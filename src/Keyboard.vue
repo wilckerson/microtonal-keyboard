@@ -1,9 +1,11 @@
 <template>
   <div>
+    Eqt: <input type="number" v-model="eqt">
+    Ratio: {{ratio(2)}}
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="krow.toString()">
         <td v-for="(key,kidx) in krow" v-bind:key="key">
-          {{key.idx}} : {{ratio(key.idx).toFixed(2)}}
+          <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small>
           <audio-key :keyName="key.k" :freq="(440 * ratio(key.idx))" />
         </td>
       </tr>
@@ -20,7 +22,7 @@ export default {
   },
   data() {
     return {
-      tones: [220, 230, 240, 250, 260],
+      eqt: 12,
       keys: [
          [
           {k:'Q',idx:17},
@@ -59,9 +61,17 @@ export default {
   },
   methods:{
     ratio:function(idx){
-      var eqt = 7;
+
+      var eqt = this.eqt;
       return idx == 1 ? 1 : Math.pow(Math.pow(2,(1.0/eqt)),idx-1);
       //return 1+((idx-1)/12);
+    }
+  },
+  watch:{
+    eqt:function(val){
+      if(val == 0){
+        this.eqt = 1;
+      }
     }
   }
 }

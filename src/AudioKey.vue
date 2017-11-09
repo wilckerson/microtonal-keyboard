@@ -12,6 +12,7 @@ export default {
         return {
             active: false,
             vca: undefined,
+            vco: undefined,
         }
     },
     mounted: function() {
@@ -20,7 +21,7 @@ export default {
             return;
         }
 
-        if(!window.audioCtx){
+        if (!window.audioCtx) {
             window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
         var audioCtx = window.audioCtx;
@@ -30,6 +31,7 @@ export default {
         //vco.type = vco.SINE;
         vco.frequency.value = this.freq;
         vco.start(0);
+        this.vco = vco;
 
         /* VCA */
         var vca = audioCtx.createGain();
@@ -74,6 +76,12 @@ export default {
                 else {
                     this.vca.gain.value = 0;
                 }
+            }
+        },
+        freq: function(val) {
+            console.log('freq',val);
+            if (this.vco) {
+                this.vco.frequency.value = val;
             }
         }
     }
