@@ -1,12 +1,15 @@
 <template>
   <div>
-    Eqt: <input type="number" v-model="eqt"> 
+    Eqt: <input type="number" step="any" v-model="eqt"> 
     <span>Ratio: {{ratio(2)}}</span>
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="krow.toString()">
         <td v-for="(key,kidx) in krow" v-bind:key="key.toString()">
-          <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small>
-          <audio-key :keyName="key.k" :freq="(440 * ratio(key.idx))" />
+          <!-- <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small> -->
+          <!-- <audio-key :keyName="key.k" :freq="(440 * ratio(key.idx))" /> -->
+
+          <small>{{key.idx}} : {{parseFloat(freq(key.idx)).toFixed(3)}}</small>
+          <audio-key :keyName="key.k" :freq="freq(key.idx)" />
         </td>
       </tr>
     </table>
@@ -69,8 +72,10 @@ export default {
   computed: {
     chartData() {
       var data = [];
-      for (var i = 1; i <= this.eqt; i++) {
-        var v = this.ratio(i);
+      var max = 26; //this.eqt;
+      for (var i = 1; i <= max; i++) {
+        //var v = this.ratio(i);
+        var v = this.freq(i);
         data.push(v);
       }
 data.push(2);
@@ -78,7 +83,8 @@ data.push(2);
     },
     chartLabels() {
       var data = [];
-      for (var i = 1; i <= this.eqt; i++) {
+      var max = 26; //this.eqt;
+      for (var i = 1; i <= max; i++) {
         var v = i.toString();
         data.push(v);
       }
@@ -87,7 +93,188 @@ data.push(2);
     }
   },
   methods: {
-    ratio: function(idx) {
+    freq(idx){
+       var freqBase = 432;
+       var freqArr = [
+
+freqBase * 1
+,freqBase * 1.065382733
+,freqBase * 1.135040368
+,freqBase * 1.20925241
+,freqBase * 1.288316638
+,freqBase * 1.372550301
+,freqBase * 1.462291391
+,freqBase * 1.557899999
+,freqBase * 1.659759759
+,freqBase * 1.768279389
+,freqBase * 1.883894329
+,freqBase * 2
+
+
+
+         //Intervalo numeros primos (Arranjados)
+          // freqBase
+          // //518.4,
+          // ,2 * freqBase / (5/3)
+          // ,2 * freqBase / (3/2)
+          // ,freqBase * (7/5)
+          // ,2 * freqBase / (7/5)
+          // ,freqBase * (3/2)
+          // //,freqBase * (11/7)
+          // ,freqBase * (5/3)
+          // ,freqBase * 2
+
+         //Intervalo numeros primos
+//          freqBase * 1,
+// freqBase * 1.5,
+// freqBase * 1.66666666666667,
+// freqBase * 1.4,
+//  freqBase * 1.57142857142857,
+//  freqBase * 1.18181818181818,
+//   freqBase * 1.30769230769231,
+//   freqBase * 1.11764705882353,
+// //  freqBase * 1.21052631578947,//<<---
+//   freqBase * 1.26086956521739,
+
+
+//  freqBase * 2,
+// freqBase * 2 / 1.5,
+// //freqBase * 2 / 1.66666666666667,
+// //freqBase * 2 / 1.4,
+//  //freqBase * 2 / 1.57142857142857,
+// // freqBase * 2 / 1.18181818181818,
+// // freqBase * 2 / 1.30769230769231,
+//  freqBase * 2 / 1.11764705882353,
+// // freqBase * 2 / 1.21052631578947,
+// // freqBase * 2 / 1.26086956521739,
+//  freqBase * 2 / 1.06896551724138,
+// // freqBase * 2 / 1.19354838709677,
+// // freqBase * 2 / 1.10810810810811,
+// // freqBase * 2 / 1.04878048780488,
+// // freqBase * 2 / 1.09302325581395,
+// // freqBase * 2 / 1.12765957446809,
+// // freqBase * 2 / 1.11320754716981,
+//  freqBase * 2 / 1.03389830508475,
+// // freqBase * 2 / 1.09836065573771,
+// // freqBase * 2 / 1.05970149253731,
+// // freqBase * 2 / 1.02816901408451,
+// // freqBase * 2 / 1.08219178082192,
+
+
+
+
+ //freqBase * 1.06896551724138,
+// freqBase * 1.19354838709677,
+// freqBase * 1.10810810810811,
+// freqBase * 1.04878048780488,
+// freqBase * 1.09302325581395,
+// freqBase * 1.12765957446809,
+// freqBase * 1.11320754716981,
+// freqBase * 1.03389830508475,
+// freqBase * 1.09836065573771,
+// freqBase * 1.05970149253731,
+// freqBase * 1.02816901408451,
+
+
+          //432,486,576,648,768,864, //Pentatônica
+         
+         //Rearranjo Pentatônico
+        //  432,324,243,
+        //  864,648,486,
+        //  765,657,576,
+        //  876,768,687
+
+//Rearranjo Pentatônico Normalizado
+          //432,486,576,648,687,768,864
+        //  ,432,468,486,576,648,687,768,864
+
+//Montada baseada nas escalas acima
+          // 432,486,543,576,648,687,768,864,
+
+//Arranjo 3 digitos do 0 ao 9
+        // 21,102,210
+        // ,132,213,321
+        // ,243,324,432
+        // ,354,435,543
+        // ,465,546,654
+        // ,576,657,765
+        // ,687,768,876
+        // ,798,879,987
+
+        //Progreção linear 100
+        //400,425,450,475,500,525,550,575,600,625,650,675,700,725,750,775,800
+
+        //Angulo interno sólidos geométricos
+        //360,405,450,495,540,585,630,675,720
+
+      //   freqBase,
+      //   freqBase * 1.5,
+      //   freqBase * 2,
+
+      //   freqBase,
+      //   freqBase * 1.25,
+      //   //freqBase * 1.5,
+      //   freqBase * 1.75,
+      //   freqBase * 2,
+
+      //   freqBase,
+      //   freqBase * 1.125,
+      //   //freqBase * 1.25,
+      //   freqBase * 1.375,
+      //   //freqBase * 1.5,
+      //   freqBase * 1.625,
+      //   //freqBase * 1.75,
+      //   freqBase * 1.875,
+      //   freqBase * 2,
+
+      //   freqBase,
+      //   freqBase * 1.0625,
+      //   freqBase * 1.1875,
+      //   freqBase * 1.3125,
+      //   freqBase * 1.4375,
+      //   freqBase * 1.5625,
+      //   freqBase * 1.6875,
+      //   freqBase * 1.8125,
+      //   freqBase * 1.9375,
+      //   freqBase * 2,
+
+
+
+
+
+
+        // freqBase,
+        // freqBase * 2,
+        // freqBase * 3 / 2,
+        // freqBase * 5 / 4,
+        // freqBase * 7 / 4,
+        // freqBase * 9 / 8,
+        // freqBase * 11 / 8,
+        // freqBase * 13 / 8,
+        // freqBase * 15 / 8,
+        // freqBase * 17 / 16,
+        // freqBase * 19 / 16,
+        // freqBase * 21 / 16,
+        // freqBase * 23 / 16,
+        // freqBase * 25 / 16,
+        // freqBase * 27 / 16,
+        // freqBase * 29 / 16,
+        // freqBase * 31 / 16,
+        // freqBase * 33 / 32,
+        // freqBase * 35 / 32,
+        // freqBase * 37 / 32,
+        // freqBase * 39 / 32,
+        // freqBase * 41 / 32,
+        // freqBase * 43 / 32,
+        // freqBase * 45 / 32,
+        // freqBase * 47 / 32,
+        // freqBase * 49 / 32,
+
+      ];
+      freqArr = freqArr.sort();
+      return freqArr[idx-1] || 0;
+    },
+    ratio(idx) {
       //var ratiosArr = [
       //0, 1, 2, 3/2, 5/4, 8/4, 13/8, 21/16, 34/32, 55/32
       // 0,1,5/4,21/16,3/2,13/8,2
@@ -123,17 +310,18 @@ data.push(2);
 
       //       ];
       //var eqt = this.eqt;
-      //return idx == 1 ? 1 : Math.pow(Math.pow(2, 1.0 / this.eqt), idx - 1);
+      return idx == 1 ? 1 : Math.pow(Math.pow(2, 1.0 / this.eqt), idx - 1);
       //return idx == 1 ? 1 : Math.pow(Math.pow(2,(1.0/this.eqt)),idx-1);
       //return 1+((idx-1)/this.eqt);
       //return ratiosArr[idx] || 0;
 
-      var v = Math.pow(1.618033,idx-1);
-      while(v > 2){
-        v = v/2;
-      }
-      return v;
-      
+      //var v = Math.pow(1.618033,idx-1);
+      // var v = Math.pow(5,idx-1);
+      // while(v > 2){
+      //   v = v/2;
+      // }
+      // return v;
+
       //return idx;
     }
   },

@@ -28,7 +28,7 @@ export default {
 
         /* VCO */
         var vco = audioCtx.createOscillator();
-        //vco.type = vco.SINE;
+        //vco.type = "sine";
         vco.frequency.value = this.freq;
         vco.start(0);
         this.vco = vco;
