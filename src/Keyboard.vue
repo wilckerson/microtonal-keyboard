@@ -97,18 +97,51 @@ data.push(2);
        var freqBase = 432;
        var freqArr = [
 
-freqBase * 1
-,freqBase * 1.065382733
-,freqBase * 1.135040368
-,freqBase * 1.20925241
-,freqBase * 1.288316638
-,freqBase * 1.372550301
-,freqBase * 1.462291391
-,freqBase * 1.557899999
-,freqBase * 1.659759759
-,freqBase * 1.768279389
-,freqBase * 1.883894329
-,freqBase * 2
+         //Vector Equilibrium
+//8 x 3 = 24
+//8/6 => 4/3 = 1.3333
+//6 x 4 = 24
+//6/4 = 1.5
+// 1
+// 1/2
+//sqrt(2) = 1.4142 => diagonal quadrado
+//sqrt(3)/2 = 0.8660 => Altura triangulo equilatero
+//sqrt(5)/2 = 1.1180 => diagonal, metade quadrado
+// 36/14 = 1.2857 (9/7) => Arestas / Faces
+
+//1
+//1,0606601717798212866012665431573...
+//1,0606601717798212866012665431573
+//1.125
+//1.193242...
+//1.265625
+//
+// freqBase,
+//  freqBase * Math.sqrt(9/8),
+//  freqBase * (9/8),
+//  freqBase * 1.1932,
+//  freqBase * (81/64),
+//  freqBase * 4/3,
+//  freqBase * Math.sqrt(2),
+//  freqBase * 3/2,
+//  freqBase * (Math.sqrt(81/32)),
+//  freqBase * (Math.sqrt(729/256)),
+//  freqBase * 16/9,//(Math.sqrt(6561/2048)),
+//  freqBase * 1.8984375,
+// freqBase * 2
+
+// freqBase * 1
+// ,freqBase * 1.065382733
+// ,freqBase * 1.135040368
+// ,freqBase * 1.20925241
+// ,freqBase * 1.288316638
+// ,freqBase * 1.372550301
+// ,freqBase * 1.462291391
+// ,freqBase * 1.557899999
+// ,freqBase * 1.659759759
+// ,freqBase * 1.768279389
+// ,freqBase * 1.883894329
+// ,freqBase * 2
 
 
 
@@ -201,6 +234,21 @@ freqBase * 1
         // ,687,768,876
         // ,798,879,987
 
+//Intervalo arranjo 3 digitos
+//freqBase, freqBase * 1.1015037593985,freqBase * 1.12286689419795, freqBase * 1.23684210526316 //987
+//,freqBase,freqBase * 1.117903930131,freqBase * 1.140625,  freqBase * 1.27510917030568 //876
+//,freqBase,freqBase * 1.140625,freqBase * 1.16438356164384,  freqBase * 1.328125 //765
+//,freqBase, freqBase * 1.1741935483871,freqBase * 1.1978021978022, freqBase * 1.40645161290323 //654
+//freqBase,freqBase * 1.22881355932203,freqBase * 1.24827586206897,  freqBase * 1.53389830508475 //543
+freqBase,freqBase * 1.33333333333333, freqBase * 1.33333333333333, freqBase * 1.77777777777778 //432
+,freqBase, freqBase * 1.21590909090909, freqBase * 1.50704225352113, freqBase * 1.61363636363636 //321
+,freqBase,freqBase * 1.02941176470588, freqBase * 1.21428571428571, freqBase * 1.25 //210
+,freqBase,freqBase * 1.04357798165138, freqBase * 1.1978021978022, freqBase * 1.25 //910
+,freqBase, freqBase * 1.03188775510204, freqBase * 1.21137206427689, freqBase * 1.25 //980
+
+
+
+
         //Progreção linear 100
         //400,425,450,475,500,525,550,575,600,625,650,675,700,725,750,775,800
 
@@ -271,7 +319,7 @@ freqBase * 1
         // freqBase * 49 / 32,
 
       ];
-      freqArr = freqArr.sort();
+      //freqArr = freqArr.sort();
       return freqArr[idx-1] || 0;
     },
     ratio(idx) {
