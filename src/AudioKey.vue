@@ -12,7 +12,13 @@ export default {
     return {
       active: false,
       vca: undefined,
-      vco: undefined
+      vco: undefined,
+      keyMap:{
+        "<":188,
+        ">":190,
+        ";":191,
+        "\\":226,
+      }
     };
   },
   mounted: function() {
@@ -55,13 +61,14 @@ export default {
   methods: {
     keyUp: function(e) {
       var keyName = String.fromCharCode(e.keyCode);
-      if (keyName == this.keyName) {
+      if (keyName == this.keyName || this.keyMap[this.keyName] == e.keyCode) {
         this.active = false;
       }
     },
     keyDown: function(e) {
+      //console.log(e.keyCode);
       var keyName = String.fromCharCode(e.keyCode);
-      if (keyName == this.keyName) {
+      if (keyName == this.keyName || this.keyMap[this.keyName] == e.keyCode) {
         this.active = true;
       }
     },
