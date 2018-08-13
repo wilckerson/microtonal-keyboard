@@ -1,0 +1,59 @@
+body {
+    background-color: rgb(250, 250, 250);
+}
+button {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+label {
+    display: block;
+    font-family: monospace;
+    line-height: 20px;
+    width: 255px;
+    margin-bottom: 5px;
+    clear: both;
+}
+input[type=radio] {
+    float: right;
+}
+span, input[type=number] {
+    background-color: white;
+    border: 1px solid #efefef;
+    border-radius: 3px;
+    display: inline-block;
+    width: 70px;
+    line-height: 16px;
+    text-align: center;
+    font-weight: bold;
+    padding: 1px 5px;
+    float: right;
+}
+select {
+    float: right;
+}
+hr {
+    border-color: rgba(200, 200, 200, 0.1);
+}
+.preset.active {
+    font-weight: bold;
+}
+#controller {
+    overflow: hidden;
+}
+#controller svg {
+    position: relative;
+    top: -55px;
+    pointer-events: none;
+}
+@media (min-width: 640px) {
+    #controller svg {
+        top: -125px;
+    }
+}
+.key {
+    cursor: pointer;
+    pointer-events: fill;
+}
+.key:hover, .key.active {
+    fill: #00ADEE;
+}

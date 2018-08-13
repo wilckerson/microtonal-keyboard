@@ -34,7 +34,8 @@ export default {
 
     /* VCO */
     var vco = audioCtx.createOscillator();
-    //vco.type = "sine";
+    vco.type = "sine";
+    //vco.type = "sawtooth";
     //vco.frequency.value = this.freq;
     vco.frequency.setValueAtTime(this.freq, audioCtx.currentTime);
     vco.start(0);
@@ -44,9 +45,30 @@ export default {
     var vca = audioCtx.createGain();
     vca.gain.setValueAtTime(0, audioCtx.currentTime);
 
+var distortion = audioCtx.createWaveShaper();
+function makeDistortionCurve(amount) {
+  var k = typeof amount === 'number' ? amount : 50,
+    n_samples = 44100,
+    curve = new Float32Array(n_samples),
+    deg = Math.PI / 180,
+    i = 0,
+    x;
+  for ( ; i < n_samples; ++i ) {
+    x = i * 2 / n_samples - 1;
+    curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+  }
+  return curve;
+};
+distortion.curve = makeDistortionCurve(2);
+
     /* Connections */
-    vco.connect(vca);
+    //vco.connect(vca);
+     vco.connect(distortion);
+    distortion.connect(vca)
     vca.connect(audioCtx.destination);
+
+   
+
     this.vca = vca;
 
     window.addEventListener("keydown", this.keyDown);
@@ -81,11 +103,14 @@ export default {
   },
   watch: {
     active: function(val, oldVal) {
+      var m = 0.05;
       if (val != oldVal && this.vca) {
         if (val) {
-          this.vca.gain.setValueAtTime(1, audioCtx.currentTime);
+          //this.vca.gain.setValueAtTime(1, audioCtx.currentTime);
+          this.vca.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime+m);
         } else {
-          this.vca.gain.setValueAtTime(0, audioCtx.currentTime);
+          //this.vca.gain.setValueAtTime(0, audioCtx.currentTime+0.2);
+          this.vca.gain.linearRampToValueAtTime(0, audioCtx.currentTime+m);
         }
       }
     },
