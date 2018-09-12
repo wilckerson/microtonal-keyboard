@@ -1,27 +1,36 @@
 <template>
   <div id="app">
-    <h1>🙌🎵</h1>
-    <h1>Microtonal Keyboard</h1>
+    
+    <h3>🙌🎵 Microtonal Keyboard</h3>
 
 <keyboard/>
+<!-- <lambdoma-keyboard/> -->
     <!-- <audio-key keyName="W" freq="220"/>
     <audio-key keyName="E" freq="440"/> -->
+
+
   </div>
 </template>
 
 <script>
 import Keyboard from './Keyboard.vue';
+import LambdomaKeyboard from './LambdomaKeyboard.vue';
 import AudioKey from './AudioKey.vue';
+
+
 
 export default {
   name: 'app',
   components: {
-    Keyboard,AudioKey
+    LambdomaKeyboard,Keyboard,AudioKey
   },
   data() {
     return {
       msg: 'Welcome to Your Vue.js App'
     }
+  },
+  methods:{
+    
   }
 }
 </script>
@@ -33,7 +42,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 20px;
+  /* margin-top: 20px; */
 }
 
 h1,
