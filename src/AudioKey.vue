@@ -207,9 +207,9 @@ export default {
 }
 
 .key-label {
-  position: absolute;
+  /* position: absolute; */
   margin: 3px;
-  font-size: 7px;
+  font-size: 10px;
   /* font-weight: bold; */
   text-transform: uppercase;
 }
@@ -218,7 +218,7 @@ export default {
   /* padding: 25px; */
   /* padding:15px;
   font-size: 14px; */
-      padding: 10px 0px;
-    font-size: 0.6em;
+      /* padding: 10px 0px; */
+    font-size: 12px;
 }
 </style>

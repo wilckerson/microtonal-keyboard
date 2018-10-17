@@ -4,10 +4,15 @@
 <!-- <input type="number" v-model="limit"/> -->
 
 <table border="0">
+    <tr>
+        <td></td>
+        <td v-for="j in limit"><small>{{j+skipX}}</small> </td>
+    </tr>
     <tr v-for="i in limit">
-        <td v-for="j in Math.round(limit/2)">
-            <!-- <span>{{(normalize(freq(i,j))-1)*100}}</span> -->
-            <audio-key keyName=""  :freq="mainFreq * freq(i,j)" :style="color(freq(i,j))"/>
+        <td><small>{{i+skipY}}</small></td>
+        <td v-for="j in Math.round(limit/1)">
+            <audio-key :keyName="keyName(i,j)"  :freq="mainFreq * ratio(i,j)" :style="color(i,j)"/>
+            
         </td>
     </tr>
 </table>
@@ -27,14 +32,15 @@ export default {
     data(){
         return {
             model: 1,
-            limit: 9,
-            skipX:2,
-            skipY:0,
+            limit: 8,
+            skipX:3,
+            skipY:3,
             mainFreq: 432
         }
     },
     methods:{
-        color(ratio){
+        color(i,j){
+            var ratio = this.ratio(i,j);
             var normRatio = this.normalize(ratio);
             // var r = normRatio * 255 / 2;
             // var g = normRatio * (255/3) / 2;
@@ -57,14 +63,14 @@ export default {
 	var h = r * 0x10000 + g * 0x100 + b * 0x1;
 	return '#' + ('000000' + h.toString(16)).slice(-6);
 },
-        freq(i,j){
-            var ratio = this.lambdoma(i,j,this.limit);
-            //ratio = this.normalize(ratio);
-            return ratio;
+        
+        ratio(i,j){
+            
+            return (j+this.skipX)/(i+this.skipY);
         },
-        lambdoma(i,j,limit){
-            return 1/(limit-i+2+this.skipY)*(j+1+this.skipX);
-        },
+        // lambdoma(i,j,limit){
+        //     return 1/(i+1+this.skipY)*(j+1+this.skipX);
+        // },
         normalize(v){
             if(v >= 2){
                 while(v >= 2){
@@ -77,6 +83,12 @@ export default {
                 }
             }
             return v;
+        },
+        keyName(i,j){
+            var ratio = this.ratio(i,j).toFixed(3);
+            var normalized = this.normalize(ratio);
+            var fraction = (j+this.skipX) + "/" + (i+this.skipY);
+            return fraction + " " + normalized;
         }
     }
 }
