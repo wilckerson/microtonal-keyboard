@@ -1,7 +1,7 @@
 <template>
     <div class="key" :class="{ 'active' : active}" @mousedown="mouseDown" @mouseup="mouseUp" @touchstart="mouseDown" @touchend="mouseUp">
         <div class="key-label">{{keyName}}</div>
-        <div class="key-tone">{{freq.toFixed(2)}}Hz</div>
+        <div class="key-tone">{{ text ||  freq.toFixed(2) + 'Hz'}}</div>
     </div>
 </template>
 
@@ -10,7 +10,7 @@ import Vue from "vue";
 
 
 export default {
-  props: ["keyName", "freq"],
+  props: ["keyName", "freq", "text"],
   data() {
     return {
       active: false,
@@ -129,7 +129,8 @@ export default {
   methods: {
     keyUp: function(e) {
       var keyName = String.fromCharCode(e.keyCode);
-      if (keyName == this.keyName || this.keyMap[this.keyName] == e.keyCode) {
+      var stopArrowUpOrDown = (e.keyCode == 38 || e.keyCode == 40);
+      if (keyName == this.keyName || this.keyMap[this.keyName] == e.keyCode || stopArrowUpOrDown) {
         this.active = false;
       }
     },
