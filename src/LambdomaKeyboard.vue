@@ -36,8 +36,8 @@ export default {
         return {
             model: 1,
             limit: 8,
-            skipX:3,
-            skipY:3,
+            skipX:7,
+            skipY:0,
             mainFreq: 432,
             currentRow: 0,
         }
@@ -91,12 +91,22 @@ export default {
         ratio(i,j){
             
             //Default Lambdoma
-            return (j+this.skipX)/(i+this.skipY);
+            //return (j+this.skipX)/(i+this.skipY);
 
+            //Scale
+            var scale = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
+            var s = scale[Math.min(i-1,scale.length-1)];            
+            //var r = s * (j+this.skipX)/8;
 
-            var r = Math.pow(1.5,i-1) * (j+this.skipX)/4;
+            //Scale 2
+            var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
+            var s2 = scale2[Math.min(j-1,scale2.length-1)];
+            var r = s * s2;
+
+            //var r = Math.pow(1.5,i-1) * (j+this.skipX)/4;
             //return this.normalize(r/2);
-            return r/2;
+            //return r/2;
+            return r;
         },
         // lambdoma(i,j,limit){
         //     return 1/(i+1+this.skipY)*(j+1+this.skipX);
