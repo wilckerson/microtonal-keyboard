@@ -3,8 +3,8 @@
     
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
-<!-- <keyboard/> -->
-<lambdoma-keyboard/>
+<keyboard/>
+<!-- <lambdoma-keyboard/> -->
     <!-- <audio-key keyName="W" freq="220"/>
     <audio-key keyName="E" freq="440"/> -->
 

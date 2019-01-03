@@ -6,10 +6,12 @@
 <table border="0">
     <tr>
         <td></td>
-        <td v-for="j in limit"><small>{{j+skipX}}</small> </td>
+        <!-- <td v-for="j in limit"><small>{{j+skipX}}</small> </td> -->
+        <td v-for="j in limit"><small>{{j}}</small> </td>
     </tr>
     <tr v-for="i in limit">
-        <td><small>{{i+skipY}}</small></td>
+        <!-- <td><small>{{i+skipY}}</small></td> -->
+        <td><small>{{i}}</small></td>
         <td v-for="j in Math.round(limit/1)">
             <audio-key :keyName="keyName(i,j)"  :freq="mainFreq * ratio(i,j)" :style="color(i,j)"/>
             
@@ -32,10 +34,10 @@ export default {
     data(){
         return {
             model: 1,
-            limit: 8,
-            skipX:3,
+            limit: 9,//9 * 1,
+            skipX:0,
             skipY:3,
-            mainFreq: 432
+            mainFreq: 432 //*4
         }
     },
     methods:{
@@ -65,8 +67,41 @@ export default {
 },
         
         ratio(i,j){
+
+            //Scale vs Overtone
+            // var scale = [1,1.125,1.25,4/3,1.5,5/3,15/8,2];
+            // var idx = (j-1) % scale.length;
+            // return (1/(i+this.skipY)) * scale[idx];
+
+            //Scale vs Scale
+            // var scale = [
+            //     Math.pow(Math.pow(2,1/12),1),
+            //     Math.pow(Math.pow(2,1/12),2),
+            //     Math.pow(Math.pow(2,1/12),3),
+            //     Math.pow(Math.pow(2,1/12),4),
+            //     Math.pow(Math.pow(2,1/12),5),
+            //     Math.pow(Math.pow(2,1/12),6),
+            //     Math.pow(Math.pow(2,1/12),7),
+            //     Math.pow(Math.pow(2,1/12),8),
+            //     Math.pow(Math.pow(2,1/12),9),
+            //     Math.pow(Math.pow(2,1/12),10),
+            //     Math.pow(Math.pow(2,1/12),11),
+            //     Math.pow(Math.pow(2,1/12),12),
+            // ];
+            //var scale = [1,1.25,1.5,1.875];
+            var scale = [1,1.125,1.25,4/3,1.5,5/3,15/8];
+            //var scale = [1,1.125,1.25,4/3,16/9]
+            var idx = (j-1) % scale.length;
+            var oct = Math.pow(2, Math.ceil((j) / scale.length)-1);
+
+            var idx2 = (i-1) % scale.length;
+            var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
             
-            return (j+this.skipX)/(i+this.skipY);
+            return scale[idx2]* oct2 * scale[idx] * oct;
+
+            //Lambdoma
+            //return (j+this.skipX)/(i+this.skipY);
+
         },
         // lambdoma(i,j,limit){
         //     return 1/(i+1+this.skipY)*(j+1+this.skipX);
@@ -85,10 +120,10 @@ export default {
             return v;
         },
         keyName(i,j){
-            var ratio = this.ratio(i,j).toFixed(3);
+            var ratio = this.ratio(i,j);
             var normalized = this.normalize(ratio);
-            var fraction = (j+this.skipX) + "/" + (i+this.skipY);
-            return fraction + " " + normalized;
+            var fraction = ""//+ (j+this.skipX) + "/" + (i+this.skipY);
+            return fraction + " " + normalized.toFixed(3);
         }
     }
 }
@@ -97,7 +132,7 @@ export default {
 <style>
 table{
     width:100%;
-    max-width:980px;
+    max-width:1200px;
 }
 
 table,tr,td{

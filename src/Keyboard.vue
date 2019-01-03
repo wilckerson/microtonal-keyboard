@@ -6,6 +6,7 @@
     <span>Ratio: {{ratio(2)}}</span>
     <span>DiffRoot: <input type="checkbox" v-model="diffRoot"/></span>
     <span>MainFreq: <input type="text" v-model="mainFreq"/></span>
+    <span>Normalize: <input type="checkbox" v-model="normalize"/></span>
     </p>
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="ridx">
@@ -53,10 +54,11 @@ export default {
       base: 2,
       ratioDiff: [],
       ratioAvg: 0,
-      mainFreq: 432,
+      mainFreq: 54,
       factor: 1,
       freqBased: false,
       diffRoot: false,
+      normalize:false,
       keys: [
         [
           { k: "Q", idx: 19 },
@@ -1835,8 +1837,13 @@ export default {
 //JI Limit-13
 //1, 16/13, 13/8, 2
 
-//1/8,1/9,1/10,1/11,1/12,1/13,1/14,1/15,1/16
-//,1,9,10,11,12,13,14,15,16
+(1)*1, (1)*1.125, (1)*1.25,
+(4/3)*1, (4/3)*1.125, (4/3)*1.25,
+(16/9)*1, (16/9)*1.125, (16/9)*1.25,
+(64/27)*1, (64/27)*1.125, (64/27)*1.25,
+(256/81)*1, (256/81)*1.125, (256/81)*1.25,
+(1024/243)*1, (1024/243)*1.125, (1024/243)*1.25,
+
 ];
 
       //MAtrix
@@ -1848,69 +1855,71 @@ export default {
       // ]
 
       //Gerador
-      var init = 1;
-      var cc = init;
-      ratiosArr = [];
-      //ratiosArr.push(cc);      
-      var r = 26  ;
+//       var init = 1;
+//       var cc = init;
+//       ratiosArr = [];
+//       //ratiosArr.push(cc);      
+//       var r = 26  ;
      
       
-      // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing 
-      // var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
-      // var arrIntervals = [  1.25, 1.2 ]; 
-       //var arrIntervals = [  9/8, 32/27 ]//9/8, 16/15,10/9 ]; 
-       //var arrIntervals = [  9/8, 32/27, 9/8, 32/27, 9/8 ]; //JI LIMIT-3
-       var arrIntervals = [  16/15, 1.0546875, 16/15,1.0416666666,16/15,16/15, 1.0546875, 16/15,1.0416666666,16/15,1.0546875, 16/15  ]; //JI LIMIT-5
-       //var arrIntervals = [  9/8, 9/8, 256/243, 9/8, 9/8, 256/243, 9/8 ]; 
-       //var arrIntervals = [  1.5 ]; 
+//       // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing 
+//       // var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
+//       // var arrIntervals = [  1.25, 1.2 ]; 
+//        //var arrIntervals = [  9/8, 32/27 ]//9/8, 16/15,10/9 ]; 
+//        //var arrIntervals = [  9/8, 32/27, 9/8, 32/27, 9/8 ]; //JI LIMIT-3
+//        var arrIntervals = [  16/15, 1.0546875, 16/15,1.0416666666,16/15,16/15, 1.0546875, 16/15,1.0416666666,16/15,1.0546875, 16/15  ]; //JI LIMIT-5
+//        //var arrIntervals = [  9/8, 9/8, 256/243, 9/8, 9/8, 256/243, 9/8 ]; 
+//        //var arrIntervals = [  1.5 ]; 
 
-// Harm: 1,2, 3/2, 4/3, 5/4, 6/5, 7/6, 8/7, 9/8, 10/9, 11/10, 12/11,  13/12 , 14/13, 15/14 , 16/15, 17/16, 18/17
-// 2   -> 3/2 , 4/3 D3()
-// 3/2 -> 5/4 , 6/5 D3(7/6 , 8/7,9/8)
-// 4/3 -> 32/27,9/8 (7/6 , 8/7) D3(9/8 , 10/9, 16/15)
-// 5/4 -> 9/8 , 10/9 D3(11/10 , 12/11, 25/24)
-// 6/5 -> 11/10 , 12/11
-// 7/6 -> 13/12 , 14/13
-// 8/7 -> 15/14 , 16/15
-// 9/8 -> 17/16, 18/17
+// // Harm: 1,2, 3/2, 4/3, 5/4, 6/5, 7/6, 8/7, 9/8, 10/9, 11/10, 12/11,  13/12 , 14/13, 15/14 , 16/15, 17/16, 18/17
+// // 2   -> 3/2 , 4/3 D3()
+// // 3/2 -> 5/4 , 6/5 D3(7/6 , 8/7,9/8)
+// // 4/3 -> 32/27,9/8 (7/6 , 8/7) D3(9/8 , 10/9, 16/15)
+// // 5/4 -> 9/8 , 10/9 D3(11/10 , 12/11, 25/24)
+// // 6/5 -> 11/10 , 12/11
+// // 7/6 -> 13/12 , 14/13
+// // 8/7 -> 15/14 , 16/15
+// // 9/8 -> 17/16, 18/17
 
-     for(var i=0; i< (r-1);i++){
-      // cc *= Math.pow(2,1/12);
-       //cc = (i+1)*13;
-       //cc += 0.25
-       //cc = Math.pow(2*Math.PI*(60/360),i);
-       //cc *= 1.618033;
-       cc = 32/(i+1);
+//      for(var i=0; i< (r-1);i++){
+//       // cc *= Math.pow(2,1/12);
+//        //cc = (i+1)*13;
+//        //cc += 0.25
+//        //cc = Math.pow(2*Math.PI*(60/360),i);
+//        //cc *= 1.618033;
+//        cc = 32/(i+1);
 
-       //var interval = arrIntervals[(i % arrIntervals.length)]
-       //cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
-       ratiosArr.push(cc);
-     }  
+//        //var interval = arrIntervals[(i % arrIntervals.length)]
+//        //cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
+//        ratiosArr.push(cc);
+//      }  
 //     //ratiosArr.push(2);
 
+if(this.normalize){
 //      //Normalizador
-    //  var vNorm = 2;
-    //  for(var i=0; i< ratiosArr.length;i++){
-    //     var v = ratiosArr[i] || 1;   
-    //     if(vNorm > 1){    
-    //       while(v > vNorm){
-    //         v = v / vNorm;
-    //       }
-    //     }
-    //     ratiosArr[i] = v;
-    //  }
+     var vNorm = 2;
+     for(var i=0; i< ratiosArr.length;i++){
+        var v = ratiosArr[i] || 1;   
+        if(vNorm > 1){    
+          while(v > vNorm){
+            v = v / vNorm;
+          }
+        }
+        ratiosArr[i] = v;
+     }
 
     //Normalizador Intertido
-    //  var vNorm = 2;
-    //  for(var i=0; i< ratiosArr.length;i++){
-    //     var v = ratiosArr[i] || 1;   
-    //     //if(v < 1){    
-    //       while(v < 1){
-    //         v = v * vNorm;
-    //       }
-    //     //}
-    //     ratiosArr[i] = v;
-    //  }
+     var vNorm = 2;
+     for(var i=0; i< ratiosArr.length;i++){
+        var v = ratiosArr[i] || 1;   
+        //if(v < 1){    
+          while(v < 1){
+            v = v * vNorm;
+          }
+        //}
+        ratiosArr[i] = v;
+     }
+}
 
      //Jump
     //  var jumpArr = [];

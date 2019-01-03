@@ -199,19 +199,34 @@ export default {
   border: 2px solid #ccc;
   min-height: 57px;
   text-align: center;
-  user-select: none;
+  
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;  
 }
 
 .key.active {
-  background: #ddd;
+  opacity: 0.8;
+  background: #ccc;
 }
 
 .key-label {
+  
   /* position: absolute; */
   margin: 3px;
   font-size: 10px;
   /* font-weight: bold; */
   text-transform: uppercase;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;  
 }
 
 .key-tone {
@@ -220,5 +235,12 @@ export default {
   font-size: 14px; */
       /* padding: 10px 0px; */
     font-size: 12px;
+
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;  
 }
 </style>
