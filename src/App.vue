@@ -8,7 +8,6 @@
     <!-- <audio-key keyName="W" freq="220"/>
     <audio-key keyName="E" freq="440"/> -->
 
-
   </div>
 </template>
 
