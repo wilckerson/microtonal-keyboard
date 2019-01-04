@@ -10,15 +10,15 @@
     </p>
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="ridx">
-        <td v-for="(key,kidx) in krow" v-bind:key="(ridx+kidx)">
+        <td v-for="(key,kidx) in krow" v-bind:key="(ridx+''+kidx)">
 
           <template v-if="!freqBased">
             <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small>
-            <audio-key :keyName="key.k" :freq="(mainFreq * factor * ratio(key.idx))" />
+            <audio-key :keyName="key.k" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" />
           </template>
          <template v-if="freqBased">
            <small>{{key.idx}} : {{parseFloat(freq(key.idx)).toFixed(3)}}</small>
-           <audio-key :keyName="key.k" :freq="freq(key.idx)" />
+           <audio-key :keyName="key.k" :freq="freq(key.idx)"  />
          </template>
         
         </td>
@@ -58,7 +58,7 @@ export default {
       factor: 1,
       freqBased: false,
       diffRoot: false,
-      normalize:false,
+      normalize: false,
       keys: [
         [
           { k: "Q", idx: 19 },
@@ -782,7 +782,9 @@ export default {
         //2
 
         //Sequencia Fibonacci Normalizada
-        // 1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765
+         //1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765
+
+
          //1,2,3/2,5/4,8/4,13/8,21/16,34/32,55/32,89/64,144/128,233/128,377/256,610/512,987/512,1597/1024,2584/2048,4181/4096,6765
          //8/4,13/8,21/16,34/32,1
          //2,55/32,89/64,144/128,1
@@ -1930,8 +1932,40 @@ export default {
 //Grave fica legal
 //12/12,13/12,14/12,15/12,16/12,17/12,18/12,19/12,20/12//,21/12,22/12,23/12,24/12
 //,4/3*12/12, 4/3*13/12, 4/3*14/12, 4/3*15/12, 4/3*16/12, 4/3*17/12, 4/3*18/12, 4/3*19/12, 4/3*20/12//,21/12,22/12,23/12,24/12
-16/16, 17/16, 18/16, 19/16, 20/16, 21/16, 22/16, 24/16, 26/16, 27/16, 28/16, 30/16, 32/16
+//16/16, 17/16, 18/16, 19/16, 20/16, 21/16, 22/16, 24/16, 26/16, 27/16, 28/16, 30/16, 32/16
 
+
+// Math.pow(1.618033,0)
+// ,Math.pow(1.618033,3)
+// ,Math.pow(1.618033,6)
+// ,Math.pow(1.618033,9)
+// ,Math.pow(1.618033,12)
+// ,Math.pow(1.618033,15)
+// ,Math.pow(1.618033,18)
+// ,Math.pow(1.618033,21)
+// ,Math.pow(1.618033,24)
+// ,Math.pow(1.618033,27)
+// ,Math.pow(1.618033,30)
+// ,Math.pow(1.618033,33)
+// ,Math.pow(1.618033,36)
+
+//1,  1.5, 1.5 * 1.5
+//4/3, 4/3*1.25, 4/3 * 1.5,
+
+// Math.pow(1.25,0),
+// Math.pow(1.25,1),
+// Math.pow(1.25,36),
+// Math.pow(1.25,1+0),
+// Math.pow(1.25,1+1),
+// Math.pow(1.25,1+36),
+// Math.pow(1.25,2+0),
+// Math.pow(1.25,2+1),
+// Math.pow(1.25,2+36),
+// Math.pow(1.25,3+0),
+// Math.pow(1.25,3+1),
+// Math.pow(1.25,3+36),
+
+2, 3/2, 4/3, 2, 5/4, 5/3, 6/5, 6/4, 2, 7/6, 7/5, 7/4, 8/7, 8/6, 8/5, 8/4
 ];
 
       //MAtrix
@@ -1942,46 +1976,53 @@ export default {
       //   mm[0]*mm[2], mm[1]*mm[2], mm[2]*mm[2], mm[3]*mm[2], mm[4]*mm[2], 0,0,0,0,
       // ]
 
+if(false){
+
       //Gerador
-//       var init = 1;
-//       var cc = init;
-//       ratiosArr = [];
-//       //ratiosArr.push(cc);      
-//       var r = 26  ;
+      var init = 1;
+      var cc = init;
+      ratiosArr = [];
+      //ratiosArr.push(cc);   
+      var start = 0;   
+      var r = 29 + start ;
      
       
-//       // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing 
-//       // var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
-//       // var arrIntervals = [  1.25, 1.2 ]; 
-//        //var arrIntervals = [  9/8, 32/27 ]//9/8, 16/15,10/9 ]; 
-//        //var arrIntervals = [  9/8, 32/27, 9/8, 32/27, 9/8 ]; //JI LIMIT-3
-//        var arrIntervals = [  16/15, 1.0546875, 16/15,1.0416666666,16/15,16/15, 1.0546875, 16/15,1.0416666666,16/15,1.0546875, 16/15  ]; //JI LIMIT-5
-//        //var arrIntervals = [  9/8, 9/8, 256/243, 9/8, 9/8, 256/243, 9/8 ]; 
-//        //var arrIntervals = [  1.5 ]; 
+      // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing 
+      // var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
+      // var arrIntervals = [  1.25, 1.2 ]; 
+       //var arrIntervals = [  9/8, 32/27 ]//9/8, 16/15,10/9 ]; 
+       //var arrIntervals = [  9/8, 32/27, 9/8, 32/27, 9/8 ]; //JI LIMIT-3
+       //var arrIntervals = [  16/15, 1.0546875, 16/15,1.0416666666,16/15,16/15, 1.0546875, 16/15,1.0416666666,16/15,1.0546875, 16/15  ]; //JI LIMIT-5
+       //var arrIntervals = [  9/8, 9/8, 256/243, 9/8, 9/8, 256/243, 9/8 ]; 
+       //var arrIntervals = [  1.5 ]; 
 
-// // Harm: 1,2, 3/2, 4/3, 5/4, 6/5, 7/6, 8/7, 9/8, 10/9, 11/10, 12/11,  13/12 , 14/13, 15/14 , 16/15, 17/16, 18/17
-// // 2   -> 3/2 , 4/3 D3()
-// // 3/2 -> 5/4 , 6/5 D3(7/6 , 8/7,9/8)
-// // 4/3 -> 32/27,9/8 (7/6 , 8/7) D3(9/8 , 10/9, 16/15)
-// // 5/4 -> 9/8 , 10/9 D3(11/10 , 12/11, 25/24)
-// // 6/5 -> 11/10 , 12/11
-// // 7/6 -> 13/12 , 14/13
-// // 8/7 -> 15/14 , 16/15
-// // 9/8 -> 17/16, 18/17
+// Harm: 1,2, 3/2, 4/3, 5/4, 6/5, 7/6, 8/7, 9/8, 10/9, 11/10, 12/11,  13/12 , 14/13, 15/14 , 16/15, 17/16, 18/17
+// 2   -> 3/2 , 4/3 D3()
+// 3/2 -> 5/4 , 6/5 D3(7/6 , 8/7,9/8)
+// 4/3 -> 32/27,9/8 (7/6 , 8/7) D3(9/8 , 10/9, 16/15)
+// 5/4 -> 9/8 , 10/9 D3(11/10 , 12/11, 25/24)
+// 6/5 -> 11/10 , 12/11
+// 7/6 -> 13/12 , 14/13
+// 8/7 -> 15/14 , 16/15
+// 9/8 -> 17/16, 18/17
 
-//      for(var i=0; i< (r-1);i++){
-//       // cc *= Math.pow(2,1/12);
-//        //cc = (i+1)*13;
-//        //cc += 0.25
-//        //cc = Math.pow(2*Math.PI*(60/360),i);
-//        //cc *= 1.618033;
-//        cc = 32/(i+1);
+     for(var i=start; i< (r-1);i++){
+      // cc *= Math.pow(2,1/12);
+       //cc = (i+1)*13;
+       //cc += 0.25
+       //cc = Math.pow(2*Math.PI*(60/360),i);
+       //cc = Math.pow(1.618033,(23*i));
+       //cc *= 1.618033;
+       //cc = 32/(i+1);
+       //cc = 32/i;
+       cc = Math.pow(1.25,i);
 
-//        //var interval = arrIntervals[(i % arrIntervals.length)]
-//        //cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
-//        ratiosArr.push(cc);
-//      }  
-//     //ratiosArr.push(2);
+       //var interval = arrIntervals[(i % arrIntervals.length)]
+       //cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
+       ratiosArr.push(cc);
+     }  
+    //ratiosArr.push(2);
+}
 
 if(this.normalize){
 //      //Normalizador
@@ -2030,47 +2071,13 @@ if(this.normalize){
       //ratiosArr = ratiosArr.sort();
       //===================================
       this.ratiosArr = ratiosArr;
-      return ratiosArr[idx-1] || 0;
-
-      //0, 1, 2, 3/2, 5/4, 8/4, 13/8, 21/16, 34/32, 55/32
-      // 0,1,5/4,21/16,3/2,13/8,2
-
-      //0
-      // ,1
-      // ,2
-      // ,1.5
-      // ,1.25
-      // ,1.625
-      // ,1.3125
-      // ,1.0625
-      // ,1.71875
-      // ,1.390625
-      // ,1.125
-      // ,1.8203125
-      // ,1.47265625
-      // ,1.19140625
-      // ,1.927734375
-      // ,1.559570313
-      // ,1.26171875
-
-      // 0
-      // ,1
-      // ,1.098
-      // ,1.259
-      // ,1.353
-      // ,1.44
-      // ,1.551
-      // ,1.66
-      // ,1.777
-      // ,2
-
-      //       ];
+      //return ratiosArr[idx-1] || 0;
 
       //#endregion
 
       var eqt = this.eqt;
       var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
-      return idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
+      //return idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
 
       //return idx == 1 ? 1 : Math.pow(Math.pow(2,(1.0/this.eqt)),idx-1);
       //return 1+((idx-1)/this.eqt);
@@ -2084,6 +2091,23 @@ if(this.normalize){
       // return v;
 
       //return idx;
+      
+      // var s = this.text(idx).split('/');
+      // var a = parseFloat(s[0]) || 1;
+      // var b = parseFloat(s[1]) || 1;
+      // return a/b;
+      var arr = [1, 10/9, 9/8, 8/7, 7/6, 6/5, 5/4, 9/7, 4/3, 7/5, 10/7, 3/2, 8/5, 5/3, 7/4, 9/5, 2];
+      return arr[idx-1] || 0;
+    },
+    text(idx){
+      // var arr = ['1','9/8','8/7','7/6','6/5','5/4','9/7','4/3','7/5','3/2','8/5','5/3','7/4','2'];
+       var arr = ['1','10','9','8','7','6','5-10','9','4-8','7','10','3-6-9','8','5-10','7','9','2-4-6-8-10',' '];
+       return arr[Math.min(idx-1,arr.length-1)];
+    },
+    color(idx){
+      //var arr = ['','#80bbaa','#80aaff','#aa80aa','#80ffaa','#ff8080','#80bbaa','#8080ff','#aa80aa','#80ff80','#80aaff','#ff8080','#aa80aa',' '];
+      //return arr[Math.min(idx-1,arr.length-1)];
+      return '';
     }
   },
   watch: {

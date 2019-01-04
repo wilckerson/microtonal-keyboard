@@ -6,9 +6,11 @@
     @mouseup="mouseUp"
     @touchstart="mouseDown"
     @touchend="mouseUp"
+    :style="{'background-color':color}"
   >
     <div class="key-label">{{keyName}}</div>
     <div class="key-tone">{{ text || freq.toFixed(2) + 'Hz'}}</div>
+    
   </div>
 </template>
 
@@ -16,7 +18,7 @@
 import Vue from "vue";
 
 export default {
-  props: ["keyName", "freq", "text"],
+  props: ["keyName", "freq", "text", "color"],
   data() {
     return {
       active: false,
