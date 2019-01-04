@@ -36,10 +36,10 @@ export default {
     data(){
         return {
             model: 1,
-            limit: 8,
-            skipX:7,
-            skipY:0,
-            mainFreq: 432,
+            limit: 9,
+            skipX:1,
+            skipY:1,
+            mainFreq: 432/32,
             currentRow: 0,
         }
     },
@@ -89,7 +89,7 @@ export default {
             return '#' + ('000000' + h.toString(16)).slice(-6);
         },
         
-        ratio(i,j){
+        ratio(row,col){
 
             //Scale vs Overtone
             // var scale = [1,1.125,1.25,4/3,1.5,5/3,15/8,2];
@@ -112,26 +112,34 @@ export default {
             //     Math.pow(Math.pow(2,1/12),12),
             // ];
             //var scale = [1,1.25,1.5,1.875];
-            var scale = [1,1.125,1.25,4/3,1.5,5/3,15/8];
+            //var scale = [1,1.125,1.25,4/3,1.5,5/3,15/8];
             //var scale = [1,1.125,1.25,4/3,16/9]
-            var idx = (j-1) % scale.length;
-            var oct = Math.pow(2, Math.ceil((j) / scale.length)-1);
-
-            var idx2 = (i-1) % scale.length;
-            var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
+            //var idx = (j-1) % scale.length;
+            //var oct = Math.pow(2, Math.ceil((j) / scale.length)-1);
+            //var idx2 = (i-1) % scale.length;
+            //var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
             
-            //Default Lambdoma
-            //return (j+this.skipX)/(i+this.skipY);
+            //Default Lambdoma (UxS)
+            //return (col+this.skipX)/(row+this.skipY);
+
+            //Default Lambdoma (SxU)
+            //return (row+this.skipY)/(col+this.skipX);
+
+            //Default Lambdoma (UxU)
+            //return 1/(row+this.skipY)/(col+this.skipX);
+
+             //Default Lambdoma (SxS)
+            return (row+this.skipY)*(col+this.skipX);
 
             //Scale
-            var scale = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
-            var s = scale[Math.min(i-1,scale.length-1)];            
-            //var r = s * (j+this.skipX)/8;
+            // var scale = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
+            // var s = scale[Math.min(i-1,scale.length-1)];            
+            // //var r = s * (j+this.skipX)/8;
 
-            //Scale 2
-            var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
-            var s2 = scale2[Math.min(j-1,scale2.length-1)];
-            var r = s * s2;
+            // //Scale 2
+            // var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
+            // var s2 = scale2[Math.min(j-1,scale2.length-1)];
+            // var r = s * s2;
 
             //var r = Math.pow(1.5,i-1) * (j+this.skipX)/4;
             //return this.normalize(r/2);
@@ -145,19 +153,19 @@ export default {
         getKeyName(i,j){
 
  var keys =[
-                ['Q','W','E','R','T','Y','U','I'],
-                ['A','S','D','F','G','H','J','K'],
-                ['Z','X','C','V','B','N','M','¼']
+                ['Q','W','E','R','T','Y','U','I','O'],
+                ['A','S','D','F','G','H','J','K','L'],
+                ['Z','X','C','V','B','N','M','¼','¾']
             ];
 
             if(i-1 == this.currentRow){
-                return keys[0][Math.min(j-1,7)];
+                return keys[0][Math.min(j-1,8)];
             }
             else if(i-1 == this.currentRow+1){
-                return keys[1][Math.min(j-1,7)];
+                return keys[1][Math.min(j-1,8)];
             }
             else if(i-1 == this.currentRow+2){
-                return keys[2][Math.min(j-1,7)];
+                return keys[2][Math.min(j-1,8)];
             }
             else{
                 return '-';
