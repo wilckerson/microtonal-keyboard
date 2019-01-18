@@ -3,8 +3,10 @@
     
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
-<!-- <keyboard/> -->
-<lambdoma-keyboard/>
+<!-- <Calc/> -->
+<keyboard/>
+<!-- <lambdoma-keyboard/> -->
+
     <!-- <audio-key keyName="W" freq="220"/>
     <audio-key keyName="E" freq="440"/> -->
 
@@ -12,6 +14,7 @@
 </template>
 
 <script>
+import Calc from './Calc.vue';
 import Keyboard from './Keyboard.vue';
 import LambdomaKeyboard from './LambdomaKeyboard.vue';
 import AudioKey from './AudioKey.vue';
@@ -21,7 +24,7 @@ import AudioKey from './AudioKey.vue';
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,AudioKey
+    LambdomaKeyboard,Keyboard,AudioKey,Calc
   },
   data() {
     return {

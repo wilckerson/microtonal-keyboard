@@ -38,7 +38,7 @@ export default {
             model: 1,
             limit: 9,
             skipX:1,
-            skipY:1,
+            skipY:7,
             mainFreq: 432/32,
             currentRow: 0,
         }

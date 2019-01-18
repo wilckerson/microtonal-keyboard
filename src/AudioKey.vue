@@ -180,6 +180,8 @@ export default {
   },
   watch: {
     active: function(val, oldVal) {
+      this.$emit('onChangeActive',this.freq);
+
       var m = 0.05;
 
       //Obter um oscillator disponivel
