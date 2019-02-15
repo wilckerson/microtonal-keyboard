@@ -19,14 +19,16 @@
           <td>{{idx}}</td>
           <td>{{ratio}}</td>
           <td>
-            <div v-if="idx == data.diffFrom2.idx">{{data.diffFrom2.diff.toFixed(8)}} (2)</div>
+            <!-- <div v-if="idx == data.diffFrom2.idx">{{data.diffFrom2.diff.toFixed(8)}} (2)</div>
             <div v-if="idx == data.diffFrom1_875.idx">{{data.diffFrom1_875.diff.toFixed(8)}} (1.875)</div>
             <div v-if="idx == data.diffFrom1_666.idx">{{data.diffFrom1_666.diff.toFixed(8)}} (1.666)</div>
             <div v-if="idx == data.diffFrom1_5.idx">{{data.diffFrom1_5.diff.toFixed(8)}} (1.5)</div>
             <div v-if="idx == data.diffFrom1_333.idx">{{data.diffFrom1_333.diff.toFixed(8)}} (1.333)</div>
             <div v-if="idx == data.diffFrom1_25.idx">{{data.diffFrom1_25.diff.toFixed(8)}} (1.25)</div>
             <div v-if="idx == data.diffFrom1_2.idx">{{data.diffFrom1_2.diff.toFixed(8)}} (1.2)</div>
-            <div v-if="idx == data.diffFrom1_125.idx">{{data.diffFrom1_125.diff.toFixed(8)}} (1.125)</div>
+            <div v-if="idx == data.diffFrom1_125.idx">{{data.diffFrom1_125.diff.toFixed(8)}} (1.125)</div> -->
+            
+            <!-- <div v-if="idx == data.diff_8_4.idx">{{data.diff_8_4.diff.toFixed(8)}} ({{(8/4).toFixed(3)}})</div> -->
           </td>
         </tr>
       </tbody>
@@ -49,12 +51,12 @@ export default {
 
     var currentMinDiff = 1;
     var currentInterval = 0;
-    var increment = 0.001;
+    var increment = 1;
     var interval = 1.022;//1 + increment;
 
     var bestResults = [];
     //for (var i = 1.25; i > 1+increment; i -= increment) {
-    for (var i = 12; i <= 100; i+= increment) {
+    for (var i = 1; i <= 1000; i+= increment) {
     //for (var i = 1; i <= 100000; i++) {
 
 
@@ -81,6 +83,7 @@ export default {
     console.log("sorted");
     console.log(sorted);
 
+  this.interval = Math.pow(2, 1/currentInterval);
     this.msg = currentInterval;
   },
   watch: {
@@ -92,33 +95,51 @@ export default {
     calcValues(interval) {
       var ratios = this.generateArrRatios(interval,80);
 
-      var diffFrom2 = this.diffFromRatio(ratios, 2);
-      var diffFrom1_875 = this.diffFromRatio(ratios, 15/8);
-      var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
-      var diffFrom1_5 = this.diffFromRatio(ratios, 1.5);
-      var diffFrom1_333 = this.diffFromRatio(ratios, 4 / 3);
-      var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
-      var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
-      var diffFrom1_125 = this.diffFromRatio(ratios, 9/8);
+      // var diffFrom2 = this.diffFromRatio(ratios, 2);
+      // var diffFrom1_875 = this.diffFromRatio(ratios, 15/8);
+      // var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
+      // var diffFrom1_5 = this.diffFromRatio(ratios, 1.5);
+      // var diffFrom1_333 = this.diffFromRatio(ratios, 4 / 3);
+      // var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
+      // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
+      // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
+      // var diffFrom1_125 = this.diffFromRatio(ratios, 9/8);
+    
+      // var data = {
+      //   diffFrom2,
+      //   diffFrom1_875,
+      //   diffFrom1_666,
+      //   diffFrom1_5,
+      //   diffFrom1_333,
+      //   diffFrom1_25,
+      //   diffFrom1_2,
+      //   diffFrom1_125,
+      //   totalDiff:
+      //     diffFrom2.diff
+      //     //+ diffFrom1_875.diff
+      //     //+ diffFrom1_666.diff
+      //     + diffFrom1_5.diff 
+      //     + diffFrom1_333.diff
+      //     + diffFrom1_25.diff 
+      //     + diffFrom1_2.diff
+      //     //+ diffFrom1_125.diff
+      // };
 
+      var diff_8_4 = this.diffFromRatio(ratios, 8/4);
+      var diff_8_5 = this.diffFromRatio(ratios, 8/5);
+      var diff_8_6 = this.diffFromRatio(ratios, 8/6);
+      var diff_8_7 = this.diffFromRatio(ratios, 8/7);
+    
       var data = {
-        diffFrom2,
-        diffFrom1_875,
-        diffFrom1_666,
-        diffFrom1_5,
-        diffFrom1_333,
-        diffFrom1_25,
-        diffFrom1_2,
-        diffFrom1_125,
+        diff_8_4,
+        diff_8_5,
+        diff_8_6,
+        diff_8_7,
         totalDiff:
-          diffFrom2.diff
-          + diffFrom1_875.diff
-          + diffFrom1_666.diff
-          + diffFrom1_5.diff 
-          + diffFrom1_333.diff
-          + diffFrom1_25.diff 
-          + diffFrom1_2.diff
-          + diffFrom1_125.diff
+          diff_8_4.diff +
+          diff_8_5.diff +
+          diff_8_6.diff +
+          diff_8_7.diff
       };
       return { data, ratios };
     },
