@@ -4,7 +4,7 @@
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
 <!-- <Calc/> -->
-<keyboard/>
+  <keyboard/>
 <!-- <lambdoma-keyboard/> -->
 
     <!-- <audio-key keyName="W" freq="220"/>

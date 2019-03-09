@@ -197,7 +197,7 @@ export default {
           gVco.vca.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + m);
           gVco.busy = true;
           this.gVco = gVco;
-        } else {
+        } else if(this.gVco) {
           //this.vca.gain.setValueAtTime(0, audioCtx.currentTime);
           this.gVco.vca.gain.linearRampToValueAtTime(
             0,

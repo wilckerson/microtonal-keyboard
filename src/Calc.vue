@@ -56,7 +56,7 @@ export default {
 
     var bestResults = [];
     //for (var i = 1.25; i > 1+increment; i -= increment) {
-    for (var i = 1; i <= 1000; i+= increment) {
+    for (var i = 1; i <= 30; i+= increment) {
     //for (var i = 1; i <= 100000; i++) {
 
 
@@ -98,49 +98,49 @@ export default {
       // var diffFrom2 = this.diffFromRatio(ratios, 2);
       // var diffFrom1_875 = this.diffFromRatio(ratios, 15/8);
       // var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
-      // var diffFrom1_5 = this.diffFromRatio(ratios, 1.5);
+       var diffFrom1_5 = this.diffFromRatio(ratios, 1.5);
       // var diffFrom1_333 = this.diffFromRatio(ratios, 4 / 3);
-      // var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
+       var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
       // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
       // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
       // var diffFrom1_125 = this.diffFromRatio(ratios, 9/8);
     
-      // var data = {
-      //   diffFrom2,
-      //   diffFrom1_875,
-      //   diffFrom1_666,
-      //   diffFrom1_5,
-      //   diffFrom1_333,
-      //   diffFrom1_25,
-      //   diffFrom1_2,
-      //   diffFrom1_125,
-      //   totalDiff:
-      //     diffFrom2.diff
-      //     //+ diffFrom1_875.diff
-      //     //+ diffFrom1_666.diff
-      //     + diffFrom1_5.diff 
-      //     + diffFrom1_333.diff
-      //     + diffFrom1_25.diff 
-      //     + diffFrom1_2.diff
-      //     //+ diffFrom1_125.diff
-      // };
-
-      var diff_8_4 = this.diffFromRatio(ratios, 8/4);
-      var diff_8_5 = this.diffFromRatio(ratios, 8/5);
-      var diff_8_6 = this.diffFromRatio(ratios, 8/6);
-      var diff_8_7 = this.diffFromRatio(ratios, 8/7);
-    
       var data = {
-        diff_8_4,
-        diff_8_5,
-        diff_8_6,
-        diff_8_7,
-        totalDiff:
-          diff_8_4.diff +
-          diff_8_5.diff +
-          diff_8_6.diff +
-          diff_8_7.diff
+        // diffFrom2,
+        // diffFrom1_875,
+        // diffFrom1_666,
+        // diffFrom1_5,
+        // diffFrom1_333,
+        // diffFrom1_25,
+        // diffFrom1_2,
+        // diffFrom1_125,
+        totalDiff: 0
+          //+ diffFrom2.diff
+          //+ diffFrom1_875.diff
+          //+ diffFrom1_666.diff
+          + diffFrom1_5.diff 
+          //+ diffFrom1_333.diff
+          + diffFrom1_25.diff 
+          //+ diffFrom1_2.diff
+          //+ diffFrom1_125.diff
       };
+
+      // var diff_8_4 = this.diffFromRatio(ratios, 8/4);
+      // var diff_8_5 = this.diffFromRatio(ratios, 8/5);
+      // var diff_8_6 = this.diffFromRatio(ratios, 8/6);
+      // var diff_8_7 = this.diffFromRatio(ratios, 8/7);
+    
+      // var data = {
+      //   diff_8_4,
+      //   diff_8_5,
+      //   diff_8_6,
+      //   diff_8_7,
+      //   totalDiff:
+      //     diff_8_4.diff +
+      //     diff_8_5.diff +
+      //     diff_8_6.diff +
+      //     diff_8_7.diff
+      // };
       return { data, ratios };
     },
     updateValues() {

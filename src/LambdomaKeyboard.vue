@@ -39,7 +39,7 @@ export default {
             limit: 9,
             skipX:1,
             skipY:7,
-            mainFreq: 432/32,
+            mainFreq: 432,
             currentRow: 0,
         }
     },
@@ -129,17 +129,18 @@ export default {
             //return 1/(row+this.skipY)/(col+this.skipX);
 
              //Default Lambdoma (SxS)
-            return (row+this.skipY)*(col+this.skipX);
+            //return (row+this.skipY)*(col+this.skipX);
 
             //Scale
-            // var scale = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
-            // var s = scale[Math.min(i-1,scale.length-1)];            
-            // //var r = s * (j+this.skipX)/8;
+            var scale = [1,6/5,5/4,3/2,2];
+             var s = scale[Math.min(col-1,scale.length-1)];            
+             //var r = s * (j+this.skipX)/8;
 
-            // //Scale 2
-            // var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
-            // var s2 = scale2[Math.min(j-1,scale2.length-1)];
-            // var r = s * s2;
+            //Scale 2
+             var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
+            //var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
+            var s2 = scale2[Math.min(row-1,scale2.length-1)];
+            var r = s * s2;
 
             //var r = Math.pow(1.5,i-1) * (j+this.skipX)/4;
             //return this.normalize(r/2);
@@ -198,7 +199,7 @@ export default {
             return v;
         },
         getRatioText(i,j){
-            var ratio = this.ratio(i,j).toFixed(3);
+            var ratio = this.ratio(i,j).toFixed(5);
             var normalized = this.normalize(ratio);
             var fraction = '';// (j+this.skipX) + "/" + (i+this.skipY);
             return fraction + " " + normalized;
