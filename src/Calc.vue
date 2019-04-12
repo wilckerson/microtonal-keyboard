@@ -51,12 +51,12 @@ export default {
 
     var currentMinDiff = 1;
     var currentInterval = 0;
-    var increment = 1;
+    var increment = 0.01;
     var interval = 1.022;//1 + increment;
 
     var bestResults = [];
     //for (var i = 1.25; i > 1+increment; i -= increment) {
-    for (var i = 1; i <= 30; i+= increment) {
+    for (var i = 1; i <= 40; i+= increment) {
     //for (var i = 1; i <= 100000; i++) {
 
 
@@ -97,10 +97,10 @@ export default {
 
       // var diffFrom2 = this.diffFromRatio(ratios, 2);
       // var diffFrom1_875 = this.diffFromRatio(ratios, 15/8);
-      // var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
+       //var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
        var diffFrom1_5 = this.diffFromRatio(ratios, 1.5);
-      // var diffFrom1_333 = this.diffFromRatio(ratios, 4 / 3);
-       var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
+       //var diffFrom1_333 = this.diffFromRatio(ratios, 4 / 3);
+       //var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
       // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
       // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
       // var diffFrom1_125 = this.diffFromRatio(ratios, 9/8);
@@ -120,7 +120,7 @@ export default {
           //+ diffFrom1_666.diff
           + diffFrom1_5.diff 
           //+ diffFrom1_333.diff
-          + diffFrom1_25.diff 
+          //+ diffFrom1_25.diff 
           //+ diffFrom1_2.diff
           //+ diffFrom1_125.diff
       };

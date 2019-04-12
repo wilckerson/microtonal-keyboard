@@ -1,12 +1,13 @@
 <template>
   <div>
     <p>
-    Base: <input type="number" step="any" v-model="base">
-    Eqt: <input type="number" step="any" v-model="eqt">
+    Base: <input type="number" step="0.001" v-model="base">
+    Eqt: <input type="number" step="1" v-model="eqt">
     <span>Ratio: {{ratio(2)}}</span>
     <span>DiffRoot: <input type="checkbox" v-model="diffRoot"/></span>
     <span>MainFreq: <input type="text" v-model="mainFreq"/></span>
     <span>Normalize: <input type="checkbox" v-model="normalize"/></span>
+    <span>Chart: <input type="checkbox" v-model="showChart"/></span>
     </p>
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="ridx">
@@ -14,9 +15,12 @@
 
           <template v-if="!freqBased">
             <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small>
+
             <!-- Distancia do fret em relação ao inicio do braço -->
             <!-- <small>({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small> -->
-            <audio-key :keyName="key.k" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" @onChangeActive="onChangeActive" />
+
+            <!-- <div>{{getFreq(key.idx)}}</div> -->
+            <audio-key :keyName="key.k" :idx="key.idx" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" @onChangeActive="onChangeActive" />
           </template>
          <template v-if="freqBased">
            <small>{{key.idx}} : {{parseFloat(freq(key.idx)).toFixed(3)}} </small>
@@ -26,9 +30,9 @@
         </td>
       </tr>
     </table>
-    <div>
-      <chartjs-line :width="500" :height="150" :labels="chartLabels(this.ratiosArr.length)" :data="chartData" :bind="true" style="display:inline-block;"></chartjs-line>
-      <chartjs-line :width="500" :height="150" :labels="chartLabels(this.ratiosArr.length)" :data="ratioDiff" :bind="true" style="display:inline-block;"></chartjs-line>
+    <div v-if="showChart">
+      <chartjs-line :width="500" :height="150" :labels="chartLabels()" :data="chartData" :bind="true" style="display:inline-block;"></chartjs-line>
+      <chartjs-line :width="500" :height="150" :labels="chartLabels()" :data="ratioDiff" :bind="true" style="display:inline-block;"></chartjs-line>
 
     </div>
     <div>ActiveRatio: {{activeRatio}}</div>
@@ -37,7 +41,7 @@
     <div style="text-align:left;" v-if="!freqBased">
       <h4>Ratio List:</h4>
     <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
-    <div v-for="ii in (parseFloat(Math.round(eqt)))" v-bind:key="ii">{{ratio(ii)}}</div>
+    <div v-for="ii in Math.max(29,nEqt)" v-bind:key="ii">{{ratio(ii)}}</div>
   </div>
   </div>
 </template>
@@ -60,14 +64,18 @@ export default {
       eqt: 12,
       base: 2,
       ratioDiff: [],
+      //ratiosArr:[],
       ratioAvg: 0,
-      mainFreq: 288, //432
+      mainFreq: 146, //432
       factor: 1,
       freqBased: false,
       diffRoot: false,
       normalize: false,
       activeKeys:[],
       activeRatio: '',
+      scaleRefIdx: 1,
+      scaleCount: 12,
+      showChart:true,
       keys: [
         [
           { k: "Q", idx: 19 },
@@ -580,7 +588,7 @@ if(this.ratioDiff.length){
     },
     ratio(idx) {
 
-      var PHI = (1+Math.sqrt(5))/2;
+      var PHI = (1+Math.sqrt(5))/2; //1.618033988749895
       //#region
       var ratiosArr = [
         // 1,
@@ -2830,82 +2838,6 @@ if(this.ratioDiff.length){
 //http://www.microtonal-synthesis.com/scale_carlos_super_just.html
 //1, 17/16, 9/8, 6/5, 5/4, 4/3, 11/8, 3/2, 13/8, 5/3, 7/4, 15/8
 
-//12 Over 31EDO
-// 1
-// // ,1.0226114356012683
-// ,(1.045734148222487 + 1.0693796985710669)/2
-// // ,1.09355990875861
-//  ,1.1182868682116343
-// // ,1.1435729397159455
-//  ,(1.1694307655976859 + 1.1958732740441396)/2
-// // ,1.2229136855674665
-//  ,1.2505655196145848
-// // ,1.2788426013265168
-// // ,1.3077590684505696
-//  ,1.3373293784088143
-// // ,1.3675683155263891
-// ,(1.3984909984232494 + 1.4301128875730498)/2
-// // ,1.4624497930329516
-//  ,1.4955178823482043
-// // ,1.529333688635466
-//  ,(1.5639141188488968 + 1.5992764622331628)/2
-// // ,1.635438398967572
-//  ,1.6724180090056688
-// // ,1.7102337811147015
-// // ,1.7489046221194902
-//  ,1.7884498663553055
-// // ,1.8288892853344956
-//  ,1.8702430976316857
-// // ,1.912531978992501
-// // ,1.955777072670856
-
-// 1
-// // ,1.0226114356012683
-//  ,1.045734148222487
-// // ,1.0693796985710669
-//  ,1.09355990875861
-// // ,1.1182868682116343
-//  ,1.1435729397159455
-// // ,1.1694307655976859
-//  ,1.1958732740441396
-// // ,1.2229136855674665
-//  ,1.2505655196145848
-// // ,1.2788426013265168
-//  ,1.3077590684505696
-//  ,(1.3373293784088143 + 1.3675683155263891 +1.33333333)/3
-//  ,(1.3984909984232494 + 1.4301128875730498)/2
-
-//  ,1.4857990948108457* 1
-// // ,1.0226114356012683
-//  ,1.4857990948108457* 1.045734148222487
-// // ,1.0693796985710669
-//  ,1.4857990948108457* 1.09355990875861
-// // ,1.1182868682116343
-//  ,1.4857990948108457* 1.1435729397159455
-// // ,1.1694307655976859
-//  ,1.4857990948108457* 1.1958732740441396
-// // ,1.2229136855674665
-//  ,1.4857990948108457* 1.2505655196145848
-// // ,1.2788426013265168
-//  ,1.4857990948108457* 1.3077590684505696
-// // ,1.3373293784088143
-//  //,1.4787* 1.3675683155263891
-//  //,1.4787* (1.3984909984232494 + 1.4301128875730498)/2
-
-//  ,(1.4624497930329516 + 1.4955178823482043 ) / 2
-//  ,1.529333688635466
-// // ,1.5639141188488968
-//  ,1.5992764622331628
-// // ,1.635438398967572
-//  ,1.6724180090056688
-// // ,1.7102337811147015
-//  ,1.7489046221194902
-// // ,1.7884498663553055
-//  ,1.8288892853344956
-// // ,1.8702430976316857
-//  ,1.912531978992501
-// // ,1.955777072670856
-
 //Escala Árabe gerada por 1,1.25,1.5,1.875 e o inverso onde o 1.875 equivale a 2
 // 1
 //     ,1.0666666666
@@ -2937,34 +2869,123 @@ if(this.ratioDiff.length){
 // //1.83333333333333,
 // //2
 
-//1,3/2,3
-//1,4/3,2,4
-//1, 5/4, 5/3, 5/2, 5
-//1, 6/5, 6/4, 6/3, 6/2, 6
-//1, 7/6, 7/5, 7/4, 7/3, 7/2, 7
+// 1,3/2,3
+// ,1,4/3,2,4
+// ,1, 5/4, 5/3, 5/2, 5
+// ,1, 6/5, 6/4, 6/3, 6/2, 6
+// ,1, 7/6, 7/5, 7/4, 7/3, 7/2, 7
 //1, 8/7, 8/6, 8/5, 8/4, 8/3, 8/2, 8
-//1, 9/8, 9/7, 9/6, 9/5, 9/4, 9/3, 9/2, 9
+//,1, 9/8, 9/7, 9/6, 9/5, 9/4, 9/3, 9/2, 9
 //1, 10/9, 10/8, 10/7, 10/6, 10/5, 10/4, 10/3, 10/2, 10
 //1, 11/10, 11/9, 11/8, 11/7, 11/6, 11/5, 11/4, 11/3, 11/2, 11
-//1, 12/11, 12/10, 12/9, 12/8, 12/7, 12/6, 12/5, 12/4, 12/3, 12/2, 12
+//,1, 12/11, 12/10, 12/9, 12/8, 12/7, 12/6, 12/5, 12/4, 12/3, 12/2, 12
+//1, 14/13, 14/12, 14/11, 14/10, 14/9, 14/8, 14/7, 14/6, 14/5, 14/4, 14/3, 14/2, 14
 //1, 15/14, 15/13, 15/12, 15/11, 15/10, 15/9, 15/8, 15/7, 15/6, 15/4, 15/3, 15/2, 15
+//1, 16/15, 16/14, 16/13, 16/12, 16/11, 16/10, 16/9, 16/8, 16/7, 16/6, 16/4, 16/3, 16/2, 16
 //1, 19/18, 19/17, 19/16, 19/15, 19/14, 19/13, 19/12, 19/11, 19/10, 19/9, 19/8, 19/7, 19/6, 19/5, 19/4, 19/3, 19/2, 19
-];
+
+// 1
+// ,Math.pow(2,1/4)
+// ,Math.pow(2,1/3)
+// ,Math.pow(2, 9/15)
+
+
+//JI 12 (Acordes well tempered)
+//1, 1.041665, 10/9, 1.171875, 5/4, 4/3, 1.3888888, 3/2, 1.5625, 5/3, 16/9, 15/8
+//1,16/15,10/9,6/5,5/4,4/3,64/45,3/2,8/5,5/3,7/4,15/8
+
+//Wendy Carlos Beta 11ED3/2 (Aproximadamente igual a 19EDO, so que mais afinada na triade) (31ED_PI) (13ED_PHI)
+//Base 3 eqt 24  (Pareceida com Wendy Carlos Alhpa 9ED3/2, só que com melhor consonancia da oitava ) (48ED9) (25ED_PI)
+//Base 4 eqt 31
+//Base Phi^3 eqt 1 (Normalizado)
+//Base Phi^48 eqt 1 (Normalizado)
+
+//Harmonic diferences
+//2, 1.5, 1.3333333333333333, 1.25, 1.2, 1.1666666666666667, 1.1428571428571428, 1.125, 1.1111111111111112, 1.1, 1.0909090909090908, 1.0833333333333333, 1.0769230769230769, 1.0714285714285714, 1.0666666666666667, 1.0625, 1.0588235294117647, 1.0555555555555556, 1.0526315789473684, 1.05, 1.0476190476190477, 1.0454545454545454, 1.0434782608695652, 1.0416666666666667, 1.04, 1.0384615384615385
+
+//Scale from Timbre
+//1, 1.16666, 1.25, 1.33333, 1.41, 1.5, 1.6666, 1.76, 2
+
+
+// 1,1.25,1.5,
+// 1.4285714285714286,1.7142857142857142,1.0714285714285714*2,
+// 1.25, 1.4285714285714286, 1.0714285714285714*2,
+// 1, 1.5, 1.7142857142857142,
+// 1.25, 1.5, 1.0714285714285714*2,
+// 1, 1.4285714285714286, 1.7142857142857142
+
+//Hexany octahedron 
+//http://www.musicandvirtualflowers.co.uk/tunes/mus_geom/musical_geometry.htm
+// 1, 15/14,  5/4, 10/7, 3/2,  12/7,
+
+// 24/24, 25/24, 26/24, 10/9, 28/24, 29/24, 30/24, 31/24, 32/24,
+// 24/24 *(3/2), 25/24 *(3/2), 26/24 *(3/2), 10/9 *(3/2), 28/24 *(3/2), 29/24 *(3/2), 30/24 *(3/2), 31/24 *(3/2), 32/24 *(3/2),
+// 24/24 *(2), 25/24 *(2), 26/24 *(2), 10/9 *(2), 28/24 *(2), 29/24 *(2), 30/24 *(2), 31/24 *(2), 32/24 *(2),
+//24/24 *(4/3)*(4/3), 25/24 *(4/3)*(4/3), 26/24 *(4/3)*(4/3), 27/24 *(4/3)*(4/3), 28/24 *(4/3)*(4/3), 29/24 *(4/3)*(4/3), 30/24 *(4/3)*(4/3), 31/24 *(4/3)*(4/3), 32/24 *(4/3)*(4/3),
+
+// 1, 1.041666666, 1.06666666, 10/9, 1.2, 1.25, 4/3, 1.44, 1.5,//1.6,
+// 1 *1.25, 1.041666666*1.25,  1.06666666*1.25, 10/9 * 1.25, 1.2 *1.25, 1.25 *1.25, 4/3 *1.25, 1.44*1.25, 1.5*1.25, //1.6*1.25,
+// 1 *1.5, 1.041666666*1.5,  1.06666666*1.5, 10/9 * 1.5, 1.2 *1.5, 1.25 *1.5, 4/3 *1.5, 1.44*1.5, 1.5*1.5,// 1.6*1.5,
+// 1
+// ,1.0596340226670484
+// ,1.122824261993551
+// ,1.1897827894843862
+// ,1.2607343233213621
+// ,1.3359169825354342
+// ,1.4155830861532472
+// ,1.5000000000000002
+// ,1.589451034000573
+// ,1.6842363929903268
+// ,1.7846741842265796
+// ,1.8911014849820438
+// ,2.0038754738031517
+// ,1
+// ,1.057371263440564
+// ,1.1180339887498947
+// ,1.1821770112539696
+// ,1.2499999999999996
+// ,1.3217140793007047
+// ,1.397542485937368
+// ,1.4777212640674615
+// ,1.562499999999999
+// ,1.6521425991258802
+// ,1.7469281074217091
+// ,1.8471515800843261
+// ,1.953124999999998
+// ,2.06517824890735
+
+//24Otones
+1
+//,1.0416666666666667
+,1.0833333333333333
+//,1.125
+,1.1666666666666667
+//,1.2083333333333333
+,1.25
+//,1.2916666666666667
+,1.3333333333333333
+//,1.375
+//,1.4166666666666667
+//,1.4583333333333333
+,1.5
+//,1.5416666666666667
+//,1.5833333333333333
+,1.625
+//,1.6666666666666667
+//,1.7083333333333333
+,1.75
+//,1.7916666666666667
+//,1.8333333333333333
+,1.875
+//,1.9166666666666667
+//,1.9583333333333333
+,2
+
+ 
+]; //AQUI!
 
 
 
-//Gerar oitava da escala
-if(true){
-  var numOct = 2;
-  var octArr = [];
-  for(var t = 0; t < numOct; t++){
-    for (let i = 0; i < ratiosArr.length; i++) {
-      const element = ratiosArr[i];
-      octArr.push(element* Math.pow(2,t+1));
-    }
-  }
-  ratiosArr = ratiosArr.concat(octArr);
-}
 
 //1,001129150390625
 //1.498068
@@ -2978,26 +2999,28 @@ if(true){
       //   mm[0]*mm[2], mm[1]*mm[2], mm[2]*mm[2], mm[3]*mm[2], mm[4]*mm[2], 0,0,0,0,
       // ]
 
-if(true){
+if(false){
 
-      //Gerador
+      //Generator
       var init = 1;
       var cc = init;
       ratiosArr = [];
       //ratiosArr.push(cc);
       var start = 0;
-      var r = 38 + start ;
+      var r = 29 + start ;
 
 
-var arrIntervals = [ 1.0606601717798212, 1.0606601717798214, 1.0540925533894598, 1.0540925533894598, 1.06666664, 1.0606601982963262, 1.0606601717798212, 1.0666666666666667, 1.0540925533894596, 1.054092553384848, 1.0606601717844617, 1.0606601717798212, 1.0606601717798212, 1.0606601717798214, 1.0540925533894598, 1.0540925533894598, 1.06666664, 1.0606601982963262, 1.0606601717798212, 1.0666666666666667, 1.0540925533894596, 1.054092553384848, 1.0606601717844617, 1.0606601717798212, 1.0606601717798212, 1.0606601717798214, 1.0540925533894598 ]
+//var arrIntervals = [ 1.0606601717798212, 1.0606601717798214, 1.0540925533894598, 1.0540925533894598, 1.06666664, 1.0606601982963262, 1.0606601717798212, 1.0666666666666667, 1.0540925533894596, 1.054092553384848, 1.0606601717844617, 1.0606601717798212, 1.0606601717798212, 1.0606601717798214, 1.0540925533894598, 1.0540925533894598, 1.06666664, 1.0606601982963262, 1.0606601717798212, 1.0666666666666667, 1.0540925533894596, 1.054092553384848, 1.0606601717844617, 1.0606601717798212, 1.0606601717798212, 1.0606601717798214, 1.0540925533894598 ]
+//var arrIntervals = [1.041665, 1.066668373336064, 1.0546875, 1.0666666666666667, 1.0666666666666667, 1.0416666, 1.0800000691200045, 1.0416666666666667, 1.0666666666666667, 1.0666666666666667, 1.0546875, 1.0666666666666667, 1.041665, 1.066668373336064, 1.0546875, 1.0666666666666667, 1.0666666666666667, 1.0416666, 1.0800000691200045, 1.0416666666666667, 1.0666666666666667, 1.0666666666666667, 1.0546875, 1.0666666666666667, 1.041665, 1.066668373336064, 1.0546875 ];
       //arrIntervals = this.smooth(arrIntervals);
-      arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
+      //arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
       //arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
       //arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
       
       
       // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing
-      // var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
+       //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
+       var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
        //var arrIntervals = [ 1.25115 ];  //Gerador de uma quinta que harmoniza muito bem com a 3M. Para 5a perfeita: (6^1/8)
        //var arrIntervals = [  1.2, 1.0416666666666666, 1.2 ];
        //var arrIntervals = [  1.2,1.25 ];
@@ -3039,15 +3062,21 @@ var arrIntervals = [ 1.0606601717798212, 1.0606601717798214, 1.0540925533894598,
        //cc *= 1.618033;
        //cc *= 8/7; //interessante os padroes de triades, mas se colocar ordenado gera notas muito proximas
        //cc  *= 1.875;
-       //cc = 1/i;
+       //cc = i/30;
        //cc = 32/(i+1);
-       //cc = i/12;
-       //cc = i;
+       cc = (24+i)/24;
+       //cc *= 1.4953487812212205419118989941409;
+
+       //Familia Undertone
+       //cc = 30/Math.max(1,30-i+1);
+
        //cc = Math.pow(1.25115,i);
        //cc = Math.pow( PHI, i),
        //cc = ( (8 * (i*i)) + (4 * i) + 1) / ((i-1) * (i - 1));
-      cc = 30 / (30-i);
-      if(cc > 2 || cc < 0){ cc = 0;}
+      //cc = 30 / (30-i);
+      //if(cc > 2 || cc < 0){ cc = 0;}
+
+      
 
         //Interval
       //  var interval = arrIntervals[(i % arrIntervals.length)]
@@ -3064,6 +3093,8 @@ var arrIntervals = [ 1.0606601717798212, 1.0606601717798214, 1.0540925533894598,
      }
     //ratiosArr.push(2);
 }
+
+
 
 if(this.normalize){
 // //      //Normalizador
@@ -3096,6 +3127,20 @@ if(this.normalize){
      }
 }
 
+
+//Gerar oitava da escala
+if(false){
+  var numOct = 2;
+  var octArr = [];
+  for(var t = 0; t < numOct; t++){
+    for (let i = 0; i < ratiosArr.length; i++) {
+      const element = ratiosArr[i];
+      octArr.push(element* Math.pow(2,t+1));
+    }
+  }
+  ratiosArr = ratiosArr.concat(octArr);
+}
+
      //Jump
     //  var jumpArr = [];
     //  var j = 1;
@@ -3114,19 +3159,25 @@ if(this.normalize){
         });
       };
 
-      // ratiosArr = ratiosArr.unique();
-      // ratiosArr = ratiosArr.sort();
+      //  ratiosArr = ratiosArr.unique();
+      //  ratiosArr = ratiosArr.sort((a,b) => a-b);
 
       //===================================
-      this.ratiosArr = ratiosArr;
+      //this.ratiosArr = ratiosArr;
+      //window.ratiosArr = ratiosArr
+      //console.log(ratiosArr);
       //AQUI!
-      return ratiosArr[idx-1] || 0;
+        //return ratiosArr[idx-1] || 0;
 
       //#endregion
 
+//Equal temperament
       var eqt = this.eqt;
       var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
       var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
+
+      //Linear
+//       var v =  (15+idx ) / this.eqt;
 
 if(this.normalize){
   v = this.normalizeValue(v);
@@ -3215,8 +3266,12 @@ if(this.normalize){
       }
       return arrResult;
     },
-    onChangeActive(freq){
-      // console.log("onChangeActive",freq);
+    onChangeActive(args){
+      console.log("onChangeActive",args);
+      var freq = args.freq;
+
+      this.scaleRefIdx = args.idx;
+
 
        var idx = this.activeKeys.indexOf(freq)
       if(idx != -1){
@@ -3242,6 +3297,28 @@ if(this.normalize){
          this.activeRatio = '';
       }
 
+    },
+    ajustedRatio(idx){
+      return 1;
+      // var normIdx = (idx-1) % this.scaleCount;
+      // var targetIdx = (normIdx+1) - (this.scaleRefIdx-1);
+      
+      var targetIdx = (idx - this.scaleRefIdx)+1;
+     
+     var div2 = false;
+      if(targetIdx <= 0){
+        targetIdx += this.scaleCount;
+        div2 = true;
+      }
+
+      var refRatio = this.ratio(this.scaleRefIdx);
+      var targetRatio = this.ratio(targetIdx);
+
+      var r = (refRatio * targetRatio);
+      if(div2){
+        r = r / 2;
+      }
+      return r;
     }
   },
   watch: {

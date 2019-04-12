@@ -12,6 +12,8 @@
   "dependencies": {
     "chart.js": "^2.7.3",
     "hchs-vue-charts": "^1.2.8",
+    "howler": "^2.1.1",
+    "pizzicato": "^0.6.4",
     "vue": "^2.4.4"
   },
   "browserslist": [

@@ -37,7 +37,7 @@ export default {
         return {
             model: 1,
             limit: 9,
-            skipX:1,
+            skipX:7,
             skipY:7,
             mainFreq: 432,
             currentRow: 0,
@@ -119,27 +119,36 @@ export default {
             //var idx2 = (i-1) % scale.length;
             //var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
             
-            //Default Lambdoma (UxS)
-            //return (col+this.skipX)/(row+this.skipY);
+            //Default Lambdoma (UxO)
+            //return (col+this.skipX)/(10-row+this.skipY);
 
-            //Default Lambdoma (SxU)
+            //Default Lambdoma (OxU)
             //return (row+this.skipY)/(col+this.skipX);
 
             //Default Lambdoma (UxU)
             //return 1/(row+this.skipY)/(col+this.skipX);
 
-             //Default Lambdoma (SxS)
-            //return (row+this.skipY)*(col+this.skipX);
+             //Default Lambdoma (OxO)
+            return (row+this.skipY)*(col+this.skipX);
 
             //Scale
-            var scale = [1,6/5,5/4,3/2,2];
-             var s = scale[Math.min(col-1,scale.length-1)];            
+            //var scale = [1,6/5,5/4,3/2,7/4,2];
+            var scale = [1,16/15,10/9,6/5,5/4,4/3,64/45,3/2,8/5,5/3,7/4,15/8,2]; //64/45
+            //var scale = [1, 1.044985, 1.118055, 1.168305, 1.25, 1.337468, 1.39757, 1.49537, 1.56250, 1.67191, 1.78882, 1.86929,2];
+            //var scale = [1, 1.041665, 10/9, 5/4, 4/3, 1.3888888, 3/2, 1.5625, 5/3, 15/8,2];
+             var s = scale[(col-1) % scale.length];            
+             //var s = scale[Math.min(col-1,scale.length-1)];            
              //var r = s * (j+this.skipX)/8;
 
             //Scale 2
-             var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
-            //var scale2 = [1,9/8,5/4,4/3,3/2,5/3,15/8,2];
-            var s2 = scale2[Math.min(row-1,scale2.length-1)];
+             //var scale2 = [8/8,9/8,10/8,11/8,12/8,13/8,14/8,15/8,16/8];
+             //var scale2 = [1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8,2];
+            // var scale2 = [1, 10/9, 5/4, 4/3, 3/2, 5/3, 15/8,2];
+             //var scale2 = [1,9/8,8/7,7/6,6/5,5/4,9/7,4/3,7/5,3/2,8/5,5/3,7/4,9/5];
+            var scale2 = [1,5/4,3/2,2];
+            var s2 = scale2[(row-1) % scale2.length];
+
+            //var s2 = scale[(row-1) % scale.length];
             var r = s * s2;
 
             //var r = Math.pow(1.5,i-1) * (j+this.skipX)/4;
@@ -217,5 +226,9 @@ table{
 table,tr,td{
     margin:0;
     padding:0;
+}
+
+table td{
+    width:130px;
 }
 </style>

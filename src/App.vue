@@ -7,8 +7,8 @@
   <keyboard/>
 <!-- <lambdoma-keyboard/> -->
 
-    <!-- <audio-key keyName="W" freq="220"/>
-    <audio-key keyName="E" freq="440"/> -->
+    <!-- <audio-key keyName="W" freq="220"/> 
+    <audio-key keyName="E" freq="440"/>  -->
 
   </div>
 </template>
@@ -19,7 +19,7 @@ import Keyboard from './Keyboard.vue';
 import LambdomaKeyboard from './LambdomaKeyboard.vue';
 import AudioKey from './AudioKey.vue';
 
-
+import {Howl, Howler} from 'howler';
 
 export default {
   name: 'app',
@@ -31,6 +31,11 @@ export default {
       msg: 'Welcome to Your Vue.js App'
     }
   },
+  mounted(){
+
+     
+     
+    },
   methods:{
     
   }
