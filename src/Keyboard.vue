@@ -1,7 +1,7 @@
 <template>
   <div>
     <p>
-    Base: <input type="number" step="0.001" v-model="base">
+    Base: <input type="number" step="0.05" v-model="base">
     Eqt: <input type="number" step="1" v-model="eqt">
     <span>Ratio: {{ratio(2)}}</span>
     <span>DiffRoot: <input type="checkbox" v-model="diffRoot"/></span>
@@ -9,6 +9,18 @@
     <span>Normalize: <input type="checkbox" v-model="normalize"/></span>
     <span>Chart: <input type="checkbox" v-model="showChart"/></span>
     </p>
+    <!-- <div>
+      1.25 ({{Math.pow(ratio(2),5)-1.25}})
+    </div>
+    <div>
+      1.5 ({{Math.pow(ratio(2),9)-1.5}})
+    </div>
+    <div>
+      2 ({{(Math.pow(ratio(2),15)-2).toFixed(18)}})
+    </div> -->
+<div>
+      <!-- Erro ({{((Math.pow(ratio(2),15)-2) + Math.pow(ratio(2),9) + Math.pow(ratio(2),5))}}) -->
+    </div>
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="ridx">
         <td v-for="(key,kidx) in krow" v-bind:key="(ridx+''+kidx)">
@@ -39,9 +51,14 @@
     <div>Avg ratio: {{ratioAvg}}</div>
     <div>Ratios diff: {{ratioDiff}}</div>
     <div style="text-align:left;" v-if="!freqBased">
-      <h4>Ratio List:</h4>
+      <h4 style="display:inline-block;">Ratio List:</h4>
+      <span><input type="checkbox" v-model="ratioListIdx"/>Idx</span>
     <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
-    <div v-for="ii in Math.max(29,nEqt)" v-bind:key="ii">{{ratio(ii)}}</div>
+    <div v-for="ii in Math.max(73,nEqt)" v-bind:key="ii">
+      <span v-if="ratioListIdx">{{ii}}:</span>
+      {{ratio(ii)}}
+      </div>
+   
   </div>
   </div>
 </template>
@@ -76,6 +93,7 @@ export default {
       scaleRefIdx: 1,
       scaleCount: 12,
       showChart:true,
+      ratioListIdx:true,
       keys: [
         [
           { k: "Q", idx: 19 },
@@ -131,7 +149,7 @@ export default {
     chartData() {
       var data = [];
       var arrDiff = [];
-      var max = 28;//Math.max(this.ratiosArr.length,this.eqt);
+      var max = 32;//Math.max(this.ratiosArr.length,this.eqt);
       for (var i = 1; i <= max; i++) {
         var v = this.freqBased ? this.freq(i) : this.ratio(i);
 
@@ -174,7 +192,7 @@ if(this.ratioDiff.length){
   methods: {
     chartLabels() {
       var data = [];
-      var max = 28; //this.eqt;
+      var max = 32; //this.eqt;
        //var max = Math.max(this.ratiosArr.length,this.eqt);
       for (var i = 1; i <= max; i++) {
         var v = i.toString();
@@ -748,7 +766,18 @@ if(this.ratioDiff.length){
         //2
 
         //Sequencia Fibonacci Normalizada
-         //1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765
+//          1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765
+// ,10946
+// ,17711
+// ,28657
+// ,46368
+// ,75025
+// ,121393
+// ,196418
+// ,317811
+// ,514229
+// ,832040 
+         
 
 
          //1,2,3/2,5/4,8/4,13/8,21/16,34/32,55/32,89/64,144/128,233/128,377/256,610/512,987/512,1597/1024,2584/2048,4181/4096,6765
@@ -2894,6 +2923,7 @@ if(this.ratioDiff.length){
 //1, 1.041665, 10/9, 1.171875, 5/4, 4/3, 1.3888888, 3/2, 1.5625, 5/3, 16/9, 15/8
 //1,16/15,10/9,6/5,5/4,4/3,64/45,3/2,8/5,5/3,7/4,15/8
 
+//6ED3 Triade muito afinada, perdendo apenas para a Wndy Carlos Gamma de 20ED3/2
 //Wendy Carlos Beta 11ED3/2 (Aproximadamente igual a 19EDO, so que mais afinada na triade) (31ED_PI) (13ED_PHI)
 //Base 3 eqt 24  (Pareceida com Wendy Carlos Alhpa 9ED3/2, só que com melhor consonancia da oitava ) (48ED9) (25ED_PI)
 //Base 4 eqt 31
@@ -2954,34 +2984,282 @@ if(this.ratioDiff.length){
 // ,1.953124999999998
 // ,2.06517824890735
 
-//24Otones
-1
-//,1.0416666666666667
-,1.0833333333333333
-//,1.125
-,1.1666666666666667
-//,1.2083333333333333
-,1.25
-//,1.2916666666666667
-,1.3333333333333333
-//,1.375
-//,1.4166666666666667
-//,1.4583333333333333
-,1.5
-//,1.5416666666666667
-//,1.5833333333333333
-,1.625
-//,1.6666666666666667
-//,1.7083333333333333
-,1.75
-//,1.7916666666666667
-//,1.8333333333333333
-,1.875
-//,1.9166666666666667
-//,1.9583333333333333
-,2
 
+ //15ED3 => Muito legal!!!
+ //
+
+//1, 16/15,  1.2, 1.28, 4/3, 1.44, 1.6, 1.92
+//1, 1.04166666, 10/9, 1.25, 4/3, 1.3888888, 5/3, 16/9
+
+
+//1,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32
+
+//Ponto de parada: 7elementos, 8, 15, 16
+//1
+// 1/2
+// ,1/3
+// ,1/5
+// ,1/7
+// ,1/9
+// ,1/11
+// ,1/13
+//  ,1/15
+//  ,1/17
+//  ,1/19
+//  ,1/21
+//  ,1/23
+//  ,1/25
+//  ,1/27
+//  ,1/29
+//  ,1/31
  
+
+
+// 1
+// ,1.125
+// ,1.25
+// ,1.375
+// ,1.5
+// ,1.625
+// ,1.75
+// ,1.875
+// ,2
+
+// ,1.25 * 1
+// ,1.25 * 1.125
+// ,1.25 * 1.25
+// ,1.25 * 1.375
+// ,1.25 * 1.5
+// ,1.25 * 1.625
+// ,1.25 * 1.75
+// ,1.25 * 1.875
+// ,1.25 * 2
+
+// ,1.5 * 1
+// ,1.5 * 1.125
+// ,1.5 * 1.25
+// ,1.5 * 1.375
+// ,1.5 * 1.5
+// ,1.5 * 1.625
+// ,1.5 * 1.75
+// ,1.5 * 1.875
+// ,1.5 * 2
+
+//Números primos
+// 2
+// ,3
+// ,5
+// ,7
+// //,11
+// //,13
+// ,17
+// //,19
+// ,53
+// ,1.4142
+
+// 2
+// ,3
+// ,5
+// ,7
+//   ,11
+//   ,13
+//   ,17
+//   ,19
+//  ,23
+//   ,29
+//   ,31
+//   ,37
+//  ,41
+//  ,43
+//   ,47
+//   ,53
+
+//  ,59
+//  ,61
+//  ,67
+//  ,71
+//  ,73
+//  ,79
+//  ,83
+//  ,89
+//  ,97
+// ,101
+// ,103
+// ,107
+// ,109
+// ,113
+// ,127
+// ,131
+// ,137
+// ,139
+// ,149
+// ,151
+// ,157
+// ,163
+// ,167
+// ,173
+// ,179
+// ,181
+// ,191
+// ,193
+// ,197
+// ,199
+// ,211
+// ,223
+// ,227
+// ,229
+// ,233
+// ,239
+// ,241
+// ,251
+// ,257
+// ,263
+// ,269
+// ,271
+// ,277
+// ,281
+// ,283
+// ,293
+
+// 1,
+// Math.pow(this.base, Math.log2(9/8)),
+// Math.pow(this.base, Math.log2(5/4)),
+// Math.pow(this.base, Math.log2(4/3)),
+// Math.pow(this.base, Math.log2(3/2)),
+// Math.pow(this.base, Math.log2(5/3)),
+// Math.pow(this.base, Math.log2(15/8)),
+// Math.pow(this.base, Math.log2(2)),
+
+//Dissonance Curve
+//1, 2, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8
+// 1
+// ,2 
+// ,1.5
+// ,4/3
+// ,5/3
+// ,5/4
+// ,6/5
+// ,1.6
+// ,1.8
+// ,1.4286
+
+// Math.pow(2, (0+0)/31),
+// Math.pow(2, (0+2)/31),
+// Math.pow(2, (0+4)/31),
+// Math.pow(2, (0+6)/31),
+// Math.pow(2, (0+8)/31),
+// Math.pow(2, (0+10)/31),
+// Math.pow(2, (0+12)/31),
+// Math.pow(2, (0+14)/31),
+// Math.pow(2, (0+16)/31),
+
+// Math.pow(2, (13+0)/31),
+// Math.pow(2, (13+2)/31),
+// Math.pow(2, (13+4)/31),
+// Math.pow(2, (13+6)/31),
+// Math.pow(2, (13+8)/31),
+// Math.pow(2, (13+10)/31),
+// Math.pow(2, (13+12)/31),
+// Math.pow(2, (13+14)/31),
+// Math.pow(2, (13+16)/31),
+
+// Math.pow(2, (23+0)/31),
+// Math.pow(2, (23+2)/31),
+// Math.pow(2, (23+4)/31),
+// Math.pow(2, (23+6)/31),
+// Math.pow(2, (23+8)/31),
+// Math.pow(2, (23+10)/31),
+// Math.pow(2, (23+12)/31),
+// Math.pow(2, (23+14)/31),
+// Math.pow(2, (23+16)/31),
+
+// Math.pow(2, (31+0)/31),
+// Math.pow(2, (31+2)/31),
+// Math.pow(2, (31+4)/31),
+// Math.pow(2, (31+6)/31),
+// Math.pow(2, (31+8)/31),
+// Math.pow(2, (31+10)/31),
+// Math.pow(2, (31+12)/31),
+// Math.pow(2, (31+14)/31),
+// Math.pow(2, (31+16)/31),
+
+//Composição numérica
+// 1, 5/4, 6/5, 3/2,
+// 1, 7/6, 8/7, 4/3,
+// 1, 9/8, 10/9, 5/4,
+
+//1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2
+
+//Otonal 32
+// 1
+// //,1.03125
+// ,1.0625
+// //,1.09375
+// ,1.125
+// //,1.15625
+// ,1.1875
+// //,1.21875
+// ,1.25
+// //,1.28125
+// //,1.3125
+// ,1.34375
+// //,1.375
+// ,1.40625
+// //,1.4375
+// //,1.46875
+// ,1.5
+// //,1.53125
+// //,1.5625
+// ,1.59375
+// //,1.625
+// ,1.65625
+// //,1.6875
+// //,1.71875
+// ,1.75
+// //,1.78125
+// //,1.8125
+// //,1.84375
+// ,1.875
+// //,1.90625
+// //,1.9375
+// //,1.96875
+// ,2
+
+// 1,17,9,19,5,21, 11,23,3,25,13,27,7,29,15,31,
+// 33,35,37,39,41,43,45,47,51,53,55,57,59,61,63
+// 1/177147,
+// 1/59049,
+// 1/19683,
+// 1/6561,
+// 1/2187,
+// 1/729,
+// 1/243,
+// 1/81,
+// 1/27,
+// 1/9,
+// 1/3,
+// 1,
+// 3,
+// 9,
+// 27,
+// 81,
+// 243,
+// 729,
+// 2187,
+// 6561,
+// 19683,
+// 59049,
+// 177147,
+
+1
+,1.0549142510254303
+,1.113032
+,1.3452680203579066
+,1.4140941702753758
+,1.492
+,1.5825546990463422
+,1.660643744
+
 ]; //AQUI!
 
 
@@ -3005,9 +3283,9 @@ if(false){
       var init = 1;
       var cc = init;
       ratiosArr = [];
-      //ratiosArr.push(cc);
-      var start = 0;
-      var r = 29 + start ;
+      ratiosArr.push(cc);
+      var start = 32;
+      var r = 53 + start ;
 
 
 //var arrIntervals = [ 1.0606601717798212, 1.0606601717798214, 1.0540925533894598, 1.0540925533894598, 1.06666664, 1.0606601982963262, 1.0606601717798212, 1.0666666666666667, 1.0540925533894596, 1.054092553384848, 1.0606601717844617, 1.0606601717798212, 1.0606601717798212, 1.0606601717798214, 1.0540925533894598, 1.0540925533894598, 1.06666664, 1.0606601982963262, 1.0606601717798212, 1.0666666666666667, 1.0540925533894596, 1.054092553384848, 1.0606601717844617, 1.0606601717798212, 1.0606601717798212, 1.0606601717798214, 1.0540925533894598 ]
@@ -3019,8 +3297,8 @@ if(false){
       
       
       // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing
-       //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale
-       var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
+       var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala ptagórica com mais repetições =/)
+       //var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
        //var arrIntervals = [ 1.25115 ];  //Gerador de uma quinta que harmoniza muito bem com a 3M. Para 5a perfeita: (6^1/8)
        //var arrIntervals = [  1.2, 1.0416666666666666, 1.2 ];
        //var arrIntervals = [  1.2,1.25 ];
@@ -3029,6 +3307,7 @@ if(false){
        //var arrIntervals = [  16/15, 1.0546875, 16/15,1.0416666666,16/15,16/15, 1.0546875, 16/15,1.0416666666,16/15,1.0546875, 16/15  ]; //JI LIMIT-5
        //var arrIntervals = [  9/8, 9/8, 256/243, 9/8, 9/8, 256/243, 9/8 ];
        //var arrIntervals = [  1.5 ];
+       //var arrIntervals = [  1.0400419115259512, 1.0345637159435739];
        //var arrIntervals = [  1.4983070768766814987992807320298 ];
 
        //var arrIntervals = [   1.1211111111111 ];
@@ -3062,9 +3341,9 @@ if(false){
        //cc *= 1.618033;
        //cc *= 8/7; //interessante os padroes de triades, mas se colocar ordenado gera notas muito proximas
        //cc  *= 1.875;
-       //cc = i/30;
+       //cc = i;
        //cc = 32/(i+1);
-       cc = (24+i)/24;
+       //cc = (24+i)/24;
        //cc *= 1.4953487812212205419118989941409;
 
        //Familia Undertone
@@ -3079,8 +3358,8 @@ if(false){
       
 
         //Interval
-      //  var interval = arrIntervals[(i % arrIntervals.length)]
-      //  cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
+       var interval = arrIntervals[(i % arrIntervals.length)]
+       cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
 
        ratiosArr.push(cc);
 
@@ -3151,7 +3430,9 @@ if(false){
     //  }
     //  ratiosArr = jumpArr;
 
-
+if(this.normalize){
+  v = this.normalizeValue(v);
+}
 
       Array.prototype.unique = function() {
         return this.filter(function(value, index, self) {
@@ -3159,22 +3440,33 @@ if(false){
         });
       };
 
-      //  ratiosArr = ratiosArr.unique();
-      //  ratiosArr = ratiosArr.sort((a,b) => a-b);
+
+          // ratiosArr = ratiosArr.unique();
+           //ratiosArr = ratiosArr.sort((a,b) => a-b);
 
       //===================================
+      // ratiosArr = this.smooth(ratiosArr);
+      // ratiosArr = this.smooth(ratiosArr);
+      // ratiosArr = this.smooth(ratiosArr);
+      // ratiosArr = this.smooth(ratiosArr);
+      
       //this.ratiosArr = ratiosArr;
       //window.ratiosArr = ratiosArr
       //console.log(ratiosArr);
+      
       //AQUI!
-        //return ratiosArr[idx-1] || 0;
+        return ratiosArr[idx-1] || 0;
+
 
       //#endregion
 
+//Log Scale
+  v = Math.pow(this.base, Math.log2(idx));
+
 //Equal temperament
-      var eqt = this.eqt;
-      var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
-      var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
+      // var eqt = this.eqt;
+      // var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
+      // var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
 
       //Linear
 //       var v =  (15+idx ) / this.eqt;
@@ -3211,7 +3503,7 @@ if(this.normalize){
                     v = v / 2;
                 }
             }
-            else if(v < 1){
+            else if(v > 0 && v < 1){
                 while(v < 1){
                     v = v * 2;
                 }
@@ -3227,10 +3519,41 @@ if(this.normalize){
     color(idx){
       //var arr = ['','#80bbaa','#80aaff','#aa80aa','#80ffaa','#ff8080','#80bbaa','#8080ff','#aa80aa','#80ff80','#80aaff','#ff8080','#aa80aa',' '];
       //return arr[Math.min(idx-1,arr.length-1)];
-      var arr = ["#ff8080","#80ffcc",""];
+      //var arr = ["#ff8080",""];
       //return arr[ (idx-1) % arr.length];
-      return '';
+
+      var normRatio = this.normalizeValue(this.ratio(idx));
+      if(normRatio){          
+        var c = this.HSVtoRGB(normRatio-1,0.77,1);
+        return "rgb("+c.r+","+c.g+","+c.b+")";
+      }
+
+      //return '';
     },
+     HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+},
     smooth(array){
       var arrResult = [];
       for (let index = 0; index < array.length; index++) {
@@ -3243,14 +3566,14 @@ if(this.normalize){
           v = (element + prev + next)/3;
         }
         else if(index == 0){
-          var prev = array[array.length-1];
-          var next = array[index+1];
-          v = (element + prev + next)/3;
+          //var prev = array[array.length-1];
+          //var next = array[index+1];
+          //v = (element + prev + next)/3;
         }
         else if(index == array.length-1){
-          var prev = array[index-1];
-          var next = array[0];
-          v = (element + prev + next)/3;
+          //var prev = array[index-1];
+          //var next = array[0];
+          //v = (element + prev + next)/3;
         }
         arrResult.push(v);        
       }

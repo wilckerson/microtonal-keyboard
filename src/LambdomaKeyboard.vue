@@ -8,6 +8,7 @@
     <tr>
         <td></td>
         <!-- <td v-for="j in limit"><small>{{j+skipX}}</small> </td> -->
+
         <td v-for="j in limit" v-bind:key="j"><small>{{j}}</small> </td>
     </tr>
     <tr v-for="i in limit" v-bind:key="i">
@@ -37,9 +38,9 @@ export default {
         return {
             model: 1,
             limit: 9,
-            skipX:7,
-            skipY:7,
-            mainFreq: 432,
+            skipX:1,
+            skipY:1,
+            mainFreq: 200,
             currentRow: 0,
         }
     },
@@ -71,8 +72,11 @@ export default {
             // var g = normRatio * (255/3) / 2;
             // var b = normRatio * (255/2) / 2;
             // return "background:rgb("+r+","+g+","+b+");";
-            var c = this.perc2color((normRatio-1)*100);
-            return "background:" + c + ";";
+
+            // var c = this.perc2color((normRatio-1)*100);
+            // return "background:" + c + ";";
+            var c = this.HSVtoRGB(normRatio-1,0.77,1);
+            return "background:rgb("+c.r+","+c.g+","+c.b+");";
         },
         perc2color(perc) {
             var r, g, b = 0;
@@ -88,6 +92,30 @@ export default {
             var h = r * 0x10000 + g * 0x100 + b * 0x1;
             return '#' + ('000000' + h.toString(16)).slice(-6);
         },
+        HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+},
         
         ratio(row,col){
 
@@ -120,7 +148,8 @@ export default {
             //var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
             
             //Default Lambdoma (UxO)
-            //return (col+this.skipX)/(10-row+this.skipY);
+            // var r = (col+this.skipX)/(10-row+this.skipY);
+            // return r;
 
             //Default Lambdoma (OxU)
             //return (row+this.skipY)/(col+this.skipX);
@@ -129,13 +158,22 @@ export default {
             //return 1/(row+this.skipY)/(col+this.skipX);
 
              //Default Lambdoma (OxO)
-            return (row+this.skipY)*(col+this.skipX);
+            //var r = (row+this.skipY)*(col+this.skipX);
+            //return r/128//; this.normalize(r)/2;
+
 
             //Scale
             //var scale = [1,6/5,5/4,3/2,7/4,2];
-            var scale = [1,16/15,10/9,6/5,5/4,4/3,64/45,3/2,8/5,5/3,7/4,15/8,2]; //64/45
+            //var scale = [1,3,5,7,11,13,17]; //64/45
+            //var scale = [1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,7/4,15/8,2]; //64/45
             //var scale = [1, 1.044985, 1.118055, 1.168305, 1.25, 1.337468, 1.39757, 1.49537, 1.56250, 1.67191, 1.78882, 1.86929,2];
             //var scale = [1, 1.041665, 10/9, 5/4, 4/3, 1.3888888, 3/2, 1.5625, 5/3, 15/8,2];
+            //var scale = [2,3,5,8,13,21,34]; //Fibonacci
+            //var scale = [1,17,9,5,11,3,13,7,15];
+            var scale = [1,17,9,19,5,11,3,13,7,15];
+            //var scale = [1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2]
+            //var scale = [1,17,9,19,5,21,11,23,3,25,13,27,7,29,15,31,2]//             
+             
              var s = scale[(col-1) % scale.length];            
              //var s = scale[Math.min(col-1,scale.length-1)];            
              //var r = s * (j+this.skipX)/8;
@@ -143,18 +181,29 @@ export default {
             //Scale 2
              //var scale2 = [8/8,9/8,10/8,11/8,12/8,13/8,14/8,15/8,16/8];
              //var scale2 = [1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8,2];
-            // var scale2 = [1, 10/9, 5/4, 4/3, 3/2, 5/3, 15/8,2];
+            //var scale2 = [1,1/3,1/5,1/7,1/11,1/13,1/17];
              //var scale2 = [1,9/8,8/7,7/6,6/5,5/4,9/7,4/3,7/5,3/2,8/5,5/3,7/4,9/5];
-            var scale2 = [1,5/4,3/2,2];
+            // var scale2 = [1,16/15,8/7,6/5,5/4,4/3,Math.sqrt(2),3/2,8/5,5/3,7/4,15/8,2]
+            var scale2 = [1,1/17,1/9,1/19,1/5,1/11,1/3,1/13,1/7,1/15];
+            //var scale2 = [1, 1.25, 1.5, 1.75];
+            //var scale2 = [1,17,9,5,11,3,13,7,15];
+            //var scale2 = [1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2]
+            
             var s2 = scale2[(row-1) % scale2.length];
 
             //var s2 = scale[(row-1) % scale.length];
             var r = s * s2;
 
+            //Lattice
+            //var r = Math.pow(1.5, col-1) * Math.pow(1.25, row-1);
+            //var r = Math.pow(4/3, col-1) * Math.pow(7/6, row-1); //JI
+            //var r = Math.pow(1.33483985417, col-1) * Math.pow(1.18920711500272106, row-1); //12EDO
+            //var r = Math.pow(1.32784882798910, col-1) * Math.pow(1.17061991471191, row-1); //22EDO
+
             //var r = Math.pow(1.5,i-1) * (j+this.skipX)/4;
-            //return this.normalize(r/2);
-            //return r/2;
+            return this.normalize(r);
             return r;
+            //return r;
         },
         // lambdoma(i,j,limit){
         //     return 1/(i+1+this.skipY)*(j+1+this.skipX);

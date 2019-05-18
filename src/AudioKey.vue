@@ -22,6 +22,7 @@ export default {
   props: ["keyName", "freq", "text", "color", "idx"],
   data() {
     return {
+      wave: false,
       active: false,
       vca: undefined,
       vco: undefined,
@@ -38,6 +39,7 @@ export default {
     };
   },
   mounted: function() {
+    //return;
     //if ((!this.freq && this.freq != 0) || !this.keyName) {
     if (!this.freq && this.freq != 0) {
       return;
@@ -49,38 +51,40 @@ export default {
     //this.soundFreq = 174.61;
     //this.soundFreq = 622.25;
 
-///Howler
-    this.sound = new Howl({
-      //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
-      //src: ['./audio-samples/guitar-note_G.wav']
-      //src: ['./audio-samples/piano-a_A_major.wav']
-      //src: ['./audio-samples/clarinete_F.mp3']
-      //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
-      //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
-      //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
-      
-    });
+    if (!this.wave) {
+      ///Howler
+      this.sound = new Howl({
+        src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
+        //src: ['./audio-samples/guitar-note_G.wav']
+        //src: ['./audio-samples/piano-a_A_major.wav']
+        //src: ['./audio-samples/clarinete_F.mp3']
+        //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
+        //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
+        //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
+      });
+    } else {
+      ///Pizzicato
+      //From wave
+      var sound = new Pizzicato.Sound({
+        source: "wave",
+        options: {
+          type: "sine", //sine, square, triangle or sawtooth
+          frequency: this.freq
+        }
+      });
+      sound.volume = 1 / 6;
+      sound.atack = 0.1;
+      sound.release = 0.3;
 
-///Pizzicato
-    //From wave
-    // var sound = new Pizzicato.Sound({
-    //         source: 'wave',
-    //         options: {
-    //           type: 'triangle', //sine, square, triangle or sawtooth
-    //           frequency: this.freq }
-    // });
-    // sound.volume=1/6;
-    //  sound.atack = 0.1;
-    // sound.release=0.3;
-
-    // var reverb = new Pizzicato.Effects.Reverb({
-    //     time: 0.5,
-    //     decay: 0.01,
-    //     reverse: false,
-    //     mix: 0.5
-    // });
-    // sound.addEffect(reverb);
-    //  this.sound = sound;
+      // var reverb = new Pizzicato.Effects.Reverb({
+      //     time: 0.5,
+      //     decay: 0.01,
+      //     reverse: false,
+      //     mix: 0.5
+      // });
+      // sound.addEffect(reverb);
+      this.sound = sound;
+    }
 
     //From File
     //     var sound = new Pizzicato.Sound({
@@ -145,11 +149,13 @@ export default {
         return;
       }
 
-      //Howler
-      this.sound.fade(1, 0, 500);
-
-      //Pizzicato
-      // this.sound.stop();
+      if (!this.wave) {
+        //Howler
+        this.sound.fade(1, 0, 500);
+      } else {
+        //Pizzicato
+        this.sound.stop();
+      }
     },
     playSoundNote() {
       if (!this.sound) {
@@ -157,22 +163,26 @@ export default {
       }
       var rate = parseFloat(this.freq) / this.soundFreq;
 
-      //Howler
-      this.sound.volume(1);
-      this.sound.rate(rate);
-      this.sound.play();
-
-      //Pizzicato
-      // if(!this.sound.sourceNode.playbackRate){
-      //   this.sound.frequency = this.freq;
-      // }
-      // this.sound.play();
+      if (!this.wave) {
+        //Howler
+        this.sound.volume(1);
+        this.sound.rate(rate);
+        this.sound.play();
+      } else {
+        //Pizzicato
+        if (!this.sound.sourceNode.playbackRate) {
+          this.sound.frequency = this.freq;
+        }
+        this.sound.play();
+      }
 
       // if(this.sound.sourceNode.playbackRate){
       //   this.sound.sourceNode.playbackRate.value = rate;
       // }
     },
     start() {
+      return;
+
       //Global audio context
       if (!window.audioCtx) {
         window.audioCtx = new (window.AudioContext ||
@@ -283,15 +293,15 @@ export default {
       }
     },
     mouseDown: function() {
-      this.active = true;
-
       clearTimeout(this.clickTimer);
       this.clickTimer = setTimeout(() => {
+        this.active = true;
         this.playSoundNote();
       }, 50);
     },
     mouseUp: function() {
       this.active = false;
+      this.stopSoundNote();
     },
     onTap() {
       //this.mouseDown();
@@ -313,7 +323,11 @@ export default {
   },
   watch: {
     active: function(val, oldVal) {
-      this.$emit("onChangeActive", {freq: this.freq, keyName: this.keyName, idx : this.idx } );
+      this.$emit("onChangeActive", {
+        freq: this.freq,
+        keyName: this.keyName,
+        idx: this.idx
+      });
 
       // var m = 0.05;
 
@@ -350,7 +364,15 @@ export default {
 
 <style>
 .key {
-  /* width: 100px; */
+  /* width: 40px;
+  height: 40px; */
+
+  /* text-shadow: 1px 1px 1px #777;
+    color: white; */
+
+  /* text-shadow: 1px 1px 1px white; */
+  color: black;
+
   border: 2px solid #ccc;
   min-height: 57px;
   text-align: center;
