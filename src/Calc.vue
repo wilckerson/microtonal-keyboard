@@ -4,9 +4,9 @@
     <div>Interval:
       <input v-model="interval">
     </div>
-    <div>Total Diff: {{(data.totalDiff || 0).toFixed(12)}}</div>
-    <div>12ET: {{calcValues( Math.pow(2, (1/12))).data.totalDiff}}</div>
-    <table border="1'">
+    <!-- <div>Total Diff: {{(data.totalDiff || 0).toFixed(12)}}</div> -->
+    <!-- <div>12ET: {{calcValues( Math.pow(2, (1/12))).data.totalDiff}}</div> -->
+    <!-- <table border="1">
       <thead>
         <tr>
           <th>Idx</th>
@@ -18,7 +18,7 @@
         <tr v-for="(ratio,idx) in arrRatios" v-bind:key="ratio">
           <td>{{idx}}</td>
           <td>{{ratio}}</td>
-          <td>
+          <td> -->
             <!-- <div v-if="idx == data.diffFrom2.idx">{{data.diffFrom2.diff.toFixed(8)}} (2)</div>
             <div v-if="idx == data.diffFrom1_875.idx">{{data.diffFrom1_875.diff.toFixed(8)}} (1.875)</div>
             <div v-if="idx == data.diffFrom1_666.idx">{{data.diffFrom1_666.diff.toFixed(8)}} (1.666)</div>
@@ -29,7 +29,24 @@
             <div v-if="idx == data.diffFrom1_125.idx">{{data.diffFrom1_125.diff.toFixed(8)}} (1.125)</div> -->
             
             <!-- <div v-if="idx == data.diff_8_4.idx">{{data.diff_8_4.diff.toFixed(8)}} ({{(8/4).toFixed(3)}})</div> -->
-          </td>
+          <!-- </td>
+        </tr>
+      </tbody>
+    </table> -->
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Idx</th>
+          <th>Ratio</th>
+          <th>TotalDiff</th>
+        </tr>
+        </thead>
+      <tbody>
+        <tr v-for="(item,idx) in sortedData" v-bind:key="idx">
+          <td>{{idx}}</td>
+          <td>{{item.ratio}}</td>
+          <td>{{item.totalDiff}}</td>
         </tr>
       </tbody>
     </table>
@@ -43,7 +60,8 @@ export default {
       data: {},
       arrRatios: [],
       interval: Math.pow(2, 1 / 19), //1.0375399999986081 Quase 18TET
-      msg: ""
+      msg: "",
+      sortedData: []
     };
   },
   mounted() {
@@ -51,19 +69,21 @@ export default {
 
     var currentMinDiff = 1;
     var currentInterval = 0;
-    var increment = 1;//0.000000001;
-    var interval = 1.045;//1 + increment;
+    var increment = 1;//0.001;
+    var interval = 1.5;//1 + increment;
 
     var bestResults = [];
     //for (var i = 1.25; i > 1+increment; i -= increment) {
      for (var i = 1; i <= 53; i+= increment) {
-     //for (var i = interval; i <= 1.048; i+= increment) {
+     //for (var i = interval; i <= 1.047; i+= increment) {
+     //for (var i = interval; i >= 1.02; i-= increment) {
     //for (var i = 1; i <= 100000; i++) {
 
 
       //var result = this.calcValues(i);
-      var result = this.calcValues( Math.pow(2, (1/i)) );
-      //var result = this.calcValues( i );
+      //var result = this.calcValues( Math.pow(1.6180339, (1/i)) );
+      //var result = this.calcValues( Math.pow(Math.PI, (1/i)) );
+       var result = this.calcValues( Math.pow(2, (1/i)) );
 
       if (result.data.totalDiff < currentMinDiff) {
         currentMinDiff = result.data.totalDiff;
@@ -84,7 +104,10 @@ export default {
     });
     console.log("sorted");
     console.log(sorted);
+    //console.log(bestResults);
     //console.log(sorted[0].ratio);
+
+    this.sortedData = sorted;
 
   this.interval = Math.pow(2, 1/currentInterval);
     this.msg = currentInterval;
@@ -100,14 +123,23 @@ export default {
 
        var diffFrom2 = this.diffFromRatio(ratios, 2);
       // var diffFrom1_875 = this.diffFromRatio(ratios, 15/8);
-       //var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
+       var diffFrom1_75 = this.diffFromRatio(ratios, 7/4);
+       var diffFrom1_666 = this.diffFromRatio(ratios, 5 / 3);
        var diffFrom1_5 = this.diffFromRatio(ratios, 1.5);
        var diffFrom1_333 = this.diffFromRatio(ratios, 4 / 3);
        var diffFrom1_25 = this.diffFromRatio(ratios, 1.25);
       // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
       // var diffFrom1_2 = this.diffFromRatio(ratios, 1.2);
-      // var diffFrom1_125 = this.diffFromRatio(ratios, 9/8);
+       var diffFrom1_125 = this.diffFromRatio(ratios, 9/8);
     
+      var harm11 = this.diffFromRatio(ratios, 11/8)
+      var harm13 = this.diffFromRatio(ratios, 13/8)
+      var diffFrom2_5 = this.diffFromRatio(ratios, 2.5)
+      var diffFrom4 = this.diffFromRatio(ratios, 4)
+      var diffFrom3 = this.diffFromRatio(ratios, 3)
+      var diffFrom2_666 = this.diffFromRatio(ratios, 8/3)
+      var diffFrom2_333 = this.diffFromRatio(ratios, 7/3)
+
       var data = {
         // diffFrom2,
         // diffFrom1_875,
@@ -118,14 +150,22 @@ export default {
         // diffFrom1_2,
         // diffFrom1_125,
         totalDiff: 0
-          // + diffFrom2.diff
+           + diffFrom2.diff
           // //+ diffFrom1_875.diff
-          // //+ diffFrom1_666.diff
-          // + diffFrom1_5.diff 
-          + diffFrom1_333.diff
-          // + diffFrom1_25.diff 
+          + diffFrom1_75.diff
+          //+ diffFrom1_666.diff
+           + diffFrom1_5.diff 
+          //+ diffFrom1_333.diff
+          + diffFrom1_25.diff 
           //+ diffFrom1_2.diff
           //+ diffFrom1_125.diff
+          //+ harm11.diff
+          //+ harm13.diff
+          //+ diffFrom3.diff
+          //+ diffFrom4.diff
+          //+ diffFrom2_5.diff
+          //+ diffFrom2_333.diff
+          //+ diffFrom2_666.diff
         
       };
 

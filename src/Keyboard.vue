@@ -1,13 +1,17 @@
 <template>
   <div>
     <p>
-    Base: <input type="number" step="0.05" v-model="base">
+      <button v-on:click="setPhi">φ</button>
+      <button v-on:click="setPi">π</button>
+    Base: <input type="number" step="0.0001" v-model="base">
     Eqt: <input type="number" step="1" v-model="eqt">
     <span>Ratio: {{ratio(2)}}</span>
     <span>DiffRoot: <input type="checkbox" v-model="diffRoot"/></span>
     <span>MainFreq: <input type="text" v-model="mainFreq"/></span>
-    <span>Normalize: <input type="checkbox" v-model="normalize"/></span>
+    <br/>
+    <span>Normalize: <input type="checkbox" v-model="normalize"/> <input type="number" v-model="equivalence"/> </span>
     <span>Chart: <input type="checkbox" v-model="showChart"/></span>
+    
     </p>
     <!-- <div>
       1.25 ({{Math.pow(ratio(2),5)-1.25}})
@@ -29,7 +33,11 @@
             <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small>
 
             <!-- Distancia do fret em relação ao inicio do braço -->
-            <!-- <small>({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small> -->
+            <small >({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small>
+
+            <!-- Distancia entre frets em relação ao inicio do braço -->
+            <!-- <small v-if="key.idx > 1">({{(   (65-(65/ratio(key.idx)))  -  (65-(65/ratio(key.idx-1)))  ).toFixed(2)}}cm)</small>
+            <small v-else>({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small> -->
 
             <!-- <div>{{getFreq(key.idx)}}</div> -->
             <audio-key :keyName="key.k" :idx="key.idx" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" @onChangeActive="onChangeActive" />
@@ -88,10 +96,11 @@ export default {
       freqBased: false,
       diffRoot: false,
       normalize: false,
+      equivalence: 2,
       activeKeys:[],
       activeRatio: '',
       scaleRefIdx: 1,
-      scaleCount: 12,
+      scaleCount: 12,     
       showChart:true,
       ratioListIdx:true,
       keys: [
@@ -149,7 +158,7 @@ export default {
     chartData() {
       var data = [];
       var arrDiff = [];
-      var max = 32;//Math.max(this.ratiosArr.length,this.eqt);
+      var max = Math.max(73,this.eqt);//Math.max(this.ratiosArr.length,this.eqt);
       for (var i = 1; i <= max; i++) {
         var v = this.freqBased ? this.freq(i) : this.ratio(i);
 
@@ -190,9 +199,15 @@ if(this.ratioDiff.length){
     }
   },
   methods: {
+    setPhi(){
+      this.base = (Math.sqrt(5)+1)/2;
+    },
+    setPi(){
+      this.base = Math.PI;
+    },
     chartLabels() {
       var data = [];
-      var max = 32; //this.eqt;
+      var max = Math.max(73,this.eqt); //this.eqt;
        //var max = Math.max(this.ratiosArr.length,this.eqt);
       for (var i = 1; i <= max; i++) {
         var v = i.toString();
@@ -2929,6 +2944,8 @@ if(this.ratioDiff.length){
 //Base 4 eqt 31
 //Base Phi^3 eqt 1 (Normalizado)
 //Base Phi^48 eqt 1 (Normalizado)
+//5ED_PHI
+//15ED3 Norm 3
 
 //Harmonic diferences
 //2, 1.5, 1.3333333333333333, 1.25, 1.2, 1.1666666666666667, 1.1428571428571428, 1.125, 1.1111111111111112, 1.1, 1.0909090909090908, 1.0833333333333333, 1.0769230769230769, 1.0714285714285714, 1.0666666666666667, 1.0625, 1.0588235294117647, 1.0555555555555556, 1.0526315789473684, 1.05, 1.0476190476190477, 1.0454545454545454, 1.0434782608695652, 1.0416666666666667, 1.04, 1.0384615384615385
@@ -3251,14 +3268,149 @@ if(this.ratioDiff.length){
 // 59049,
 // 177147,
 
-1
-,1.0549142510254303
-,1.113032
-,1.3452680203579066
-,1.4140941702753758
-,1.492
-,1.5825546990463422
-,1.660643744
+//Herry Patch 43 Tone Scale
+//1, 81/80, 33/32, 21/20, 16/15, 12/11, 11/10, 10/9, 9/8, 8/7, 7/6, 32/27, 6/5, 11/9, 5/4, 14/11, 9/7, 21/16, 4/3, 27/20, 11/8, 7/5, 10/7, 16/11, 40/27, 3/2, 32/21, 14/9, 11/7, 8/5, 18/11, 5/3, 27/16, 12/7, 7/4, 16/9, 9/5, 20/11, 11/6, 15/8, 40/21, 64/33, 160/81
+
+
+//2, Math.PI, Math.PI-2
+
+//Augusto Novaro - Natural System
+//1, 21/20, 16/15, 10/9, 9/8, 8/7, 7/6, 6/5, 5/4, 9/7, 4/3, 7/5, 10/7, 3/2, 14/9, 8/5, 5/3, 12/7, 7/4, 16/9, 9/5, 15/8, 40/21
+//Augusto Novaro - Natural Approximated
+//1, 1.0494, 1.0697, 1.117, 1.1224, 1.1443, 1.1665, 1.2007, 1.2479, 1.2845, 1.3348, 1.4007, 1.4983, 1.5572, 1.6027, 1.6657, 1.7145, 1.7479, 1.7818, 1.8697, 1.9060
+
+
+//1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 
+
+//1, 3, 5, 7, 11, 13, 17, 19, 23, 29
+
+//Hercala harmonica baseada nos números com maiores divisores
+// 18/18	//6	
+// //,19/18	//2	
+// ,20/18	//6	
+// ,21/18	//4	
+// ,22/18	//4	
+// //,23/18	//2	
+// ,24/18	//8	
+// //,25/18	//3	
+// ,26/18	//4	
+// ,27/18	//4	
+// ,28/18	//6	
+// //,29/18	//2	
+// ,30/18	//8	
+// //,31/18	//2	
+// ,32/18	//6	
+// ,33/18	//4	
+// ,34/18	//4	
+// ,35/18	//4	
+
+ // Math.pow(5/3 ,-4),Math.pow(5/3 ,-3), Math.pow(5/3 ,-2),Math.pow(5/3 ,-1), 1, Math.pow(5/3 ,1),  Math.pow(5/3 ,2),  Math.pow(5/3 ,3),  Math.pow(5/3 ,4)
+    //Math.pow(3/2 ,-9), Math.pow(3/2 ,-8),  Math.pow(3/2 ,-7),  Math.pow(3/2 ,-6),  Math.pow(3/2 ,-5), Math.pow(3/2 ,-4),Math.pow(3/2 ,-3), Math.pow(3/2 ,-2),Math.pow(3/2 ,-1), 
+    //1, Math.pow(3/2 ,1),  Math.pow(3/2 ,2),  Math.pow(3/2 ,3),  Math.pow(3/2 ,4),  Math.pow(3/2 ,5),  Math.pow(3/2 ,6),  Math.pow(3/2 ,7),  Math.pow(3/2 ,8),  Math.pow(3/2 ,9)
+ 
+
+//  (1)*1, (1)*10/9, (1)*1.25, (1)*4/3, (1)*1.5, (1)*5/3, (1)*1.875, 2,
+//  (Math.pow(10/9,1/3))*1, (Math.pow(10/9,1/3))*10/9, (Math.pow(10/9,1/3))*1.25, (Math.pow(10/9,1/3))*4/3, (Math.pow(10/9,1/3))*1.5, (Math.pow(10/9,1/3))*5/3, (Math.pow(10/9,1/3))*1.875, 2,
+//  (Math.pow(10/9,2/3))*1, (Math.pow(10/9,2/3))*10/9, (Math.pow(10/9,2/3))*1.25, (Math.pow(10/9,2/3))*4/3, (Math.pow(10/9,2/3))*1.5, (Math.pow(10/9,2/3))*5/3, (Math.pow(10/9,2/3))*1.875, 2,
+ 
+ //(16/15)*1, (16/15)*1.25, (16/15)*1.5, (16/15)*1.75,
+ //(1)*1, (1)*1.25, (1)*4/3, (1)*1.5, (1)*5/3, (1)* 2,
+ //(1.25)*1, (1.25)*1.25, (1.25)*4/3, (1.25)*1.5, (1.25)*5/3, (1.25)* 2,
+ //(4/3)*1, (4/3)*1.25, (4/3)*4/3, (4/3)*1.5, (4/3)*5/3, (4/3)* 2,
+ //(1.5)*1, (1.5)*1.25, (1.5)*4/3, (1.5)*1.5, (1.5)*5/3, (1.5)* 2,
+ //(this.base)*1, (this.base)*1.25, (this.base)*4/3, (this.base)*1.5, (this.base)*5/3, (this.base)* 2,
+ //(Math.pow(this.base,2))*1, (Math.pow(this.base,2))*1.25, (Math.pow(this.base,2))*4/3, (Math.pow(this.base,2))*1.5, (Math.pow(this.base,2))*5/3, (Math.pow(this.base,2))* 2,
+ //(Math.pow(this.base,3))*1, (Math.pow(this.base,3))*1.25, (Math.pow(this.base,3))*4/3, (Math.pow(this.base,3))*1.5, (Math.pow(this.base,3))*5/3, (Math.pow(this.base,3))* 2,
+ //(25/24)*1, (25/24)*1.25, (25/24)*4/3, (25/24)*1.5, (25/24)*5/3, (25/24)*2,
+ //(16/15)*1, (16/15)*1.25, (16/15)*4/3, (16/15)*1.5, (16/15)*5/3, (16/15)*2,
+
+//1, 1.5, 1.125, 5/3, 1.25, 1.875, 1.40625, 1.0546875, 
+
+//===================================================================================
+//Ratios of the 17 frets on the neck of "Baglama" ("saz") according to Yalçýn Tura
+//  1
+//  ,18/17
+//  ,12/11
+//  ,9/8
+//  ,81/68
+//  ,27/22
+//  ,81/64
+//  ,4/3
+//  ,24/17
+//  ,16/11
+//  ,3/2
+//  ,27/17
+//  ,18/11
+//  ,27/16
+//  ,16/9
+//  ,32/17
+//  ,64/33
+//  ,2/1
+
+
+// 1
+// ,1.040041911525952
+
+//  ,(1.2009369551760027 / 1.040041911525952)/1.040041911525952
+//  ,1.2009369551760027 / 1.040041911525952
+//  //,1.040041911525952 * Math.pow(1.1547005383792515, 3/4)
+
+// ,1.2009369551760027
+// ,1.2490247664834064
+
+// //,1.33333333333
+// //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 1/5)
+// //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 2/5)
+// //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 3/5)
+// //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 4/5)
+//  //,1.4422495703074085 / Math.pow(1.1547005383792515, 1/3)
+//  //,1.2490247664834064 * Math.pow(1.1547005383792515, 3/4)
+
+//  ,(1.4422495703074085 / 1.040041911525952)/1.040041911525952
+//  ,1.4422495703074085 / 1.040041911525952
+
+// ,1.4422495703074085
+
+// //,1.7320508075688774
+// //,1.5
+
+// 1
+// ,1.040041911525952
+//   ,1.074569931823542
+// ,1.110244236874139
+// ,1.1547005383792515
+// ,1.2009369551760027
+// ,1.2490247664834064
+//   ,1.2904907420478493
+// ,1.3333333333333335
+// ,1.3867225487012695
+// ,1.4422495703074085
+// 1
+//   ,1.0416666666666667
+//   ,1.0416666666666667 * 1.0666666666666
+// ,1.2
+//   //,1.0416666666666667 * 1.2
+// ,1.25
+//   //,1.0416666666666667 * 1.25
+// ,1.3333333
+//   ,1.0416666666666667 * 1.3333333
+
+1,
+//Math.pow(8/7, 1/3),
+//Math.pow(8/7, 2/3),
+8/7,
+//8/7*Math.pow(7/6, 1/3),
+//8/7*Math.pow(7/6, 2/3),
+4/3,
+//4/3*Math.pow(9/8, 1/3),
+//4/3*Math.pow(9/8, 2/3),
+3/2,
+//3/2*Math.pow(7/6, 1/3),
+//3/2*Math.pow(7/6, 2/3),
+7/4,
+//7/4*Math.pow(8/7, 1/3),
+//7/4*Math.pow(8/7, 2/3),
+2
 
 ]; //AQUI!
 
@@ -3266,6 +3418,8 @@ if(this.ratioDiff.length){
 
 
 //1,001129150390625
+
+
 //1.498068
 
 
@@ -3284,7 +3438,7 @@ if(false){
       var cc = init;
       ratiosArr = [];
       ratiosArr.push(cc);
-      var start = 32;
+      var start = 1;
       var r = 53 + start ;
 
 
@@ -3297,7 +3451,7 @@ if(false){
       
       
       // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing
-       var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala ptagórica com mais repetições =/)
+       //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala ptagórica com mais repetições =/)
        //var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
        //var arrIntervals = [ 1.25115 ];  //Gerador de uma quinta que harmoniza muito bem com a 3M. Para 5a perfeita: (6^1/8)
        //var arrIntervals = [  1.2, 1.0416666666666666, 1.2 ];
@@ -3309,7 +3463,10 @@ if(false){
        //var arrIntervals = [  1.5 ];
        //var arrIntervals = [  1.0400419115259512, 1.0345637159435739];
        //var arrIntervals = [  1.4983070768766814987992807320298 ];
-
+var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.040041911525952, 1.040041911525952, 1.0674995157120026, 1.040041911525952, 1.040041911525952];
+//arrIntervals = this.smooth(arrIntervals);
+//arrIntervals = this.smooth(arrIntervals);
+//arrIntervals = this.smooth(arrIntervals);
        //var arrIntervals = [   1.1211111111111 ];
        //var arrIntervals = [   1.5, 1.33333333, 1.25, 1.2 ];
        //var arrIntervals = [  
@@ -3341,7 +3498,8 @@ if(false){
        //cc *= 1.618033;
        //cc *= 8/7; //interessante os padroes de triades, mas se colocar ordenado gera notas muito proximas
        //cc  *= 1.875;
-       //cc = i;
+       //cc = Math.pow(1.059463094359295264561825294946, i);
+       //cc = (1/i);
        //cc = 32/(i+1);
        //cc = (24+i)/24;
        //cc *= 1.4953487812212205419118989941409;
@@ -3409,12 +3567,13 @@ if(this.normalize){
 
 //Gerar oitava da escala
 if(false){
+  var base = 2;//1.5;
   var numOct = 2;
   var octArr = [];
   for(var t = 0; t < numOct; t++){
     for (let i = 0; i < ratiosArr.length; i++) {
       const element = ratiosArr[i];
-      octArr.push(element* Math.pow(2,t+1));
+      octArr.push(element* Math.pow(base,t+1));
     }
   }
   ratiosArr = ratiosArr.concat(octArr);
@@ -3430,9 +3589,9 @@ if(false){
     //  }
     //  ratiosArr = jumpArr;
 
-if(this.normalize){
-  v = this.normalizeValue(v);
-}
+// if(this.normalize){
+//   v = this.normalizeValue(v);
+// }
 
       Array.prototype.unique = function() {
         return this.filter(function(value, index, self) {
@@ -3441,8 +3600,8 @@ if(this.normalize){
       };
 
 
-          // ratiosArr = ratiosArr.unique();
-           //ratiosArr = ratiosArr.sort((a,b) => a-b);
+          //ratiosArr = ratiosArr.unique();
+         //ratiosArr = ratiosArr.sort((a,b) => a-b);
 
       //===================================
       // ratiosArr = this.smooth(ratiosArr);
@@ -3453,28 +3612,40 @@ if(this.normalize){
       //this.ratiosArr = ratiosArr;
       //window.ratiosArr = ratiosArr
       //console.log(ratiosArr);
+
       
       //AQUI!
-        return ratiosArr[idx-1] || 0;
+        //return ratiosArr[idx-1] || 0;
 
 
       //#endregion
 
 //Log Scale
-  v = Math.pow(this.base, Math.log2(idx));
+//   var v = Math.log2( (1 * idx));
+//   //var v = Math.pow(this.base, Math.log2(idx));
+//   //v = 1+((idx-1)/36)
+//  if(v < 1){ v = 1}
+//  if(this.normalize){
+//   v = this.normalizeValue(v);
+// }
+    //return v;
 
 //Equal temperament
-      // var eqt = this.eqt;
-      // var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
-      // var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
-
-      //Linear
-//       var v =  (15+idx ) / this.eqt;
-
+      var eqt = this.eqt;
+      var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
+      var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
 if(this.normalize){
   v = this.normalizeValue(v);
 }
+      return v;
 
+
+      //Linear 
+       var v =  ((this.eqt-1)+idx ) / this.eqt;
+        //var v = 1/v;
+if(this.normalize){
+  v = this.normalizeValue(v);
+}
       return v;
 
       //return idx == 1 ? 1 : Math.pow(Math.pow(2,(1.0/this.eqt)),idx-1);
@@ -3498,14 +3669,19 @@ if(this.normalize){
        //return this.ratiosArr[idx-1] || 0;
     },
     normalizeValue(v){
-            if(v >= 2){
-                while(v >= 2){
-                    v = v / 2;
+      if(this.equivalence == 1){
+        return v;
+      }
+
+      var equivalence = this.equivalence || 2;
+            if(v >= equivalence){
+                while(v >= equivalence){
+                    v = v / equivalence;
                 }
             }
             else if(v > 0 && v < 1){
                 while(v < 1){
-                    v = v * 2;
+                    v = v * equivalence;
                 }
             }
             return v;
@@ -3519,12 +3695,24 @@ if(this.normalize){
     color(idx){
       //var arr = ['','#80bbaa','#80aaff','#aa80aa','#80ffaa','#ff8080','#80bbaa','#8080ff','#aa80aa','#80ff80','#80aaff','#ff8080','#aa80aa',' '];
       //return arr[Math.min(idx-1,arr.length-1)];
-      //var arr = ["#ff8080",""];
-      //return arr[ (idx-1) % arr.length];
+      //var arr = ["#ff8080",'#8080ff'];
+     //return arr[ (idx-1) % arr.length];
+
+if(this.equivalence == 1){ return ""}
 
       var normRatio = this.normalizeValue(this.ratio(idx));
+
+      // if([1, 1.25, 4/3, 1.5,5/3].indexOf( normRatio) != -1){
+      //   return "#ff8080";
+      // }
+      // else
+      // {
+      //   return '#8080ff';
+      // }
+
       if(normRatio){          
-        var c = this.HSVtoRGB(normRatio-1,0.77,1);
+        var v = (normRatio-1) / (this.equivalence - 1 || 1);
+        var c = this.HSVtoRGB(v,0.77,1);
         return "rgb("+c.r+","+c.g+","+c.b+")";
       }
 
@@ -3590,7 +3778,7 @@ if(this.normalize){
       return arrResult;
     },
     onChangeActive(args){
-      console.log("onChangeActive",args);
+      //console.log("onChangeActive",args);
       var freq = args.freq;
 
       this.scaleRefIdx = args.idx;

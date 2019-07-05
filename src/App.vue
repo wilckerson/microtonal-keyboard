@@ -3,9 +3,10 @@
     
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
-<!-- <Calc/> -->
-  <keyboard/>
-<!-- <lambdoma-keyboard/> -->
+<Calc v-if="route == '#calc'"/>
+<Calc2 v-if="route == '#calc2'"/>
+<lambdoma-keyboard v-else-if="route == '#lambdoma'"/>
+  <keyboard v-else/>
 
     <!-- <audio-key keyName="W" freq="220"/> 
     <audio-key keyName="E" freq="440"/>  -->
@@ -15,6 +16,7 @@
 
 <script>
 import Calc from './Calc.vue';
+import Calc2 from './Calc2.vue';
 import Keyboard from './Keyboard.vue';
 import LambdomaKeyboard from './LambdomaKeyboard.vue';
 import AudioKey from './AudioKey.vue';
@@ -24,16 +26,17 @@ import {Howl, Howler} from 'howler';
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,AudioKey,Calc
+    LambdomaKeyboard,Keyboard,AudioKey,Calc,Calc2
   },
   data() {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      msg: 'Welcome to Your Vue.js App',
+      route: ''
     }
   },
   mounted(){
 
-     
+     this.route = window.location.hash;
      
     },
   methods:{

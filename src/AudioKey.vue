@@ -54,6 +54,7 @@ export default {
     if (!this.wave) {
       ///Howler
       this.sound = new Howl({
+        //src: ["./audio-samples/sine.wav"]
         src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
         //src: ['./audio-samples/guitar-note_G.wav']
         //src: ['./audio-samples/piano-a_A_major.wav']
@@ -308,7 +309,7 @@ export default {
       //setTimeout(this.mouseUp,400);
     },
     onTouchStart() {
-      console.log("onTouchStart");
+      //console.log("onTouchStart");
     },
     getAvailableOscillator() {
       var gVco = undefined;
@@ -353,7 +354,7 @@ export default {
       // }
     },
     freq: function(val) {
-      console.log("freq", val);
+      //console.log("freq", val);
       if (this.vco) {
         this.vco.frequency.value = val;
       }
