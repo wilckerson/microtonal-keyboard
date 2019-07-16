@@ -25,6 +25,7 @@
 <div>
       <!-- Erro ({{((Math.pow(ratio(2),15)-2) + Math.pow(ratio(2),9) + Math.pow(ratio(2),5))}}) -->
     </div>
+   
     <table class="keyboard">
       <tr v-for="(krow,ridx) in keys" v-bind:key="ridx">
         <td v-for="(key,kidx) in krow" v-bind:key="(ridx+''+kidx)">
@@ -61,10 +62,12 @@
     <div style="text-align:left;" v-if="!freqBased">
       <h4 style="display:inline-block;">Ratio List:</h4>
       <span><input type="checkbox" v-model="ratioListIdx"/>Idx</span>
+      <span style="margin-left:20px;"><input type="checkbox" v-model="inCents"/>In cents</span>
     <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
     <div v-for="ii in Math.max(73,nEqt)" v-bind:key="ii">
       <span v-if="ratioListIdx">{{ii}}:</span>
-      {{ratio(ii)}}
+      <span>{{inCents ? ratioToCents(ratio(ii)) :  ratio(ii)}}</span>
+      
       </div>
    
   </div>
@@ -103,7 +106,19 @@ export default {
       scaleCount: 12,     
       showChart:true,
       ratioListIdx:true,
+      inCents: false,
       keys: [
+        [
+          { k: "1", idx: 28 },
+          { k: "2", idx: 29 },
+          { k: "3", idx: 30 },
+          { k: "4", idx: 31 },
+          { k: "5", idx: 32 },
+          { k: "6", idx: 33 },
+          { k: "7", idx: 34 },
+          { k: "8", idx: 35 },
+          { k: "9", idx: 36 },
+        ],
         [
           { k: "Q", idx: 19 },
           { k: "W", idx: 20 },
@@ -114,7 +129,6 @@ export default {
           { k: "U", idx: 25 },
           { k: "I", idx: 26 },
           { k: "O", idx: 27 },
-          { k: "P", idx: 28 }
         ],
         [
           { k: "A", idx: 10 },
@@ -144,15 +158,16 @@ export default {
   },
   mounted: function() {
     var _this = this;
-    window.addEventListener("keydown", e => {
-      var keyName = String.fromCharCode(e.keyCode);
-      var idx = parseInt(keyName);
+    //Transposição nos números
+    // window.addEventListener("keydown", e => {
+    //   var keyName = String.fromCharCode(e.keyCode);
+    //   var idx = parseInt(keyName);
 
-      if (!isNaN(idx)) {
-        _this.factor = _this.ratio(idx) || 1;
-        //console.log("factor",_this.factor);
-      }
-    });
+    //   if (!isNaN(idx)) {
+    //     _this.factor = _this.ratio(idx) || 1;
+    //     //console.log("factor",_this.factor);
+    //   }
+    // });
   },
   computed: {
     chartData() {
@@ -199,6 +214,10 @@ if(this.ratioDiff.length){
     }
   },
   methods: {
+    ratioToCents(ratio){
+      var cents = 1200*Math.log2( parseFloat(ratio) );
+      return cents;
+    },
     setPhi(){
       this.base = (Math.sqrt(5)+1)/2;
     },
@@ -3395,22 +3414,23 @@ if(this.ratioDiff.length){
 // ,1.3333333
 //   ,1.0416666666666667 * 1.3333333
 
-1,
-//Math.pow(8/7, 1/3),
-//Math.pow(8/7, 2/3),
-8/7,
-//8/7*Math.pow(7/6, 1/3),
-//8/7*Math.pow(7/6, 2/3),
-4/3,
-//4/3*Math.pow(9/8, 1/3),
-//4/3*Math.pow(9/8, 2/3),
-3/2,
-//3/2*Math.pow(7/6, 1/3),
-//3/2*Math.pow(7/6, 2/3),
-7/4,
-//7/4*Math.pow(8/7, 1/3),
-//7/4*Math.pow(8/7, 2/3),
-2
+// 1
+// ,1.618033988749895
+// ,2.618033988749895
+// ,1.4120226591665965
+// ,2.284700655416562
+// ,1.2322411048610529
+// ,1.993807989999907
+// ,1.0753496982869866
+// ,1.739952361620289
+// ,2.815302059907276
+// ,1.5184181405091886
+// ,2.4568521604782805
+// ,1.3250901003291566
+// ,2.144040820488583
+// ,1.1563769736059133
+// ,1.8710572471021079
+
 
 ]; //AQUI!
 

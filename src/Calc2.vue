@@ -1,15 +1,31 @@
 <template>
   <div>
-    <h2>Equal Temperament Calc</h2>
+    <h2>Microtonal Calc</h2>
 
-    <label>Base:</label>
+    <select v-model="calcType">
+      <option value="eqt">Equal Temperament</option>
+      <option value="gen">Generator</option>
+    </select>
 
-    <input type="number" step="0.0001" v-model="base" />
-    <button v-on:click="setBasePhi">φ</button>
-    <button v-on:click="setBasePi">π</button>
+    <div v-if="calcType == 'eqt'">
+      <label>Base:</label>
 
-    <label>Divisão máxima:</label>
-    <input type="number" step="1" v-model="maxDiv" />
+      <input type="number" step="0.0001" v-model="base" />
+      <button v-on:click="setBasePhi">φ</button>
+      <button v-on:click="setBasePi">π</button>
+
+      <label>Divisão máxima:</label>
+      <input type="number" step="1" v-model="maxDiv" />
+    </div>
+
+    <div v-if="calcType == 'gen'">
+      <label>Min:</label>
+      <input type="number" step="0.0001" v-model="genMin" />
+      <label>Max:</label>
+      <input type="number" step="0.0001" v-model="genMax" />
+      <label>Step:</label>
+      <input type="number" step="0.0001" v-model="genStep" />
+    </div>
 
     <label>Valores procurados:</label>
     <textarea
@@ -19,9 +35,9 @@
       placeholder="Um valor por linha em formato decimal (Ex: 1.333) ou fracionário(Ex: 4/3) "
     ></textarea>
 
-<div>
-    <input type="checkbox" v-model="priorityOrder"/> Ordem de prioridade
-</div>
+    <div>
+      <input type="checkbox" v-model="priorityOrder" /> Ordem de prioridade
+    </div>
     <br />
     <button v-on:click="calc">Calcular</button>
 
@@ -33,6 +49,7 @@
             <th>Idx</th>
             <th>Value</th>
             <th>TotalDiff</th>
+            <th>Result</th>
           </tr>
         </thead>
         <tbody>
@@ -40,6 +57,13 @@
             <td>{{idx+1}}</td>
             <td>{{item.value}}</td>
             <td>{{item.diff}}</td>
+            <td>
+              <span
+                v-for="(ratio,idx) in item.ratios"
+                :key="idx"
+                style="padding-right: 10px;"
+              >{{ratio}}</span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -51,11 +75,15 @@
 export default {
   data() {
     return {
+      calcType: "eqt",
       maxDiv: 53,
       base: 2,
+      genMin: 1.05,
+      genMax: 1.08,
+      genStep: 0.0001,
       textData: "",
       sortedResult: [],
-      priorityOrder: false,
+      priorityOrder: false
     };
   },
   methods: {
@@ -66,7 +94,7 @@ export default {
       this.base = Math.PI;
     },
     calc() {
-         this.sortedResult = [];
+      this.sortedResult = [];
 
       var ratioData = this.parseTextData();
 
@@ -75,25 +103,52 @@ export default {
       }
 
       var results = [];
-      var currentMinDiff = 1;
-      for (let i = 1; i <= this.maxDiv; i++) {
-        var interval = Math.pow(this.base, 1 / i);
-        var ratios = this.generateArrRatios(interval, this.maxDiv);
+      if (this.calcType == "eqt") {
+        results = this.calcEqt(ratioData);
+      }
+      else  if (this.calcType == "gen") {
+        results = this.calcGen(ratioData);
+      }
 
+      var sortedResult = results        
+        .sort(function compare(a, b) {
+        if (a.diff < b.diff) return -1;
+        if (a.diff > b.diff) return 1;
+        return 0;
+      })
+      .slice(0,100);
+      //console.log("sorted");
+      //console.log(sortedResult);
+
+      this.sortedResult = sortedResult;
+    },
+    calcGen(ratioData){
+
+var maxRatioData = Math.max(...ratioData);
+
+      var gMin = parseFloat(this.genMin);
+      var gMax = parseFloat(this.genMax);
+      var gStep = parseFloat(this.genStep);
+
+var results = [];
+      //var currentMinDiff = 1;
+      for (let i = gMin; i <= gMax; i+=gStep) {
+        var interval = i;
+        var qtd = Math.ceil(Math.log(maxRatioData) / Math.log(interval)) + 1;
+        var ratios = this.generateArrRatios(interval, qtd);
+        
         var totalDiff = 0;
+        var resultRatios = [];
         for (let j = 0; j < ratioData.length; j++) {
           const ratio = ratioData[j];
 
           var diffResult = this.diffFromRatio(ratios, ratio);
-          if(this.priorityOrder){
-             
-              totalDiff += (diffResult.diff  * (ratioData.length-j));
+          resultRatios.push(diffResult.ratio);
+          if (this.priorityOrder) {
+            totalDiff += diffResult.diff * (ratioData.length - j);
+          } else {
+            totalDiff += diffResult.diff;
           }
-          else
-          {
-              totalDiff += diffResult.diff;
-          }
-         
         }
 
         //Only best results
@@ -101,18 +156,44 @@ export default {
         //   currentMinDiff = totalDiff;
         //   results.push({ value: i, diff: totalDiff });
         // }
-        results.push({ value: i, diff: totalDiff });
+        results.push({ value: i, diff: totalDiff, ratios: resultRatios });
       }
 
-      var sortedResult = results.sort(function compare(a, b) {
-        if (a.diff < b.diff) return -1;
-        if (a.diff > b.diff) return 1;
-        return 0;
-      });
-      //console.log("sorted");
-      //console.log(sortedResult);
+      return results;
 
-      this.sortedResult = sortedResult;
+    },
+    calcEqt(ratioData) {
+      var maxRatioData = Math.max(...ratioData);
+      var results = [];
+      //var currentMinDiff = 1;
+      for (let i = 2; i <= this.maxDiv; i++) {
+        var interval = Math.pow(parseFloat(this.base), 1 / i);
+        var qtd = Math.ceil(Math.log(maxRatioData) / Math.log(interval)) + 1;
+        var ratios = this.generateArrRatios(interval, qtd);
+
+        var totalDiff = 0;
+        var resultRatios = [];
+        for (let j = 0; j < ratioData.length; j++) {
+          const ratio = ratioData[j];
+
+          var diffResult = this.diffFromRatio(ratios, ratio);
+          resultRatios.push(diffResult.ratio);
+          if (this.priorityOrder) {
+            totalDiff += diffResult.diff * (ratioData.length - j);
+          } else {
+            totalDiff += diffResult.diff;
+          }
+        }
+
+        //Only best results
+        // if (totalDiff < currentMinDiff) {
+        //   currentMinDiff = totalDiff;
+        //   results.push({ value: i, diff: totalDiff });
+        // }
+        results.push({ value: i, diff: totalDiff, ratios: resultRatios });
+      }
+
+      return results;
     },
     parseTextData() {
       var result = [];
@@ -149,7 +230,7 @@ export default {
       var currentIdx = 0;
       for (var i = 0; i < arr.length; i++) {
         var arrRatio = arr[i];
-        var diff = arrRatio > ratio ? arrRatio/ratio : ratio/arrRatio;
+        var diff = arrRatio > ratio ? arrRatio / ratio : ratio / arrRatio;
         //var diff = Math.abs(arrRatio - ratio);
         if (diff < currentDiff) {
           currentDiff = diff;
@@ -157,7 +238,8 @@ export default {
         }
       }
 
-      return { idx: currentIdx, diff: currentDiff, ratio: ratio };
+      var resultRatio = arr[currentIdx];
+      return { idx: currentIdx, diff: currentDiff, ratio: resultRatio };
     }
   }
 };
