@@ -94,7 +94,7 @@ export default {
       ratioDiff: [],
       //ratiosArr:[],
       ratioAvg: 0,
-      mainFreq: 146, //432
+      mainFreq: 132,//440
       factor: 1,
       freqBased: false,
       diffRoot: false,
@@ -104,7 +104,7 @@ export default {
       activeRatio: '',
       scaleRefIdx: 1,
       scaleCount: 12,     
-      showChart:true,
+      showChart:false,
       ratioListIdx:true,
       inCents: false,
       keys: [
@@ -641,6 +641,8 @@ if(this.ratioDiff.length){
     ratio(idx) {
 
       var PHI = (1+Math.sqrt(5))/2; //1.618033988749895
+
+     
       //#region
       var ratiosArr = [
         // 1,
@@ -2959,7 +2961,7 @@ if(this.ratioDiff.length){
 
 //6ED3 Triade muito afinada, perdendo apenas para a Wndy Carlos Gamma de 20ED3/2
 //Wendy Carlos Beta 11ED3/2 (Aproximadamente igual a 19EDO, so que mais afinada na triade) (31ED_PI) (13ED_PHI)
-//Base 3 eqt 24  (Pareceida com Wendy Carlos Alhpa 9ED3/2, só que com melhor consonancia da oitava ) (48ED9) (25ED_PI)
+//Base 3 eqt 24  (Pareceida com Wendy Carlos Alhpa 9ED3/2, só que com melhor consonancia oitavar ) (48ED9) (25ED_PI)
 //Base 4 eqt 31
 //Base Phi^3 eqt 1 (Normalizado)
 //Base Phi^48 eqt 1 (Normalizado)
@@ -3431,6 +3433,209 @@ if(this.ratioDiff.length){
 // ,1.1563769736059133
 // ,1.8710572471021079
 
+//Dedução da escala de 12 a partir da escala de 7 deduzida a partir da pentatônica
+//1, 1.041666666, 10/9, 1.185185185185185, 1.2500000000000002, 4/3, 1.40625, 1.5, 1.5625, 5/3, 16/9, 15/8, 2
+//1, 16/15, 10/9, 1.2, 1.25, 4/3, 1.4, 1.5, 1.6, 5/3, 9/5, 15/8 //Utilizando as menores frações (Contém Wolf Tone!)
+
+// 1, 6/5, 5/4, 4/3, 3/2, 8/5, 5/3, 2,0
+// ,4/3, 4/3*6/5, 4/3*5/4, 4/3*4/3, 4/3*3/2, 4/3*8/5, 4/3*5/3, 4/3*2,0
+// ,1.5, 1.5*6/5, 1.5*5/4, 1.5*4/3, 1.5*3/2, 1.5*8/5, 1.5*5/3, 1.5*2,0
+
+
+// 1
+// ,1.0507566386532194
+// ,1.1111111111111111
+// ,1.166666666666666666
+// ,1.22222222222222
+// ,1.2808866897642726
+// ,4/3
+// ,1.4142135623730951
+// ,1.5
+// ,1.5614183643114203
+// ,1.6666666666666
+// ,1.75
+// ,1.8333333333333333
+// ,1.9033903060212396
+
+//=================================
+//  17-tone Well Temperament  de acordo com  o artigo "The 17-tone Puzzle — And the Neo-medieval Key That Unlocks It" by George Secor 
+// 1
+// ,1.03930303
+// ,1.087272727
+// ,1.131863636
+// ,1.174420455
+// ,1.226609848
+// ,1.281117424
+// ,1.329284091
+// ,1.38380303
+// ,1.447670455
+// ,1.504568182
+// ,1.561140152
+// ,1.633193182
+// ,1.702965909
+// ,1.766996212
+// ,1.842488636
+// ,1.927526515
+
+//La Monte Young's - The Well-Tuned Piano By Kyle Gann https://www.kylegann.com/wtp.html
+//1/1,	567/512,	9/8,	147/128,	21/16,	1323/1024,	189/128,	3/2,	49/32,	7/4,	441/256,	63/32
+
+
+//Teste Well tempered 14EDO (22ED3)
+//1, 10/9, 11/9, 4/3, 1.5, 5/3, 11/6,
+//1, 10/9, 1.185185185, 12/9, 15/9, 16/9, 
+//Math.sqrt(2)/(4/3), (Math.sqrt(2)/(4/3)) * 10/9, (Math.sqrt(2)/(4/3)) * 11/9, Math.sqrt(2), Math.sqrt(2)*1.125, (Math.sqrt(2)/(4/3)) * 5/3, (Math.sqrt(2)/(4/3)) * 11/6
+//1, 1.5, 10/9, 5/3, 1.25, 1.875, Math.sqrt(2)
+//Math.sqrt(2)* 1, Math.sqrt(2)*1.5, Math.sqrt(2)*10/9, Math.sqrt(2)*5/3, Math.sqrt(2)*1.25, Math.sqrt(2)*1.875, Math.sqrt(2)*Math.sqrt(2)
+//1, 1.052, 1.11111, 1.166666, 1.222222, 1.273148, 1.33333333, Math.sqrt(2), 1.5, 1.5674, 1.666666666, 1.75, 1.833333333333, 1.914
+//1, 9/8, 5/4,  4/3, 3/2, 5/3, 15/8,
+//Math.sqrt(1.0400419)* 1, Math.sqrt(1.0400419)*9/8, Math.sqrt(1.0400419)* 5/4, Math.sqrt(1.0400419)* 4/3, Math.sqrt(1.0400419)*3/2, Math.sqrt(1.0400419)*5/3, Math.sqrt(1.0400419)*15/8,
+//Math.sqrt(1.081687177)* 1, Math.sqrt(1.081687177)*9/8, Math.sqrt(1.081687177)* 5/4, Math.sqrt(1.081687177)* 4/3, Math.sqrt(1.081687177)*3/2, Math.sqrt(1.081687177)*5/3, Math.sqrt(1.081687177)*15/8,
+//Math.sqrt(9/8), (9/8)*Math.sqrt((5/4) / (9/8)), (5/4)*Math.sqrt((4/3) / (5/4)),  (4/3)*Math.sqrt((3/2) / (4/3)), (3/2)*Math.sqrt((5/3) / (3/2)), (5/3)*Math.sqrt((15/8) / (5/3)),  (15/8)*Math.sqrt((2) / (15/8)),
+
+//1
+//,1.0606601717798212
+//,1.125//,1.118033//1.125//
+//,1.222222//,1.1858541225631423
+// ,1.11803398
+// ,1.1852
+// ,1.25
+//,1.25
+//,1.2909944487358054
+// ,1.3333333333333333
+// ,1.414213562373095
+// ,1.5
+// ,1.5811388300841898
+// ,1.6666666666666667
+// ,1.7677669529663687
+// ,1.875
+// ,1.9364916731037083
+
+//14 tones 7 Limit Just Intonation http://www.dbdoty.com/OM/OMTuning.html
+//1, 15/14, 9/8, 7/6, 5/4, 9/7, 4/3, 7/5, 3/2, 14/9, 5/3, 7/4, 15/8, 27/14, 
+
+//Interessante pq? 12Ed3 normalizado
+// 1
+// ,1.2009369551760027
+// ,1.4422495703074085
+// ,1.7320508075688774
+// ,1.040041911525952
+// ,1.2490247664834064
+// ,1.5
+// ,1.801405432764004
+// ,1.0816871777305563
+// ,1.299038105676658
+// ,1.5600628672889283
+// ,1.8735371497251099
+// ,1.1250000000000002
+// ,1.665391149
+// ,4/3//1.351013259
+
+//Interessante (Carlos Alpha Almost Just )
+//1, 1.0416666666, 1.0850694444, 1.152, 1.2, 1.25, 1.3020833333, 1.3563368, 1.44 //v1
+//1, 1.0416666666, 1.07584, 1.152, 1.1925, 1.25, 1.3020833333, 1.3448, 1.44 //v2
+//1, 1.0416666666, 1.0850694444, 1.152, 1.2, 1.25, 1.3020833333, 1.346688, 1.44 //v3
+//1, 1.0416666666, 1.11825, 1.142, 1.21, 1.25, 1.3020833333, 1.33333, 1.44 //v4
+
+//Ref 31Ed4
+// ,1 
+// ,1.0457341482224871
+// ,1.0935599087586108
+// ,1.1435729397159464
+// ,1.195873274044141
+// ,1.2505655196145866
+// ,1.3077590684505718
+// ,1.3675683155263918
+// ,1.4301128875730527
+
+// 1
+// ,1.0442737824274138
+// ,1.0905077326652575
+// ,1.1387886347566913
+// ,1.1892071150027206
+// ,1.2418578120734836
+// ,1.296839554651009
+// ,1.354255546936892
+// ,1.414213562373094
+
+
+
+
+//1, 1.06666666666, 1.111111111, 1.2, 1.25, 4/3, 1.44
+
+
+//22 Srutis indiano
+// ,1
+// ,1.5
+// ,1.125
+// ,1.6875
+// ,1.265625
+// ,1.8984375
+// ,1.4222222222222 //,1.423828125
+// ,1.0666666666666 //,1.06787109375
+// ,1.6 //,1.601806640625
+// ,1.2 //,1.20135498046875
+// ,1.8 //,1.802032470703125
+// //,1.35 //,1.3515243530273438
+
+// ,1
+// ,1.333333333333
+// ,1.7777777777768888
+// ,1.1851851851842963
+// ,1.5802469135786665
+// ,1.0546875 //,1.0534979423855142
+// ,1.40625 //,1.4046639231803346
+// ,1.875 //,1.8728852309066444
+// ,1.25 //,1.2485901539374509
+// ,5/3 //,1.664786871916185
+// ,10/9 //,1.1098579146105123
+// ,1.481481 //,1.4798105528136465
+// //,1.975308 //,1.9730807370843688
+
+// 1
+// ,1.0546875
+// ,1.06666666666666
+// ,1.111111
+// ,1.125
+// ,1.185185185
+// ,1.2
+// ,1.25
+// ,1.265625
+// ,1.33333
+// ,1.40625
+// ,1.4222222222222
+// ,1.481481481
+// ,1.5
+// ,1.58203125
+// ,1.6
+// ,1.666666
+// ,1.6875
+// ,1.77777777
+// ,1.875
+// ,1.8962962962
+// ,1.975308641
+
+//15Ed3 normalizado e ordenado
+1
+,1.075989624725346
+,1.157753672516591
+,1.2457309396155178
+,1.3403935662256536
+,1.4422495703074092
+,1.5518455739153607
+,1.669769736708878
+,1.7966549123791256
+,1.9331820449317647
+,1.0400419115259532
+,1.1190743060814419
+,1.2041123426403475
+,1.2956123876847447
+,1.394065486814418
+,1.5000000000000024
+,1.6139844370880216
+,1.7366305087748892
+,1.8685964094232796
+//,2*1.0052951746692418
 
 ]; //AQUI!
 
@@ -3457,7 +3662,7 @@ if(false){
       var init = 1;
       var cc = init;
       ratiosArr = [];
-      ratiosArr.push(cc);
+      //ratiosArr.push(cc);
       var start = 1;
       var r = 53 + start ;
 
@@ -3536,10 +3741,47 @@ var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.
       
 
         //Interval
-       var interval = arrIntervals[(i % arrIntervals.length)]
-       cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
+       //var interval = arrIntervals[(i % arrIntervals.length)]
+       //cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
 
-       ratiosArr.push(cc);
+       //ratiosArr.push(cc);
+var rrr = 1.5; //Math.pow(5,1/4)
+var v = Math.pow(rrr, i-1);
+ratiosArr.push(v);
+ratiosArr.push(v * 17/16);
+ratiosArr.push(v * 18/16);
+ratiosArr.push(v * 19/16);
+ratiosArr.push(v * 20/16);
+ratiosArr.push(v * 21/16);
+ratiosArr.push(v * 22/16);
+ratiosArr.push(v * 23/16);
+
+//Escala maior
+//ratiosArr.push(v * 9/8);
+//ratiosArr.push(v * 1.25);
+//ratiosArr.push(v * 4/3);
+
+// ratiosArr.push(v * 1.05416);
+
+ //ratiosArr.push(v * 1.04563955259127);
+//  ratiosArr.push(v * 1.03484);
+//  ratiosArr.push(v * 1.07092);
+//  ratiosArr.push(v * 1.143262629818315);
+//  ratiosArr.push(v * 1.19544062473754);
+//  ratiosArr.push(v * 8/7);
+//  ratiosArr.push(v * 1.2);
+ //ratiosArr.push(v * 7/6);
+ //ratiosArr.push(v * 4/3);
+// ratiosArr.push(v * 5/4);
+ //ratiosArr.push(v * 4/3);
+//ratiosArr.push(v * Math.pow(2,5/31));
+//ratiosArr.push(v * 1.1925);
+//ratiosArr.push(v * Math.pow(2,13/31));
+// ratiosArr.push(v * 11/8);
+
+// ratiosArr.push(v * 1.0416666666);
+// ratiosArr.push(v * 1.079);
+
 
       //cc = Math.pow( PHI, i);
       //ratiosArr.push(cc);
@@ -3586,9 +3828,9 @@ if(this.normalize){
 
 
 //Gerar oitava da escala
-if(false){
-  var base = 2;//1.5;
-  var numOct = 2;
+if(true){
+  var base = 2*1.0052951746692418 //Math.sqrt(2);
+  var numOct = 4;
   var octArr = [];
   for(var t = 0; t < numOct; t++){
     for (let i = 0; i < ratiosArr.length; i++) {
@@ -3620,8 +3862,8 @@ if(false){
       };
 
 
-          //ratiosArr = ratiosArr.unique();
-         //ratiosArr = ratiosArr.sort((a,b) => a-b);
+         ratiosArr = ratiosArr.unique();
+          ratiosArr = ratiosArr.sort((a,b) => a-b);
 
       //===================================
       // ratiosArr = this.smooth(ratiosArr);
@@ -3634,21 +3876,30 @@ if(false){
       //console.log(ratiosArr);
 
       
-      //AQUI!
-        //return ratiosArr[idx-1] || 0;
+      //AQUI!        
+     //return ratiosArr[idx-1] || 0;
 
+      
 
       //#endregion
 
 //Log Scale
-//   var v = Math.log2( (1 * idx));
-//   //var v = Math.pow(this.base, Math.log2(idx));
+  //var v = Math.log2( (1 * idx));
+  //var v = Math.pow(this.base, Math.log2(idx));
+//   var v = 1+Math.log2(1+((idx-1)/this.eqt));
 //   //v = 1+((idx-1)/36)
 //  if(v < 1){ v = 1}
 //  if(this.normalize){
 //   v = this.normalizeValue(v);
 // }
-    //return v;
+//     return v;
+
+//Mapped Equal temperament
+    // var mapArr = [1,2,5];
+    // var mapIdx = mapArr[(idx-1) % mapArr.length];
+       
+    //   idx = idx + mapIdx;
+    
 
 //Equal temperament
       var eqt = this.eqt;
