@@ -3,7 +3,7 @@
     <p>
       <button v-on:click="setPhi">φ</button>
       <button v-on:click="setPi">π</button>
-    Base: <input type="number" step="0.0001" v-model="base">
+    Base: <input type="number" step="0.001" v-model="base">
     Eqt: <input type="number" step="1" v-model="eqt">
     <span>Ratio: {{ratio(2)}}</span>
     <span>DiffRoot: <input type="checkbox" v-model="diffRoot"/></span>
@@ -26,12 +26,14 @@
       <!-- Erro ({{((Math.pow(ratio(2),15)-2) + Math.pow(ratio(2),9) + Math.pow(ratio(2),5))}}) -->
     </div>
    
+   <div>b: {{base}}</div>
+
     <table class="keyboard">
-      <tr v-for="(krow,ridx) in keys" v-bind:key="ridx">
+      <tr v-for="(krow,ridx) in keys" v-bind:key="ridx + base">
         <td v-for="(key,kidx) in krow" v-bind:key="(ridx+''+kidx)">
 
           <template v-if="!freqBased">
-            <small>{{key.idx}} : {{ratio(key.idx).toFixed(4)}}</small>
+            <small>{{key.idx}} : {{parseFloat(ratio(key.idx)).toFixed(4)}}</small>
 
             <!-- Distancia do fret em relação ao inicio do braço -->
             <small >({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small>
@@ -42,6 +44,7 @@
 
             <!-- <div>{{getFreq(key.idx)}}</div> -->
             <audio-key :keyName="key.k" :idx="key.idx" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" @onChangeActive="onChangeActive" />
+
           </template>
          <template v-if="freqBased">
            <small>{{key.idx}} : {{parseFloat(freq(key.idx)).toFixed(3)}} </small>
@@ -217,6 +220,10 @@ if(this.ratioDiff.length){
     ratioToCents(ratio){
       var cents = 1200*Math.log2( parseFloat(ratio) );
       return cents;
+    },
+    centsToRatio(cents){
+      var ratio = Math.pow(2,cents/1200);
+      return ratio;
     },
     setPhi(){
       this.base = (Math.sqrt(5)+1)/2;
@@ -3290,7 +3297,7 @@ if(this.ratioDiff.length){
 // 177147,
 
 //Herry Patch 43 Tone Scale
-//1, 81/80, 33/32, 21/20, 16/15, 12/11, 11/10, 10/9, 9/8, 8/7, 7/6, 32/27, 6/5, 11/9, 5/4, 14/11, 9/7, 21/16, 4/3, 27/20, 11/8, 7/5, 10/7, 16/11, 40/27, 3/2, 32/21, 14/9, 11/7, 8/5, 18/11, 5/3, 27/16, 12/7, 7/4, 16/9, 9/5, 20/11, 11/6, 15/8, 40/21, 64/33, 160/81
+1, 81/80, 33/32, 21/20, 16/15, 12/11, 11/10, 10/9, 9/8, 8/7, 7/6, 32/27, 6/5, 11/9, 5/4, 14/11, 9/7, 21/16, 4/3, 27/20, 11/8, 7/5, 10/7, 16/11, 40/27, 3/2, 32/21, 14/9, 11/7, 8/5, 18/11, 5/3, 27/16, 12/7, 7/4, 16/9, 9/5, 20/11, 11/6, 15/8, 40/21, 64/33, 160/81
 
 
 //2, Math.PI, Math.PI-2
@@ -3537,34 +3544,23 @@ if(this.ratioDiff.length){
 //1, 1.0416666666, 1.0850694444, 1.152, 1.2, 1.25, 1.3020833333, 1.346688, 1.44 //v3
 //1, 1.0416666666, 1.11825, 1.142, 1.21, 1.25, 1.3020833333, 1.33333, 1.44 //v4
 
-//Ref 31Ed4
-// ,1 
-// ,1.0457341482224871
-// ,1.0935599087586108
-// ,1.1435729397159464
-// ,1.195873274044141
-// ,1.2505655196145866
-// ,1.3077590684505718
-// ,1.3675683155263918
-// ,1.4301128875730527
-
+//16 Well Tempered (oitava 1.4859942891) (oitava 1,141428)
 // 1
 // ,1.0442737824274138
 // ,1.0905077326652575
-// ,1.1387886347566913
-// ,1.1892071150027206
-// ,1.2418578120734836
-// ,1.296839554651009
-// ,1.354255546936892
-// ,1.414213562373094
-
-
+// //,1.1387886347566913
+// //,1.1892071150027206
+// //,1.2418578120734836
+// //,1.296839554651009
+// //,1.354255546936892
+// //,1.414213562373094
 
 
 //1, 1.06666666666, 1.111111111, 1.2, 1.25, 4/3, 1.44
 
-
+//=============================================
 //22 Srutis indiano
+//=============================================
 // ,1
 // ,1.5
 // ,1.125
@@ -3577,7 +3573,7 @@ if(this.ratioDiff.length){
 // ,1.2 //,1.20135498046875
 // ,1.8 //,1.802032470703125
 // //,1.35 //,1.3515243530273438
-
+//------------------------------------------
 // ,1
 // ,1.333333333333
 // ,1.7777777777768888
@@ -3591,6 +3587,8 @@ if(this.ratioDiff.length){
 // ,10/9 //,1.1098579146105123
 // ,1.481481 //,1.4798105528136465
 // //,1.975308 //,1.9730807370843688
+//=============================================
+
 
 // 1
 // ,1.0546875
@@ -3616,37 +3614,94 @@ if(this.ratioDiff.length){
 // ,1.975308641
 
 //15Ed3 normalizado e ordenado
-1
-,1.075989624725346
-,1.157753672516591
-,1.2457309396155178
-,1.3403935662256536
-,1.4422495703074092
-,1.5518455739153607
-,1.669769736708878
-,1.7966549123791256
-,1.9331820449317647
-,1.0400419115259532
-,1.1190743060814419
-,1.2041123426403475
-,1.2956123876847447
-,1.394065486814418
-,1.5000000000000024
-,1.6139844370880216
-,1.7366305087748892
-,1.8685964094232796
+// 1
+// ,1.075989624725346
+// ,1.157753672516591
+// ,1.2457309396155178
+// ,1.3403935662256536
+// ,1.4422495703074092
+// ,1.5518455739153607
+// ,1.669769736708878
+// ,1.7966549123791256
+// ,1.9331820449317647
+// ,1.0400419115259532
+// ,1.1190743060814419
+// ,1.2041123426403475
+// ,1.2956123876847447
+// ,1.394065486814418
+// ,1.5000000000000024
+// ,1.6139844370880216
+// ,1.7366305087748892
+// ,1.8685964094232796
 //,2*1.0052951746692418
 
+
+//19 welltempered (oitava 1.118033)
+// 1,
+// 1.03583333,
+// 1.0733452
+
+//22 Weell tempered (oitava 1,0648)
+// 1,
+// 1.035798
+
+//22 Weell tempered v2 (oitava 1.3333333)
+// 1
+// ,1.040041911525952
+// ,1.0816871777305563
+// ,1.125
+// ,9/8 * 1.0357441686167614
+// ,9/8 * 1.0727659828236265
+// ,9/8 * 1.1111111109999998
+// ,1.299
+
+//1, 1.066666, 1.11803, 1.185185, 1.25
+
+//1, 1.25, 1.5, 1.75, 2,
+//2/ 1, 2/1.25, 2/1.5, 2/1.75, 2/2,
+//12/12, 13/12, 14/12, 15/12, 16/12, 17/12, 18/12, 19/12, 20/12, 21/12, 22/12, 23/12, 24/12,
+//2/(12/12), 2/(13/12), 2/(14/12), 2/(15/12), 2/(16/12), 2/(17/12), 2/(18/12), 2/(19/12), 2/(20/12), 2/(21/12), 2/(22/12), 2/(23/12), 2/(24/12)
+
+//12 weelTempered (Derivada do lambdoma 1,16/9, 4/3,3/2, 9/8, 2)
+//1, 1.0534979423868311, 1.125, 1.1851851851851851, 1.265625, 1.3333333333333333, 1.4046639231824416, 1.5, 1.5802469135802468, 1.6875, 1.7777777777777777, 1.8856613654549612, 2
+
+
+//Muito Legal!!!! Apesar de não ser oitavada (https://en.xen.wiki/w/88cET)
+//(Gerador) 1.052193343278766 => Terceira nota de 45EdPI => Aprox 11Ed7/4 ou 88cents e 41ed8
+
+//Maior
+//1, 1.125, 1.25, 1.5, 1.5625, 1.875,
+
+//Menor
+//1, 1.125, 1.2, 1.44, 1.5, 1.8,
+
+//Diamond
+//1, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6, 1.6666666666666667,
+
+//1, 1.0666666666666667, 1.125, 1.2, 1.25, 1.28, 1.3333333333333333, 1.44, 1.5, 1.5625, 1.6, 1.6666666666666665, 1.7777777777777777, 1.8, 1.875, 1.92
+
+//Extented Diamon
+//1 ,16/15 ,10/9 ,9/8 ,6/5 ,5/4 ,4/3 ,3/2 ,8/5 ,5/3 ,16/9 ,9/5 ,15/8
+
+//Golden cents progression (https://en.xen.wiki/w/Generating_a_scale_through_successive_divisions_of_the_octave_by_the_Golden_Ratio)
+//1, 1.0590, 1.1459, 1.2361,  1.3090,  1.4120, 1.5279
+//0, 66.844, 108.156, 175,241.844, 283.1566, 350, 391.3126, 458.1567,525, 566.3127, 633.1567,700, 741.3127, 808.1567, 849.4686, 916.3127, 983.1567,1024.4693,1091.3133, 1132.6253, 1200 
+//0.000000, 66.873708, 175.077641, 283.281573, 350.155281, 458.359214, 566.563146, 633.436854, 741.640786, 808.514495, 916.718427, 1024.922359, 1091.796068, 1200.000000
+
+//1, 1.1671826, 1.5278659122, 1.8885472821, 2.472137465, 4
+
+
+
+,1.0416160106505838
+,1.084963913643637
+,1.1301157834293298
+,1.177146693908918
+,1.2261348432599308
+,1.2771616839560882
 ]; //AQUI!
 
-
-
-
-//1,001129150390625
-
-
-//1.498068
-
+//CentsToRatios
+//ratiosArr = ratiosArr.map(v => this.centsToRatio(v))
 
       //MAtrix
       // var mm = [1, 5/4, 1.5, 7/4, 2];
@@ -3655,6 +3710,33 @@ if(this.ratioDiff.length){
       //   mm[0]*mm[1], mm[1]*mm[1], mm[2]*mm[1], mm[3]*mm[1], mm[4]*mm[1], 0,0,0,0,
       //   mm[0]*mm[2], mm[1]*mm[2], mm[2]*mm[2], mm[3]*mm[2], mm[4]*mm[2], 0,0,0,0,
       // ]
+
+//Tentativa MOS Golden
+// var intervalRatiosArr = [0,1200];
+// var intervalConstant = PHI;
+// for (let interation = 0; interation < this.eqt; interation++) {
+  
+//   var newRatioArr = [];
+//   for (let ratioIdx = 0; ratioIdx < intervalRatiosArr.length; ratioIdx++) {
+    
+
+//     if(ratioIdx+1 < intervalRatiosArr.length){
+//       const el1 = intervalRatiosArr[ratioIdx];
+//       const el2 = intervalRatiosArr[ratioIdx+1];
+
+//       var diff = el2 - el1;
+      
+//       if(newRatioArr.length == 0 || (newRatioArr.length > 0 && newRatioArr[newRatioArr.length-1].toFixed(4) != diff.toFixed(4))){
+//         var newRatioDiff = (diff / intervalConstant) + el1;
+//         newRatioArr.push(newRatioDiff);
+//       }
+//     }    
+//   }
+
+//   intervalRatiosArr = intervalRatiosArr.concat(newRatioArr);
+//   intervalRatiosArr.sort((a,b) => a-b);
+// }
+// ratiosArr = intervalRatiosArr.map(e => this.centsToRatio(e));
 
 if(false){
 
@@ -3676,7 +3758,7 @@ if(false){
       
       
       // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing
-       //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala ptagórica com mais repetições =/)
+       //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala pitagórica com mais itens entre as quintas =/)
        //var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
        //var arrIntervals = [ 1.25115 ];  //Gerador de uma quinta que harmoniza muito bem com a 3M. Para 5a perfeita: (6^1/8)
        //var arrIntervals = [  1.2, 1.0416666666666666, 1.2 ];
@@ -3827,10 +3909,10 @@ if(this.normalize){
 }
 
 
-//Gerar oitava da escala
+//Gerar repetição da escala (oitava)
 if(true){
-  var base = 2*1.0052951746692418 //Math.sqrt(2);
-  var numOct = 4;
+  var base = 1.3303120581981223; //2; //this.base
+  var numOct = 12;
   var octArr = [];
   for(var t = 0; t < numOct; t++){
     for (let i = 0; i < ratiosArr.length; i++) {
@@ -3876,9 +3958,14 @@ if(true){
       //console.log(ratiosArr);
 
       
+     //Partials da fração
+// function partials(v){ var n = 2/(v-1); return [ (n+1)/n, (n+2)/(n+1)]}
+// var rPartials = partials(this.base);
+// ratiosArr = [1, rPartials[0], this.base ]
+
+
       //AQUI!        
      //return ratiosArr[idx-1] || 0;
-
       
 
       //#endregion
@@ -3905,6 +3992,8 @@ if(true){
       var eqt = this.eqt;
       var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
       var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
+//v = 1/Math.pow(1.5,1) * v
+
 if(this.normalize){
   v = this.normalizeValue(v);
 }
@@ -3939,6 +4028,7 @@ if(this.normalize){
       //this.ratiosArr = [1, 11/10, 10/9, 9/8, 8/7, 7/6, 6/5, 11/9, 5/4, 9/7, 4/3, 11/8, 7/5, 10/7, 3/2, 11/7, 8/5, 5/3, 7/4, 9/5, 11/6, 2];
        //return this.ratiosArr[idx-1] || 0;
     },
+   
     normalizeValue(v){
       if(this.equivalence == 1){
         return v;

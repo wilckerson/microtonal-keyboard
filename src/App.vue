@@ -3,8 +3,9 @@
     
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
-<Calc v-if="route == '#calc'"/>
+<!-- <Calc v-if="route == '#calc'"/> -->
 <Calc2 v-if="route == '#calc2'"/>
+<!-- <KeyGrid v-if="route == '#grid'"/> -->
 <lambdoma-keyboard v-else-if="route == '#lambdoma'"/>
   <keyboard v-else/>
 
@@ -15,6 +16,7 @@
 </template>
 
 <script>
+import KeyGrid from './KeyGrid.vue';
 import Calc from './Calc.vue';
 import Calc2 from './Calc2.vue';
 import Keyboard from './Keyboard.vue';
@@ -26,7 +28,7 @@ import {Howl, Howler} from 'howler';
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,AudioKey,Calc,Calc2
+    LambdomaKeyboard,Keyboard,AudioKey,Calc,Calc2,KeyGrid
   },
   data() {
     return {
