@@ -3,7 +3,7 @@
     <p>
       <button v-on:click="setPhi">φ</button>
       <button v-on:click="setPi">π</button>
-    Base: <input type="number" step="0.0001" v-model="base">
+    Base: <input type="number" step="0.001" v-model="base">
     Eqt: <input type="number" step="1" v-model="eqt">
     <span>Ratio: {{ratio(2)}}</span>
     <span>DiffRoot: <input type="checkbox" v-model="diffRoot"/></span>
@@ -11,8 +11,8 @@
     <br/>
     <span>Normalize: <input type="checkbox" v-model="normalize"/> <input type="number" v-model="equivalence"/> </span>
     <span>Repeat <input type="checkbox" v-model="repeatScale"/> <input type="number" v-model="repeatScaleValue" step="0.001"/> </span>
+    <span>GridSize: <input type="number" v-model="gridSize" min="1" max="41"/> </span>
     <span>Chart: <input type="checkbox" v-model="showChart"/></span>
-    <span>Sort: <input type="checkbox" v-model="applySort"/></span>
     
     </p>
     <!-- <div>
@@ -29,32 +29,22 @@
     </div>
    
 
-    <table class="keyboard">
-      <tr v-for="(krow,ridx) in keys" v-bind:key="ridx + base">
-        <td v-for="(key,kidx) in krow" v-bind:key="(ridx+''+kidx)">
+    <table class="keyboard" style="border-spacing: 0px;">
+      <tr v-for="(krow,ridx) in parseInt(gridSize)" v-bind:key="ridx">
+        <td v-for="(key,kidx) in parseInt(gridSize)" v-bind:key="(ridx+''+kidx)">
 
-          <template v-if="!freqBased">
-            <small>{{key.idx}} : {{parseFloat(ratio(key.idx)).toFixed(4)}}</small>
+            <!-- <div >{{ (gridSize*ridx)  +kidx+1}}</div> -->
+            <!-- <div :style="{'background-color':color((gridSize*ridx)  +kidx+1)}">{{ratio((gridSize*ridx)  +kidx+1)}}</div> -->
+            <div :style="{'background-color':color((gridSize*ridx)  +kidx+1)}"> &nbsp; </div>
+           
 
-            <!-- Distancia do fret em relação ao inicio do braço -->
-            <!-- <small >({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small> -->
+            <!-- <audio-key :keyName="key.k" :idx="key.idx" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" @onChangeActive="onChangeActive" /> -->
 
-            <!-- Distancia entre frets em relação ao inicio do braço -->
-            <!-- <small v-if="key.idx > 1">({{(   (65-(65/ratio(key.idx)))  -  (65-(65/ratio(key.idx-1)))  ).toFixed(2)}}cm)</small>
-            <small v-else>({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small> -->
-
-            <!-- <div>{{getFreq(key.idx)}}</div> -->
-            <audio-key :keyName="key.k" :idx="key.idx" :freq="(mainFreq * factor * ratio(key.idx))" :text="text(key.idx)" :color="color(key.idx)" @onChangeActive="onChangeActive" />
-
-          </template>
-         <template v-if="freqBased">
-           <small>{{key.idx}} : {{parseFloat(freq(key.idx)).toFixed(3)}} </small>
-           <audio-key :keyName="key.k" :freq="freq(key.idx)"  />
-         </template>
 
         </td>
       </tr>
     </table>
+    
     <div v-if="showChart">
       <chartjs-line :width="500" :height="150" :labels="chartLabels()" :data="chartData" :bind="true" style="display:inline-block;"></chartjs-line>
       <chartjs-line :width="500" :height="150" :labels="chartLabels()" :data="ratioDiff" :bind="true" style="display:inline-block;"></chartjs-line>
@@ -68,6 +58,7 @@
       <span><input type="checkbox" v-model="ratioListIdx"/>Idx</span>
       <span style="margin-left:20px;"><input type="checkbox" v-model="inCents"/>In cents</span>
     <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
+    
     <div v-for="ii in Math.max(73,nEqt)" v-bind:key="ii">
       <span v-if="ratioListIdx">{{ii}}:</span>
       <span>{{inCents ? ratioToCents(ratio(ii)) :  ratio(ii)}}</span>
@@ -93,8 +84,9 @@ export default {
   },
   data() {
     return {
-      eqt: 1, //12,
-      base: Math.pow(5,1/4), //2,
+        gridSize:12,
+      eqt: 12,
+      base: 1.5, //2,
       ratioDiff: [],
       //ratiosArr:[],
       ratioAvg: 0,
@@ -104,8 +96,7 @@ export default {
       diffRoot: false,
       normalize: false,
       repeatScale:false,
-      repeatScaleValue: 2,
-      applySort: false,
+      repeatScaleValue: 1.5, //2,
       equivalence: 2,
       activeKeys:[],
       activeRatio: '',
@@ -3850,7 +3841,6 @@ if(this.ratioDiff.length){
 
 //1, 1.1547, 1.33333209, //1.5, 1.732051615138131
 //1, this.base
-//1, 1.2505655196145855 //1.4955178823482058
 
 //12 Oriental WeellTempered
 // 1
@@ -3866,249 +3856,7 @@ if(this.ratioDiff.length){
 // ,1.777777600000007
 // ,1.8728848095107882
 
-//Gerador
-// 1, Math.pow(Math.pow(this.base,2)/2,1/3), Math.pow(Math.pow(this.base,2)/2,2/3), 
-// Math.pow(this.base,2)/2, Math.pow(Math.pow(this.base,2)/2,1/3)*(Math.pow(this.base,2)/2), Math.pow(Math.pow(this.base,2)/2,2/3)*(Math.pow(this.base,2)/2), 
-// 2/(this.base), (Math.pow(Math.pow(this.base,2)/2,1/3)*2)/(this.base), (Math.pow(Math.pow(this.base,2)/2,2/3))*2/(this.base), 
-// this.base, this.base*Math.pow(Math.pow(this.base,2)/2,1/3), this.base*Math.pow(Math.pow(this.base,2)/2,2/3), 
-// Math.pow(this.base,3)/2, Math.pow(Math.pow(this.base,2)/2,1/3)*(Math.pow(this.base,3)/2), Math.pow(Math.pow(this.base,2)/2,2/3)*(Math.pow(this.base,3)/2),
 
-//19 WellTempered
-// 1
-// ,1.0378908155562134
-// ,1.0772173450159417
-// ,1.1180339887498947
-// ,1.1603972084031946
-// ,1.2043656049987448
-// ,1.2043656049987448*1.0378908155562134
-// ,1.2043656049987448*1.0772173450159417
-// ,1.337480609952844
-// ,1.388158841054579
-// ,1.440757311663705
-// ,1.4953487812212205419118989941409
-// ,1.5520087660826822
-// ,1.6108156439799475
-// ,1.6718507624410548
-// ,1.7351985513182235
-// ,1.800946639579631
-// ,1.800946639579631*1.0378908155562134
-// ,1.800946639579631*1.0772173450159417
-
-//Pythagorean Comma
-//Math.pow(2,7), Math.pow(1.5, 12)
-
-// 1, 1.0666666666666667, 1.125, 1.2000000000000002, 1.25, 1.2800000000000002, 1.3333333333333333, 1.5, 1.5625,
-// 1.25*1, 1.25*1.0666666666666667, 1.25*1.125, 1.25*1.2000000000000002, 1.25*1.25, 1.25*1.2800000000000002, 1.25*1.3333333333333333, 1.25*1.5, 1.25*1.5625,
-// 1.5*1, 1.5*1.0666666666666667, 1.5*1.125, 1.5*1.2000000000000002, 1.5*1.25, 1.5*1.2800000000000002, 1.5*1.3333333333333333, 1.5*1.5, 1.5*1.5625,
-
-// 1
-// ,(1.125 + 1.1098579146132868)/2
-// ,(1.265625 + 1.2485901539399475)/2
-// ,4/3
-// ,1.5
-// //,(1.5 + 1.4798105528177155)/2
-// ,(1.6875 + 1.6647868719199301)/2
-// ,(1.8984375 + 1.8728852309099215)/2
-
-
-//Bom para 19EDO
-//---------------------------------------------------
-// 1
-// ,Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,1.2* 1
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,1.5* 1
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,1.8* 1
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,2.25* 1
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),8)
-//--------------------------------------------------------------
-
-//Bom com 21EDO
-// 1
-// ,Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(1.25)* 1
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(1.5)* 1
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(1.75)* 1
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// 1
-// ,Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(1.2)* 1
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(1.5)* 1
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(1.8)* 1
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-// ,(2)* 1
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),1)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),2)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),3)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),4)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),5)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),6)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),7)
-// ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
-//Prime Harmonic
-//1/1, 17/16, 37/32, 19/16, 5/4, 11/8, 23/16, 3/2, 13/8, 7/4, 29/16, 31/16
-
-//17 Unequal Tempered
-// 1
-// ,1.0343916737038537
-// ,1.0699661346278597
-// ,1.164335916513186
-// ,1.2043793774355849
-// ,1.2458
-// ,1.288645147100261
-// ,1.3329638105193877
-// ,1.3788066669498158
-// ,1.450529684792127
-// ,1.5004158284092517
-// ,1.55201764
-// ,1.6053941242575052
-// ,1.6606063151450532
-// ,1.7177173456860806
-// ,1.8692180390322457
-// ,1.933503575912
-
-
-
-// 1
-// ,(1.0534979423868314 + 1.06787109375)/2
-// ,1.125
-// ,1.1851851851851851
-// ,(1.2485901539399482 + 1.265625)/2
-// ,1.3333333333333333
-// ,(1.4046639231824418 + 1.423828125)/2
-// ,1.5
-// ,(1.5802469135802468 + 1.601806640625)/2
-// ,1.6875
-// ,1.7777777777777777
-// ,(1.8728852309099222 + 1.8984375)/2
-
-1
-,1.0449067265256593
-,1.0699844879622753
-,1.1180339887498947
-,(1.1682412353290783 + 1.1962790249769766)/2
-,1.2499999999999998
-,1.2800000000000002
-,1.337480609952844
-,1.3975424859373682
-,1.4310835055998656
-,1.4953487812212205
-,1.5624999999999996
-,1.6
-,(1.6718507624410548 + 1.7119751807396408)/2
-,1.788854381999832
-,1.8691859765265255
-,1.9140464399631627
 ]; //AQUI!
 
 //CentsToRatios
@@ -4155,8 +3903,8 @@ if(false){
       var init = 1;
       var cc = init;
       ratiosArr = [];
-      ratiosArr.push(cc);
-      var start = 0;
+      //ratiosArr.push(cc);
+      var start = 1;
       var r = 53 + start ;
 
 
@@ -4181,10 +3929,7 @@ if(false){
        //var arrIntervals = [  1.5 ];
        //var arrIntervals = [  1.0400419115259512, 1.0345637159435739];
        //var arrIntervals = [  1.4983070768766814987992807320298 ];
-//var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.040041911525952, 1.040041911525952, 1.0674995157120026, 1.040041911525952, 1.040041911525952];
-var arrIntervals = [2/1.5, 
-2/1.4907119849998598,//Math.sqrt((9/8)/(10/9)) * (10/9),//1.125, 
- 2/1.4907119849998598, 2/1.5]
+var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.040041911525952, 1.040041911525952, 1.0674995157120026, 1.040041911525952, 1.040041911525952];
 //arrIntervals = this.smooth(arrIntervals);
 //arrIntervals = this.smooth(arrIntervals);
 //arrIntervals = this.smooth(arrIntervals);
@@ -4237,9 +3982,47 @@ var arrIntervals = [2/1.5,
       
 
         //Interval
-       var interval = arrIntervals[(i % arrIntervals.length)]
-       cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
-      ratiosArr.push(cc);
+       //var interval = arrIntervals[(i % arrIntervals.length)]
+       //cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
+
+       //ratiosArr.push(cc);
+var rrr = 1.5; //Math.pow(5,1/4)
+var v = Math.pow(rrr, i-1);
+ratiosArr.push(v);
+ratiosArr.push(v * 17/16);
+ratiosArr.push(v * 18/16);
+ratiosArr.push(v * 19/16);
+ratiosArr.push(v * 20/16);
+ratiosArr.push(v * 21/16);
+ratiosArr.push(v * 22/16);
+ratiosArr.push(v * 23/16);
+
+//Escala maior
+//ratiosArr.push(v * 9/8);
+//ratiosArr.push(v * 1.25);
+//ratiosArr.push(v * 4/3);
+
+// ratiosArr.push(v * 1.05416);
+
+ //ratiosArr.push(v * 1.04563955259127);
+//  ratiosArr.push(v * 1.03484);
+//  ratiosArr.push(v * 1.07092);
+//  ratiosArr.push(v * 1.143262629818315);
+//  ratiosArr.push(v * 1.19544062473754);
+//  ratiosArr.push(v * 8/7);
+//  ratiosArr.push(v * 1.2);
+ //ratiosArr.push(v * 7/6);
+ //ratiosArr.push(v * 4/3);
+// ratiosArr.push(v * 5/4);
+ //ratiosArr.push(v * 4/3);
+//ratiosArr.push(v * Math.pow(2,5/31));
+//ratiosArr.push(v * 1.1925);
+//ratiosArr.push(v * Math.pow(2,13/31));
+// ratiosArr.push(v * 11/8);
+
+// ratiosArr.push(v * 1.0416666666);
+// ratiosArr.push(v * 1.079);
+
 
       //cc = Math.pow( PHI, i);
       //ratiosArr.push(cc);
@@ -4252,51 +4035,19 @@ var arrIntervals = [2/1.5,
 }
 
 
-
-
- //Well Tempered Generator - WTG
-if(true){
-  ratiosArr = [
- 
-Math.pow(this.base,0)
-,Math.pow(this.base,1)
-,Math.pow(this.base,2)
-,Math.pow(this.base,3)
- ,Math.pow(this.base,4)
- ,Math.pow(this.base,5)
-,Math.pow(this.base,6)
-,Math.pow(this.base,7)
- ,Math.pow(this.base,8)
- ,Math.pow(this.base,9)
- ,Math.pow(this.base,10)
-,Math.pow(this.base,11)
-,Math.pow(this.base,12)
-,Math.pow(this.base,13)
-,Math.pow(this.base,14)
-,Math.pow(this.base,15)
-,Math.pow(this.base,16)
-,Math.pow(this.base,17)
-,Math.pow(this.base,0)
-,Math.pow(this.base,-1)
-,Math.pow(this.base,-2)
-,Math.pow(this.base,-3)
- ,Math.pow(this.base,-4)
- ,Math.pow(this.base,-5)
-,Math.pow(this.base,-6)
-,Math.pow(this.base,-7)
- ,Math.pow(this.base,-8)
- ,Math.pow(this.base,-9)
- ,Math.pow(this.base,-10)
-,Math.pow(this.base,-11)
-,Math.pow(this.base,-12)
-,Math.pow(this.base,-13)
-,Math.pow(this.base,-14)
-,Math.pow(this.base,-15)
-,Math.pow(this.base,-16)
-,Math.pow(this.base,-17)
-  ];
+//Gerar repetição da escala (oitava)
+if(this.repeatScale){
+  var base = this.repeatScaleValue;
+  var numOct = 24;
+  var octArr = [];
+  for(var t = 0; t < numOct; t++){
+    for (let i = 0; i < ratiosArr.length; i++) {
+      const element = ratiosArr[i];
+      octArr.push(element* Math.pow(base,t+1));
+    }
+  }
+  ratiosArr = ratiosArr.concat(octArr);
 }
-
 
 if(this.normalize){
 // //      //Normalizador
@@ -4330,21 +4081,6 @@ if(this.normalize){
 }
 
 
-//Gerar repetição da escala (oitava)
-if(this.repeatScale){
-  var base = this.repeatScaleValue;
-  var numOct = 2;
-  var octArr = [];
-  for(var t = 0; t < numOct; t++){
-    for (let i = 0; i < ratiosArr.length; i++) {
-      const element = ratiosArr[i];
-      octArr.push(element* Math.pow(base,t+1));
-    }
-  }
-  ratiosArr = ratiosArr.concat(octArr);
-}
-
-
 
      //Jump
     //  var jumpArr = [];
@@ -4360,17 +4096,15 @@ if(this.repeatScale){
 //   v = this.normalizeValue(v);
 // }
 
-    
-
-if(this.applySort){
-    Array.prototype.unique = function() {
+      Array.prototype.unique = function() {
         return this.filter(function(value, index, self) {
           return self.indexOf(value) === index;
         });
       };
-          ratiosArr = ratiosArr.unique();
-          ratiosArr = ratiosArr.sort((a,b) => a-b);
-}
+
+
+          // ratiosArr = ratiosArr.unique();
+          // ratiosArr = ratiosArr.sort((a,b) => a-b);
 
       //===================================
       // ratiosArr = this.smooth(ratiosArr);
@@ -4390,8 +4124,7 @@ if(this.applySort){
 
 
       //AQUI!        
-     return ratiosArr[idx-1] || 0;
-      
+     //return ratiosArr[idx-1] || 0;
       
 
       //#endregion

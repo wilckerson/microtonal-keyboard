@@ -51,42 +51,50 @@ export default {
     //this.soundFreq = 174.61;
     //this.soundFreq = 622.25;
 
-    if (!this.wave) {
-      ///Howler
-      this.sound = new Howl({
-        //src: ["./audio-samples/sine.wav"]
-        //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
-        //src: ['./audio-samples/guitar-note_G.wav']
-        src: ['./audio-samples/violaoMicrotonal2.wav'] //132hz
-        //src: ['./audio-samples/piano-a_A_major.wav']
-        //src: ['./audio-samples/clarinete_F.mp3']
-        //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
-        //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
-        //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
-      });
-    } else {
-      ///Pizzicato
-      //From wave
-      var sound = new Pizzicato.Sound({
-        source: "wave",
-        options: {
-          type: "sine", //sine, square, triangle or sawtooth
-          frequency: this.freq
-        }
-      });
-      sound.volume = 1 / 6;
-      sound.atack = 0.1;
-      sound.release = 0.3;
-
-      // var reverb = new Pizzicato.Effects.Reverb({
-      //     time: 0.5,
-      //     decay: 0.01,
-      //     reverse: false,
-      //     mix: 0.5
-      // });
-      // sound.addEffect(reverb);
-      this.sound = sound;
+    if (!window["audioCache"]) {
+      window["audioCache"] = {};
     }
+
+    if (!window.audioCache[this.keyName]) {
+      if (!this.wave) {
+        ///Howler
+        window.audioCache[this.keyName] = new Howl({
+          //src: ["./audio-samples/sine.wav"]
+          //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
+          //src: ['./audio-samples/guitar-note_G.wav']
+          src: ["./audio-samples/violaoMicrotonal2.wav"] //132hz
+          //src: ['./audio-samples/piano-a_A_major.wav']
+          //src: ['./audio-samples/clarinete_F.mp3']
+          //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
+          //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
+          //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
+        });
+      } else {
+        ///Pizzicato
+        //From wave
+        var sound = new Pizzicato.Sound({
+          source: "wave",
+          options: {
+            type: "sine", //sine, square, triangle or sawtooth
+            frequency: this.freq
+          }
+        });
+        sound.volume = 1 / 6;
+        sound.atack = 0.1;
+        sound.release = 0.3;
+
+        // var reverb = new Pizzicato.Effects.Reverb({
+        //     time: 0.5,
+        //     decay: 0.01,
+        //     reverse: false,
+        //     mix: 0.5
+        // });
+        // sound.addEffect(reverb);
+        window.audioCache[this.keyName] = sound;
+      }
+    }
+
+    this.sound = window.audioCache[this.keyName];
 
     //From File
     //     var sound = new Pizzicato.Sound({
