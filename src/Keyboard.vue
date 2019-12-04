@@ -133,8 +133,8 @@ export default {
   },
   data() {
     return {
-      eqt: 7, //12,
-      base: 5/3, // Math.pow(5,1/4), //2,
+      eqt: 31, //12,
+      base:  4,//2, // Math.pow(5,1/4),
       ratioDiff: [],
       //ratiosArr:[],
       ratioAvg: 0,
@@ -142,7 +142,7 @@ export default {
       factor: 1,
       freqBased: false,
       diffRoot: false,
-      equivalence: 2,
+      equivalence: 2,//2.0125,
       normalize: true,
       repeatScale: false,
       repeatScaleValue: 2,
@@ -4255,26 +4255,115 @@ export default {
 //1, 7/6, 6/5, 5/4, 4/3, 7/5, 3/2, 5/3, 7/4,
 // 1, 12/7, 5/3, 8/5, 3/2, 10/7, 4/3, 6/5, 8/7
 
-1
-,3
-,1.5811387712794926
-,4.743416313838478
-,2.499999814043224
-,1.3176155447250877
-,3.952846634175263
-,2.0833330234053844
-,1.0980128722643934
-,3.29403861679318
-,1.7361107237011897
-,5.208332171103568
-,2.74503197647805
-,1.446758828803807
-,4.34027648641142
-,2.287526476912609
-,1.205632267658303
-,3.6168968029749085
-,1.9062719223001576
+// 1
+// ,3
+// ,1.5811387712794926
+// ,4.743416313838478
+// ,2.499999814043224
+// ,1.3176155447250877
+// ,3.952846634175263
+// ,2.0833330234053844
+// ,1.0980128722643934
+// ,3.29403861679318
+// ,1.7361107237011897
+// ,5.208332171103568
+// ,2.74503197647805
+// ,1.446758828803807
+// ,4.34027648641142
+// ,2.287526476912609
+// ,1.205632267658303
+// ,3.6168968029749085
+// ,1.9062719223001576
 
+//MOS
+// 1
+// ,1.0999434961596022
+// ,1.222222222222222
+// ,1.3443753841950685
+// ,1.4938271604938274
+// ,1.6431254695717503
+// ,1.8257887517146776
+// ,2.008264462809917
+
+//1, Math.sqrt(this.base)/(this.base/(2/this.base)), Math.sqrt(this.base), 2/this.base, this.base, Math.sqrt(4/this.base), Math.sqrt(4/this.base) * (this.base/(2/this.base))
+//1, 2/this.base, this.base
+
+// 1, 4/3, 3/2, 2,
+// 1.25*1, 1.25*4/3, 1.25*3/2, 1.25*2,
+// 1.171875732422*1, 1.171875732422*4/3, 1.171875732422*3/2, 1.171875732422*2,
+// 1.125*1, 1.125*4/3, 1.125*3/2, 1.1225*2,
+// 1,
+// Math.pow(1.118033988749895,1),
+// Math.pow(1.118033988749895,2),
+// Math.pow(1.118033988749895,2)* 16/15,
+// Math.pow(1.118033988749895,3)* 16/15,
+// Math.pow(1.118033988749895,4)* 16/15,
+// 16/9,
+// 1, 1.6770509831248422/1.5, 1.25, 4/3, 3/2, 1.6770509831248422, 15/8, 2
+// ,1
+// ,1.1180339887498947
+// ,1.2499999999999998
+// ,1.337480609952844
+// ,1.4953487812212205
+// ,1.6718507624410548
+// ,1.8691859765265255,
+
+// 1
+// ,1.1215115859159155
+// ,1.257788237343632
+// ,1.3354053616550763
+// ,1.4976725849904013
+// ,1.6796571559753737
+// ,1.8837549607929576
+
+// ,1.7833074799371251
+// ,1.1907191850938197
+// ,1.0617092146412235
+// ,1.4106240808096404
+// ,1.59009278399985
+
+//22EDO scales
+//Superpyth[5], pentatonic - 45454
+// 1,
+// Math.pow(2, 4/22),
+// Math.pow(2, 9/22),
+// Math.pow(2, 13/22),
+// Math.pow(2, 18/22),
+// Math.pow(2, 22/22),
+//Superpyth[7], diatonic - 4144414
+// 1,
+// Math.pow(2, 4/22),
+// Math.pow(2, 5/22),
+// Math.pow(2, 9/22),
+// Math.pow(2, 13/22),
+// Math.pow(2, 17/22),
+// Math.pow(2, 18/22),
+//Math.pow(2, 22/22),
+//Porcupine[7] - 3334333
+// 1,
+// Math.pow(2, 3/22),
+// Math.pow(2, 6/22),
+// Math.pow(2, 9/22),
+// Math.pow(2, 13/22),
+// Math.pow(2, 16/22),
+// Math.pow(2, 19/22),
+//Porcupine[8] - 33333331
+// 1,
+// Math.pow(2, 3/22),
+// Math.pow(2, 6/22),
+// Math.pow(2, 9/22),
+// Math.pow(2, 12/22),
+// Math.pow(2, 15/22),
+// Math.pow(2, 18/22),
+// Math.pow(2, 21/22),
+
+//1, 16/15, 9/8, 6/5, 5/4, 4/3, 3/2 / (16/15), 3/2, 5/3 / (16/15), 5/3, 2
+
+//Selected 15EDO
+//1, 25/24, 12/11, 8/7, 6/5, 5/4, 4/3, 7/5, 10/7, 3/2,  8/5, 5/3, 7/4, 11/6, 48/25, 2
+// 1, 25/24, 12/11, 8/7, 6/5, 5/4, 1.3125, 11/8, 36/25, 1.5277777,  8/5, 5/3, 7/4, 11/6, 48/25 //(Interessante!!!, possui varias inversões de acordes)
+
+1.5, 1.3636, 1.4545, 1.6364, 1.2727, 1.0909, 1.8182
       ]; //AQUI!
 
       //CentsToRatios
@@ -4345,9 +4434,24 @@ export default {
         //var arrIntervals = [  1.4983070768766814987992807320298 ];
         //var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.040041911525952, 1.040041911525952, 1.0674995157120026, 1.040041911525952, 1.040041911525952];
         var arrIntervals = [
-          //1.0400328069626328, 1.0675252146862264, 1.0400328069626328, 1.0400328069626328
-          1.0400328069626328, 1.0675252146862264, 1.0400328069626328, 1.0400328069626328
-          //1.0400328069626328, 1.0264341735563938, 1.0132484223115084, 1.0400328069626328, 1.0400328069626328, 1.0400328069626328
+1.036038002584053
+,1.0415862958033848
+,1.036038002584053
+,1.036038002584053
+,1.036038002584053
+,1.036038002584053
+,1.0415862958033848
+,1.036038002584053
+,1.036038002584053
+,1.0415862958033848
+,1.036038002584053
+,1.036038002584053
+,1.0415862958033848
+,1.036038002584053
+,1.036038002584053
+,1.036038002584053
+,1.036038002584053
+,1.0415862958033848
         ];
         //arrIntervals = this.smooth(arrIntervals);
         //arrIntervals = this.smooth(arrIntervals);
@@ -4450,15 +4554,41 @@ export default {
         var start = 1;
         var value = start;
 
-        var shift = 0;
+        var shift = 4;
         var qtd = 9;
-        var lineRatios = [1, 1.5, 2.25, 2.25 * 1.5];
+        //var lineRatios = [1, Math.pow(2, 14/34), Math.pow(2, 28/34), Math.pow(2, 42/34)]; //34ed8
+        //var lineRatios = [1, Math.pow(2, 9/22), Math.pow(2, 18/22), Math.pow(2, 27/22)]; //11ed2
+        //var lineRatios = [1, Math.pow(2, 13/31), Math.pow(2, 26/31), Math.pow(2, 39/31)]; //31ed4
+        //var lineRatios = [1, Math.pow(3, 13/28), Math.pow(3, 26/28), Math.pow(3, 39/28)]; //28ed3 ou 53ed8
+        var lineRatios = [1,/* Math.pow(3, 13/30),*/ Math.pow(3, 27/30), Math.pow(3, 42/30), Math.pow(3, 56/30)]; //30ed3
+         
 
         for (let l = 0; l < lineRatios.length; l++) {
           const vLine = lineRatios[l];
 
           for (let i = 0; i < qtd; i++) {
             var v = Math.pow(this.base, (i-shift)/this.eqt);
+            ratiosArr.push(v * vLine);
+          }
+        }        
+      }
+
+      //Generator4
+      if (false) {
+        ratiosArr = [];
+        var start = 1;
+        var value = start;
+
+        var shift = 1;
+        var qtd = 9;
+        var lineRatios = [1, 1.25, 1.5, 1.75];
+        var colRatios = [1, 25/24, 12/11, 8/7, 6/5, 5/4];
+
+        for (let l = 0; l < lineRatios.length; l++) {
+          const vLine = lineRatios[l];
+
+          for (let i = 0; i < qtd; i++) {
+            var v = colRatios[i] || 0;
             ratiosArr.push(v * vLine);
           }
         }        
@@ -4477,7 +4607,7 @@ export default {
 
         //Under
         for (let index = 1; index < this.eqt; index++) {
-          //ratiosArr.unshift(Math.pow(this.base,-index))
+          ratiosArr.unshift(Math.pow(this.base,-index))
 
           //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
           //ratiosArr.push(Math.pow(this.base, -(index + 1)));
@@ -4507,31 +4637,14 @@ export default {
         //   }
       }
 
-      if (this.normalize) {
-        // //      //Normalizador
-        //      var vNorm = 2;
-        //      for(var i=0; i< ratiosArr.length;i++){
-        //         var v = ratiosArr[i] || 1;
-        //         if(vNorm > 1){
-        //           while(v > vNorm){
-        //             v = v / vNorm;
-        //           }
-        //         }
-        //         ratiosArr[i] = v;
-        //      }
+      // if (this.normalize) {
+      //   for (var i = 0; i < ratiosArr.length; i++) {
+      //     var v = ratiosArr[i] || 1;
+      //     ratiosArr[i] = this.normalizeValue(v);
+      //   }
+      // }
 
-        //     //Normalizador Intertido
-        //      var vNorm = 2;
-        //      for(var i=0; i< ratiosArr.length;i++){
-        //         var v = ratiosArr[i] || 1;
-        //         //if(v < 1){
-        //           while(v < 1){
-        //             v = v * vNorm;
-        //           }
-        //         //}
-        //         ratiosArr[i] = v;
-        //      }
-
+ if (this.normalize) {
         for (var i = 0; i < ratiosArr.length; i++) {
           var v = ratiosArr[i] || 1;
           ratiosArr[i] = this.normalizeValue(v);
@@ -4541,7 +4654,7 @@ export default {
       //Gerar repetição da escala (oitava)
       if (this.repeatScale) {
         var base = this.repeatScaleValue;
-        var numOct = 4;
+        var numOct = 6;
         var octArr = [];
         for (var t = 0; t < numOct; t++) {
           for (let i = 0; i < ratiosArr.length; i++) {
@@ -4551,6 +4664,8 @@ export default {
         }
         ratiosArr = ratiosArr.concat(octArr);
       }
+
+     
 
       //Jump
       //  var jumpArr = [];
@@ -4614,7 +4729,7 @@ export default {
       //   idx = idx + mapIdx;
 
       //Equal temperament
-      if (true) {
+      if (false) {
         var eqt = this.eqt;
         var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
         var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
@@ -4627,7 +4742,7 @@ export default {
       }
 
       //Linear
-      if (false) {
+      if (true) {
         var v = (this.eqt - 1 + idx) / this.eqt;
         //var v = 1/v;
         if (this.normalize) {
