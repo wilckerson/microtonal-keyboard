@@ -2,8 +2,16 @@
 <div>
 <!-- <h5>Lambdoma Keyboard</h5> -->
 <!-- <input type="number" v-model="limit"/> -->
-<span>Normalize: <input type="checkbox" v-model="normalize"/> <input type="number" v-model="equivalence" min="1" /> </span>
-
+<span>Normalize: <input type="checkbox" v-model="normalize" /> 
+<input type="number" v-model="equivalence" min="0.1" step="0.01" /> </span>
+<div>
+    Lattice X: <input type="number" v-model="latticeX" min="1" step="0.0001" />
+    Lattice Y: <input type="number" v-model="latticeY" min="1" step="0.0001" />
+</div>
+<div>
+    Shift X: <input type="number" v-model="shiftX" />
+    Shift Y: <input type="number" v-model="shiftY" />
+</div>
 <table border="0">
     <tr>
         <td></td>
@@ -16,16 +24,16 @@
         <td v-else><small>{{i+skipY}}</small></td> -->
 
         <td v-for="j in Math.round(limit/1)" v-bind:key="j">
-            <audio-key :keyName="getKeyName(i,j)" :text="getRatioText(i,j)"  :freq="mainFreq * ratio(i,j)" :style="color(i,j)"/>
-            <!-- <div :style="color(i,j)">&nbsp;</div> -->
+            <!-- <audio-key :keyName="getKeyName(i,j)" :text="getRatioText(i,j)"  :freq="mainFreq * ratio(i,j)" :style="color(i,j)"/> -->
+            <div :style="color(i,j)">&nbsp;</div>
             <!-- <div :style="color(i,j)">{{ratio(i,j)}}</div> -->
         </td>
     </tr>
 </table>
 
-<p>
+<!-- <p>
     {{resultList}}
-</p>
+</p> -->
 
 
 </div>
@@ -41,14 +49,18 @@ export default {
     data(){
         return {
             model: 1,
-            limit: 10, //(N*2)-1
-            skipX:11,
-            skipY:3,
-            mainFreq: 200,
+            limit: 70, //(N*2)-1
+            skipX:0,
+            skipY:0,
+            mainFreq: 110,
             currentRow: 0,
             resultList: [],
             normalize: false,
-            equivalence: 2
+            equivalence: 2,
+            latticeX: 3,
+            latticeY: 5,
+            shiftX: 0,
+            shiftY: 0,
         }
     },
      mounted: function() {
@@ -84,8 +96,14 @@ export default {
 
             // var c = this.perc2color((normRatio-1)*100);
             // return "background:" + c + ";";
-            var c = this.HSVtoRGB(normRatio-1,0.77,1);
-            return "background:rgb("+c.r+","+c.g+","+c.b+");";
+            // var c = this.HSVtoRGB(normRatio-1,0.77,1);
+            // return "background:rgb("+c.r+","+c.g+","+c.b+");";
+
+            // if (normRatio) {
+        var v = (normRatio - 1) / (this.equivalence - 1 || 1);
+        var c = this.HSVtoRGB(v, 0.77, 1);
+        return "background:rgb(" + c.r + "," + c.g + "," + c.b + ")";
+      //}
         },
         perc2color(perc) {
             var r, g, b = 0;
@@ -161,7 +179,7 @@ export default {
             //return r;
 
             //Default Lambdoma (OxU)
-            //return (row+this.skipY)/(col+this.skipX);
+            return (row+this.skipY)/(col+this.skipX);
 
             //Default Lambdoma (UxU)
             //var r = 1/(row+this.skipY)/(col+this.skipX);
@@ -197,6 +215,7 @@ export default {
             //var scale = [1,17,9,19,5,11,3,13,7,15];
             //var scale = [1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2]
             //var scale = [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2]
+            var scale = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
             //var scale = [1, 7/6, 6/5, 5/4, 4/3, 7/5, 3/2, 5/3, 7/4, 2]
             //var scale = [1,17,9,19,5,21,11,23,3,25,13,27,7,29,15,31,2]//             
             //var scale = [1, 1.0666666, 1.125, 1.171875, 1.25, 4/3, 1.40625, 1.5, 1.5625, 5/3, 1.757813, 15/8]
@@ -243,20 +262,20 @@ export default {
 //31edo4
  //]
  //Harmonics 12-24
- var scale = [
-     1
-    ,1.0833333333333333
-    ,1.1666666666666667
-    ,1.25
-    ,1.3333333333333333
-    ,1.4166666666666667
-    ,1.5
-    ,1.5833333333333333
-    ,1.6666666666666667
-    ,1.75
-    ,1.8333333333333333
-    ,1.9166666666666667
- ]
+//  var scale = [
+//      1
+//     ,1.0833333333333333
+//     ,1.1666666666666667
+//     ,1.25
+//     ,1.3333333333333333
+//     ,1.4166666666666667
+//     ,1.5
+//     ,1.5833333333333333
+//     ,1.6666666666666667
+//     ,1.75
+//     ,1.8333333333333333
+//     ,1.9166666666666667
+//  ]
             //  var scale = [1, Math.pow(1.0416666,1), Math.pow(1.0416666,2), Math.pow(1.0416666,3),Math.pow(1.0416666,4), Math.pow(1.0416666,5), Math.pow(1.0416666,6), Math.pow(1.0416666,7)]
              var s = scale[(col-1) % scale.length];            
              //var s = scale[Math.min(col-1,scale.length-1)];            
@@ -265,7 +284,7 @@ export default {
             //Scale 2
              //var scale2 = [1, 1.2513882056240933, 1.5034066538560558, 1.7697301721873249, 2]; 
             //  var scale2 = [1, 1.118033, 1.49551788234820, 1.672425, 2]; 
-             var scale2 = [1, 1.25, 1.5, 1.75, 2]; 
+             //var scale2 = [1, 1.25, 1.5, 1.75, 2]; 
 
 
              //var scale2 = [1/12, 1/11, 1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5, 6, 7,8,9,10,11,12];        
@@ -290,17 +309,20 @@ export default {
              //var scale2 = [12/12, 13/12, 14/12, 15/12, 16/12, 17/12, 18/12, 19/12, 20/12, 21/12, 22/12, 23/12, 24/12]
             //var scale2 = [1,1.2513882056240933,1.3303120581981225, 1.664736819428643,2, 2*1.2513882056240933]; 
             //var scale2 = [1,1.249827834539069,1.3282012399433354, 1.6600228795504854, 1.9923018599150024, 1.9923018599150024*1.249827834539069]; //Carlos Gamma
-            
+            //var scale2 = [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2]
+            var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
 
             var s2 = scale2[(row-1) % scale2.length];
             
             //Multiply
-            var r = s * s2;
+            //var r = s * s2;
 
             //Tonality Diamond
             //var r = s / s2;
 
             //Lattice
+            //var r = Math.pow(this.latticeX, col-1-this.shiftX) * Math.pow(this.latticeY, row-1-this.shiftY);
+            //var r = Math.pow(3, col-1) * Math.pow(5, row-1);
             //var r = Math.pow(1.5, col-1) * Math.pow(1.25, row-1);
             //var r = Math.pow(4/3, col-1) * Math.pow(7/6, row-1); //JI
             //var r = Math.pow(1.33483985417, col-1) * Math.pow(1.18920711500272106, row-1); //12EDO

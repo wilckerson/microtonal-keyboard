@@ -13,16 +13,47 @@ export default {
     this.calc();
   },
   methods: {
+    getDivisorsCnt(n) {
+      var numDivisors = 1;
+      var factor = 2; // Candidate for prime factor of `n`
+
+      // If `n` is not a prime number then it must have one factor
+      // which is <= `sqrt(n)`, so we try these first:
+      while (factor * factor <= n) {
+        if (n % factor === 0) {
+          // `factor` is a prime factor of `n`, determine the exponent:
+          var exponent = 0;
+          do {
+            n /= factor;
+            exponent++;
+          } while (n % factor === 0);
+          // `factor^exponent` is one term in the prime factorization of n,
+          // this contributes as factor `exponent + 1`:
+          numDivisors *= exponent + 1;
+        }
+        // Next possible prime factor:
+        factor = factor == 2 ? 3 : factor + 2;
+      }
+
+      // Now `n` is either 1 or a prime number. In the latter case,
+      // it contributes a factor 2:
+      if (n > 1) {
+        numDivisors *= 2;
+      }
+
+      return numDivisors;
+    },
     calc() {
-        console.clear();
+      console.clear();
       console.log("calc3");
 
       //var targetIntervals = [1.25, 1.5, 4/3, 5/3, 1.2, 1.6];
       //var targetIntervals = [4/3, 1.25, 1.2];
-       var targetIntervals = [1.25, 1.5, 4/3, 1.6];
+      var targetIntervals = [1.25, 1.5, 4 / 3, 1.6];
       var harmonicStart = 2;
-      var harmonicLimit = 256;
-      var minRelations = 2;
+      var harmonicLimit = 32;
+      var minRelations = 5;
+      var divisorsBased = true;
 
       var result = [];
 
@@ -34,6 +65,7 @@ export default {
         //var scaleSize = h + h * 2; //Duas oitavas
         for (let scaleIdx = 0; scaleIdx <= scaleSize; scaleIdx++) {
           var note = (h + scaleIdx) / h;
+          //var note = (h + scaleIdx);
           hScale.push(note);
         }
 
@@ -43,62 +75,74 @@ export default {
         for (let idxNoteA = 0; idxNoteA < hScale.length; idxNoteA++) {
           const noteA = hScale[idxNoteA];
 
-          for (
-            let idxNoteB = idxNoteA + 1;
-            idxNoteB < hScale.length;
-            idxNoteB++
-          ) {
-            const noteB = hScale[idxNoteB];
-
-            var interval = noteB / noteA;
-            //Contabiliza quantos destes intervalos está na lista de intervalos desejados
-            if (
-              targetIntervals.find(
-                targetInterval => Math.abs(targetInterval - interval) < 0.001
-              )
+          //Calculo baseado nos divisores
+          if (divisorsBased) {
+            var divisorsCount = this.getDivisorsCnt(noteA * h);
+            var keyA = noteA.toFixed(4);
+            notesCount[keyA] = divisorsCount;
+          } else {
+            for (
+              let idxNoteB = idxNoteA + 1;
+              idxNoteB < hScale.length;
+              idxNoteB++
             ) {
-              count++;
+              const noteB = hScale[idxNoteB];
 
-              var keyA = noteA.toFixed(4);
-              notesCount[keyA] = (notesCount[keyA] || 0) + 1;
+              var interval = noteB / noteA;
+              //Contabiliza quantos destes intervalos está na lista de intervalos desejados
+              if (
+                targetIntervals.find(
+                  targetInterval => Math.abs(targetInterval - interval) < 0.001
+                )
+              ) {
+                count++;
 
-              var keyB = noteB.toFixed(4);
-              notesCount[keyB] = (notesCount[keyB] || 0) + 1;
+                var keyA = noteA.toFixed(4);
+                notesCount[keyA] = (notesCount[keyA] || 0) + 1;
+
+                var keyB = noteB.toFixed(4);
+                notesCount[keyB] = (notesCount[keyB] || 0) + 1;
+              }
             }
           }
         }
 
-var notesCountValues = Object.keys(notesCount)
-.map(key => ({ key: key, value: notesCount[key]}))
-.filter(item => minRelations > 0 ? (item.value >= minRelations) : true ) || [];
+        var notesCountValues =
+          Object.keys(notesCount)
+            .map(key => ({ key: key, value: notesCount[key] }))
+            .filter(item =>
+              minRelations > 0 ? item.value >= minRelations : true
+            ) || [];
 
-var filteredTotalCount = 0;
-var notesCountFiltered = {};
-notesCountValues.forEach(item => {
-    notesCountFiltered[item.key] = item.value;
-    filteredTotalCount +=  item.value
-    });
+        var filteredTotalCount = 0;
+        var notesCountFiltered = {};
+        notesCountValues.forEach(item => {
+          notesCountFiltered[item.key] = item.value;
+          filteredTotalCount += item.value;
+        });
 
-//var notesCountValues = notesCountValuesPrep.sort((a,b) => a.value - b.value);
+        //var notesCountValues = notesCountValuesPrep.sort((a,b) => a.value - b.value);
 
         // var notesCountValues = Object.values(notesCount)
         //     .filter(item => minRelations > 0 ? (item >= minRelations) : true )
         //     .sort()
         //     .reverse();
 
-        var notesCountSize = (notesCountValues.length || 1);
+        var notesCountSize = notesCountValues.length || 1;
         //var filteredTotalCount = notesCountValues.reduce((a, b) => a.value + b.value, 0) || 1;
 
         result.push({
           harmonic: h,
           //rank: (count / notesCountSize) / notesCountSize, //h + count,
-          rank: (filteredTotalCount / notesCountSize), //h + count,
-          count: filteredTotalCount,//count,
+          rank: filteredTotalCount / notesCountSize, //h + count,
+          count: filteredTotalCount, //count,
           notesCountSize: notesCountSize,
           scale: hScale,
-          notesCount: notesCount,          
-          notesCountList:notesCountValues.map(item => parseFloat(item.key)),
-          notesCountValues:notesCountFiltered
+          notesCount: notesCount,
+          notesCountList: notesCountValues
+            .map(item => parseFloat(item.key))
+            .sort(),
+          notesCountValues: notesCountFiltered
         });
       }
 
@@ -107,7 +151,7 @@ notesCountValues.forEach(item => {
         if (item1.rank > item2.rank) return -1;
         if (item1.rank < item2.rank) return 1;
 
-         // Sort by count
+        // Sort by count
         // if (item1.count > item2.count) return -1;
         // if (item1.count < item2.count) return 1;
 
