@@ -133,7 +133,7 @@ export default {
   },
   data() {
     return {
-      eqt: 19, //12,
+      eqt: 22, //12,
       base:  2, // Math.pow(5,1/4),
       ratioDiff: [],
       //ratiosArr:[],
@@ -145,7 +145,7 @@ export default {
       equivalence: 2,//2.0125,
       normalize: false,
       repeatScale: false,
-      repeatScaleValue: 2,
+      repeatScaleValue: 1.4142135623730947,
       applySort: false,
       activeKeys: [],
       activeRatio: "",
@@ -3704,6 +3704,8 @@ export default {
 
         //Decatonic major Pajara22 Edo
         //0, 109.091, 218.182, 381.818, 490.909, 600, 709.091, 872.727, 981.818, 1090.909
+        //1, 1.0650411453664965, 1.134312641323579, 1.2467581783474724, 1.3278487582622387, 1.4142135623730951, 1.5061956322626746, 1.655506298971982, 1.7631823248185694, 1.8778617227147314
+        //1, 16/15, 9/8, 5/4, 4/3, 1.4142135623730951, 3/2, 5/3, 7/4, 15/8
         //Triades da escala decatônica
         // 1,                    1.2467583092848906 , 1.5061955531706115
         // ,1.0650410894399605 , 1.3278488279891056 , 1.655506559769621
@@ -3715,6 +3717,10 @@ export default {
         // ,1.655506559769621  , 2                  , 2*1.2467583092848906
         // ,1.7631825099920417 , 2*1.0650410894399605 , 2*1.3278488279891056
         // ,1.877861821323412  , 2*1.1343125221954624 , 2*1.4142135623730947
+
+//https://en.xen.wiki/w/12-22h
+//1, 109.09091, 218.18182, 327.27273, 436.36364, 490.90909, 600.00000, 709.09091, 818.18182, 927.27273, 1036.36364, 1145.45455, 2/1, 
+//1, 1.065041089999228, 1.1343125233867437, 1.2080894463075924, 1.286664900712002, 1.3278488272918372, 1.4142135623730951, 1.5061955539615324, 1.6041601545431816, 1.7084964795280002, 1.819618952816345, 1.9379689528907738
 
         //Mathematics of the scale of twelve true fifths was discovered in 1962 by a German-American musicologist Maria Renold
         //1, 3/4*Math.sqrt(2), 9/8, 27/32*Math.sqrt(2), 81/64, 4/3, Math.sqrt(2), 3/2, 9/8*Math.sqrt(2), 27/16, 81/64*Math.sqrt(2), 243/128
@@ -3786,6 +3792,24 @@ export default {
 // ,1.7489026668813836
 // ,1.8288879222280738
 // ,1.9125312662689065
+
+//Armodue semi-equilized with other temperaments
+// 1
+// ,1.0458607114007321
+// ,1.0938246276516452
+// ,1.1439882032233906
+// ,1.1964523160572604
+// ,1.2513224704286998
+// ,1.3087090091142815
+// ,1.3687273352888094
+// ,1.399760922774874
+// ,1.4639549544842747
+// ,1.5310929701555498
+// ,1.601309982987543
+// ,1.6747471979804458
+// ,1.7515522958962118
+// ,1.8318797302415974
+// ,1.915891037871058
         //Armodue Just
         // 1/1
         // ,16/15
@@ -4410,7 +4434,7 @@ export default {
 //           5, 5/2, 5/3, 5/4,
 //           6, 6/2, 6/3, 6/4, 6/5,
 //          7, 7/2, 7/3, 7/4, 7/5, 7/6,
-//           8, 8/2, 8/3, 8/4, 8/5, 8/6, 8/7,
+          // 8, 8/2, 8/3, 8/4, 8/5, 8/6, 8/7, 8/8
 //           9, 9/2, 9/3, 9/4, 9/5, 9/6, 9/7, 9/8,
 //         //  10, 10/2, 10/3, 10/4, 10/5, 10/6, 10/7, 10/8, 10/9,
 //         //  11, 11/2, 11/3, 11/4, 11/5, 11/6, 11/7, 11/8, 11/9, 11/10,
@@ -4459,12 +4483,12 @@ export default {
 // //,65/(40.17223382+15.34444667+5.861064252+2.23873007)
 
  //Escala hexatônica legal para 30ed3
-1
-,1.0759896247253458
-,1.2009369551760023
-,1.4960443215903987
-,1.6097281681605375
-,1.7966549123791213
+// 1
+// ,1.0759896247253458
+// ,1.2009369551760023
+// ,1.4960443215903987
+// ,1.6097281681605375
+// ,1.7966549123791213
 
 // 1
 // ,1.0594630943592953
@@ -4473,7 +4497,97 @@ export default {
 // ,1.5874010519682
 // ,1.7817974362806794
 
-     ]; //AQUI!
+//Integer triangles
+//https://en.wikipedia.org/wiki/Integer_triangle
+// 3,4,5, 
+// 13,14,15,
+// 5,12,13,
+// 6,25,29,
+// 7,15,20,
+// 9,10,17,
+// 68,85,87,
+// 127,131,158,
+// 113,243,290,
+// 145,207,328,
+// 327,386,409,
+// 135,352,377,
+// 132,366,366,
+
+// 1,
+// 1 * 1.5,
+// 1 * 1.5 * (5/3),
+// 1 * 1.5 * (5/3) * 1.5,
+// 1 * 1.5 * (5/3) * 1.5 * (5/3),
+// 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5,
+// 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5 * (5/3),
+// 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5 * (5/3) * 1.5,
+
+// 1
+// ,1.0991312225591843
+// ,1.208089444404447
+// ,1.3278488279891056
+// ,1.5061955531706088
+// ,1.6555065597696181
+// ,1.8196189489943297
+
+//Legal: Repeat Math.sqrt(2)
+// 1,
+// 1.0298572716643797,
+// 1.06066017177982,
+// 1.2137487898581,
+// 1.25,
+// 1.373199999
+
+//Magic[16] 19edo Repeat 1.2457309396155174
+// 1,
+// 1.0345743207503675,
+// 1.070333333,
+// 1.1161231697263,
+// 1.2041,
+
+// 1, 
+// 1.0650410894399627,
+// 1.0991312225591843,
+// 1.1706199147119116,
+// //1.2080894444044472,
+// 1.2467583092848906,
+// 1.2866648980094315,
+// 1.3703509847201234,
+// 1.4142135623730947,
+
+
+//Legal Repeat 1.4142135623730947
+// 1, 
+// 1.0650410894399627,
+//  1.2467583092848906,
+//ou
+// 1, 
+// 1.0650410894399627,
+//  1.2467583092848906,
+// 1.3278488279891056,
+
+//Legal, subset 22edo
+// 1
+// ,1.0991312225591843
+// ,1.208089444404447
+// ,1.3278488279891056
+// ,1.3703509847201212
+// ,1.4594801056814455
+// ,1.5061955531706088
+// ,1.6555065597696181
+// ,1.8196189489943297
+// ,2
+
+//Golden Ratio Diatônica \o/ (L/s = PHI)
+1
+,1.117564
+,1.248949294096
+,1.3377620783991666
+,1.4950347393840864
+,1.6707970034850368
+,1.867222582402752
+
+]; //AQUI!
 
       //CentsToRatios
       //ratiosArr = ratiosArr.map(v => this.centsToRatio(v))
@@ -4529,7 +4643,7 @@ export default {
         //arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
 
         // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing
-        //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala pitagórica com mais itens entre as quintas =/)
+        var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala pitagórica com mais itens entre as quintas =/)
         //var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
         //var arrIntervals = [ 1.25115 ];  //Gerador de uma quinta que harmoniza muito bem com a 3M. Para 5a perfeita: (6^1/8)
         //var arrIntervals = [  1.2, 1.0416666666666666, 1.2 ];
@@ -4539,29 +4653,30 @@ export default {
         //var arrIntervals = [  16/15, 1.0546875, 16/15,1.0416666666,16/15,16/15, 1.0546875, 16/15,1.0416666666,16/15,1.0546875, 16/15  ]; //JI LIMIT-5
         //var arrIntervals = [  9/8, 9/8, 256/243, 9/8, 9/8, 256/243, 9/8 ];
         //var arrIntervals = [  1.5 ];
+        //var arrIntervals = [  1.5, 5/3 ];
         //var arrIntervals = [  1.0400419115259512, 1.0345637159435739];
         //var arrIntervals = [  1.4983070768766814987992807320298 ];
         //var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.040041911525952, 1.040041911525952, 1.0674995157120026, 1.040041911525952, 1.040041911525952];
-        var arrIntervals = [
-1.036038002584053
-,1.0415862958033848
-,1.036038002584053
-,1.036038002584053
-,1.036038002584053
-,1.036038002584053
-,1.0415862958033848
-,1.036038002584053
-,1.036038002584053
-,1.0415862958033848
-,1.036038002584053
-,1.036038002584053
-,1.0415862958033848
-,1.036038002584053
-,1.036038002584053
-,1.036038002584053
-,1.036038002584053
-,1.0415862958033848
-        ];
+//         var arrIntervals = [
+// 1.036038002584053
+// ,1.0415862958033848
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.0415862958033848
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.0415862958033848
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.0415862958033848
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.036038002584053
+// ,1.0415862958033848
+//         ];
         //arrIntervals = this.smooth(arrIntervals);
         //arrIntervals = this.smooth(arrIntervals);
         //arrIntervals = this.smooth(arrIntervals);
@@ -4633,9 +4748,16 @@ export default {
         var start = 1;
         var value = start;
 
-        var qtd = 9;//this.eqt;
+        var qtd = this.eqt;
         for (let i = 0; i < qtd; i++) {
-          //var v = (parseFloat(this.eqt) + i) / parseFloat(this.eqt);
+
+          //Overtone
+          var v = (parseFloat(this.eqt) + i) / parseFloat(this.eqt);
+          ratiosArr.push(v);
+          //var v = (parseFloat(this.eqt)) / (parseFloat(this.eqt)-i);
+
+//Under
+          var v = 1/((parseFloat(this.eqt) + i) / parseFloat(this.eqt));
           ratiosArr.push(v);
 
           //ratiosArr.push(value / start);
@@ -4683,11 +4805,14 @@ export default {
         //var lineRatios = [1, Math.pow(PHI, 11/18), Math.pow(PHI, 22/18), Math.pow(PHI, 33/18)]; //9edPHI (apox 26ed4)
         //var lineRatios = [1, Math.pow(2, 11/27), Math.pow(2, 22/27), Math.pow(2,33/27)]; // 27ed4
         //var lineRatios = [1, Math.pow(2, 9/27), Math.pow(2, 18/27), Math.pow(2,27/27)]; // 27ed4
-        //var lineRatios = [1, 4/3, 3/2, 2]; 
-       
+        // var lineRatios = [1, 4/3, 3/2, 2]; 
+        //var lineRatios = [1, 1.125, 3/2, 2]; 
+        // var lineRatios = [1, 4/3, 8/5, 2]; 
+        //var lineRatios = [1, 1.2, 1.5, 2];        
+        //var lineRatios = [1, 1.25, 1.5, 1.875, 2.25];        
         //var lineRatios = [1, 4/3, 5/3, 2]; 
         //var lineRatios = [1, 1.2, 5/3, 2]; 
-        //var lineRatios = [1, 4/3, 16/9, (16*4)/(9*3)]; 
+        var lineRatios = [1, 4/3, 16/9, (16*4)/(9*3)]; 
         //var lineRatios = [1, 1.5, 2.25, 2.25*1.5]; 
         //var lineRatios = [1, Math.sqrt(1.5), 1.5, Math.sqrt(1.5)*1.5]; 
         //var lineRatios = [1, 1.4969014140728691, 1.4969014140728691*1.4969014140728691, 1.4969014140728691*1.4969014140728691*1.4969014140728691]; 
@@ -4701,9 +4826,9 @@ export default {
         //45Ed(PI^2) ou 19Ed(PHI^2) (string step 4.5)
         //31EdPI (string step 6)
         var n = this.repeatScaleValue;
-        //var lineRatios = [1, Math.pow(this.base, n/this.eqt), Math.pow(this.base, (n*2)/this.eqt), Math.pow(this.base, (n*3)/this.eqt)]; 
+        var lineRatios = [1, Math.pow(this.base, n/this.eqt), Math.pow(this.base, (n*2)/this.eqt), Math.pow(this.base, (n*3)/this.eqt)]; 
 
-        var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)]; 
+        //var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)]; 
         //var lineRatios = [1, Math.pow(2, n/41), Math.pow(2, (n*2)/41), Math.pow(2, (n*3)/41)]; 
         //var lineRatios = [1, Math.pow(2, n/19), Math.pow(2, (n*2)/19), Math.pow(2, (n*3)/19)]; 
         //var lineRatios = [1, Math.pow(2, 6/19), Math.pow(2, 12/19), Math.pow(2, 18/19)]; 
@@ -4785,6 +4910,7 @@ export default {
       }
 
       //Well Tempered Generator - WTG
+      //base: PHI edt: 4 norm: 1.5 repeat sort
       if (false) {
         ratiosArr = [1];
 
@@ -4904,7 +5030,7 @@ export default {
        //ratiosArr = [1, rPartials[0], this.base, rPartials[0]*2 ]
 
       //AQUI!
-      //return ratiosArr[idx-1] || 0;
+      return ratiosArr[idx-1] || 0;
 
       //#endregion
 
@@ -4926,10 +5052,19 @@ export default {
       //idx = idx + mapIdx;
 
       //Ls Mapped Steps
-      if(idx > 1){
-        //var mapArr = [2,2,1,2,2,2,1]; //Diatônica 12ed2
-        //var mapArr = [4,4,1,4,1,4,1];
-        var mapArr = "4 1 1 4 1 1 4 1 1 1".split(' ');
+      if(true && idx > 1){
+        //var mode = "2 2 1 2 2 2 1"; //Diatônica 12ed2
+        //var mode = "3 3 3 3 3 3 3 1"; //Porcupine[8] 22edo
+        //var mode = "3 1 3 1 3 1 1 3 1 3 1 1"; //Superpyth[12] 22edo
+        //var mode = "1 3 1 1 3 1 3 1 1 3 1"; //kleismic[11] 19edo
+        //var mode = "4 1 1 4 1 1 4 1 1 1"; //magic[10] 19edo
+        //var mode = "1 1 6 1 1 1 6 1 1";  //liese[9]  19edo
+        //var mode = "5 1 1 5 1 1 5 1 1 1"; //Magic[10]
+        //var mode = "5 1 1"; //Magic[10]
+        var mode = "12"; 
+        
+
+        var mapArr = mode.split('');
         var cIdx = idx-1;
         var mapSum = 0;
         for (let mapIdx = 0; mapIdx < cIdx; mapIdx++) {
@@ -4953,7 +5088,7 @@ export default {
       }
 
       //Linear
-      if (true) {
+      if (false) {
         var v = (this.eqt - 1 + idx) / this.eqt;
         //var v = 1/v;
         if (this.normalize) {
@@ -4961,6 +5096,22 @@ export default {
         }
         return v;
       }
+
+      //Linear Up and Down
+      // if (true) {
+      //   if(idx <= this.base){
+      //     var v = (this.eqt - 1 + idx) / this.eqt;
+      //     //var v = 1/v;
+      //     if (this.normalize) {
+      //       v = this.normalizeValue(v);
+      //     }
+      //     return v;
+      //   }
+      //   else
+      //   {
+      //     return 0;
+      //   }
+      // }
 
       //return idx == 1 ? 1 : Math.pow(Math.pow(2,(1.0/this.eqt)),idx-1);
       //return 1+((idx-1)/this.eqt);

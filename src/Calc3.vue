@@ -49,11 +49,12 @@ export default {
 
       //var targetIntervals = [1.25, 1.5, 4/3, 5/3, 1.2, 1.6];
       //var targetIntervals = [4/3, 1.25, 1.2];
-      var targetIntervals = [1.25, 1.5, 4 / 3, 1.6];
+      var targetIntervals = [1.25, 1.5];
+      //var targetIntervals = [1.25, 1.5, 4 / 3, 1.6];
       var harmonicStart = 2;
-      var harmonicLimit = 32;
-      var minRelations = 5;
-      var divisorsBased = true;
+      var harmonicLimit = 64;
+      var minRelations = 1;
+      var divisorsBased = false;
 
       var result = [];
 
@@ -138,7 +139,7 @@ export default {
           count: filteredTotalCount, //count,
           notesCountSize: notesCountSize,
           scale: hScale,
-          notesCount: notesCount,
+          //notesCount: notesCount,
           notesCountList: notesCountValues
             .map(item => parseFloat(item.key))
             .sort(),
@@ -148,12 +149,12 @@ export default {
 
       var sortedResult = result.sort(function(item1, item2) {
         // Sort by Rank
-        if (item1.rank > item2.rank) return -1;
-        if (item1.rank < item2.rank) return 1;
+        // if (item1.rank > item2.rank) return -1;
+        // if (item1.rank < item2.rank) return 1;
 
         // Sort by count
-        // if (item1.count > item2.count) return -1;
-        // if (item1.count < item2.count) return 1;
+        if (item1.count > item2.count) return -1;
+        if (item1.count < item2.count) return 1;
 
         // Sort by harmonic
         if (item1.harmonic > item2.harmonic) return 1;
