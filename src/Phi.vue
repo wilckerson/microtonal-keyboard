@@ -49,10 +49,10 @@ export default {
       //src: ["./audio-samples/sine.wav"]
       //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
       //src: ['./audio-samples/guitar-note_G.wav']
-      //src: ["./audio-samples/violaoMicrotonal2.wav"] //132hz
+      src: ["./audio-samples/violaoMicrotonal2.wav"] //132hz
       //src: ['./audio-samples/piano-a_A_major.wav']
       //src: ['./audio-samples/clarinete_F.mp3']
-      src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
+      //src: ["./audio-samples/HangDrum_C03.wav"] ///Hang!!!
       //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
       // src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
     });
@@ -76,10 +76,10 @@ export default {
       var size = this.size;
 
       //Center
-    //   context.beginPath();
-    //   context.arc(centerX, centerY, size, 0, 2 * Math.PI, false);
-    //   context.fillStyle = "red";
-    //   context.fill();
+      //   context.beginPath();
+      //   context.arc(centerX, centerY, size, 0, 2 * Math.PI, false);
+      //   context.fillStyle = "red";
+      //   context.fill();
 
       //Angle circles
       var radius = size * 2;
@@ -87,23 +87,38 @@ export default {
       circles = [];
 
       for (let i = 0; i < count; i++) {
-        var angle = 137.5 * i * (Math.PI / 180);
+        var angle = (137.5 * i) % 360;
+        var angleRad = angle * (Math.PI / 180);
         //var radius = (size*2) + ((i * 1.618033));
         radius += parseFloat(this.distance);
-        var x = centerX + Math.cos(angle) * radius;
-        var y = centerY - Math.sin(angle) * radius;
+        var x = centerX + Math.cos(angleRad) * radius;
+        var y = centerY - Math.sin(angleRad) * radius;
 
-        var value = i;
+        var value = i + 1;
+
+      if (value <= 0) {
+        return;
+      }
+
+//Cents
+// var cents = angle/360 * 1200;
+// value = this.centsToRatio(cents);
+
+//Linear ratio
+value = angle/360
+
+
+      //var freq = value * 132;
+
         var color = "#8edc9b";
         if (this.normalize) {
-          value = this.normalizeValue(i);
-          if(value == 0){
-              color = "red";
-          }
-          else
-          {
-          color = this.color(value);
-          }
+          value = this.normalizeValue(value);
+        }
+
+        if (value == 0) {
+          color = "red";
+        } else {
+          color = this.color(this.normalizeValue(value));
         }
 
         //DrawCircle
@@ -120,7 +135,7 @@ export default {
           context.fillText(value.toFixed(2), x, y + 5);
         }
 
-        circles.push({ x, y, size, value });
+        circles.push({ x, y, size, value, angle });
       }
     },
     onClickCanvas(ev) {
@@ -136,7 +151,7 @@ export default {
           Math.sqrt((posX - circle.x) ** 2 + (posY - circle.y) ** 2) <
           circle.size
         ) {
-          this.onClickCircle(circle.value);
+          this.onClickCircle(circle);
 
           break;
         }
@@ -144,12 +159,16 @@ export default {
       //console.log(circles);
       //console.log(posX, posY);
     },
-    onClickCircle(value) {
+    onClickCircle(circle) {
+
+      
+      var value = circle.value;
       if (value <= 0) {
         return;
       }
 
       var freq = value * 132;
+
       //console.log(`click on circle: ${idx} => ${freq}Hz`);
       this.playSoundNote(freq);
     },
@@ -164,7 +183,9 @@ export default {
       sound.play();
     },
     normalizeValue(v) {
-        if(v == 0){ return 0;}
+      if (v == 0) {
+        return 0;
+      }
 
       if (this.equivalence == 1) {
         return v;
@@ -188,6 +209,10 @@ export default {
         var c = this.HSVtoRGB(v, 0.77, 1);
         return "rgb(" + c.r + "," + c.g + "," + c.b + ")";
       }
+    },
+     centsToRatio(cents) {
+      var ratio = Math.pow(2, cents / 1200);
+      return ratio;
     },
     HSVtoRGB(h, s, v) {
       var r, g, b, i, f, p, q, t;

@@ -4,7 +4,8 @@
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
 <!-- <Calc v-if="route == '#calc'"/> -->
-<Phi v-if="route == '#phi'"/>
+<Guitar v-if="route == '#guitar'"/>
+<Phi v-else-if="route == '#phi'"/>
 <Calc3 v-else-if="route == '#calc3'"/>
 <Calc2 v-else-if="route == '#calc2'"/>
 <!-- <KeyGrid v-if="route == '#grid'"/> -->
@@ -20,6 +21,7 @@
 
 <script>
 import KeyGrid from './KeyGrid.vue';
+import Guitar from './Guitar.vue';
 import Phi from './Phi.vue';
 import Calc from './Calc.vue';
 import Calc2 from './Calc2.vue';
@@ -34,7 +36,7 @@ import {Howl, Howler} from 'howler';
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi
+    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi, Guitar
   },
   data() {
     return {

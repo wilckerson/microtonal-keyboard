@@ -66,8 +66,9 @@ export default {
           //src: ['./audio-samples/piano-a_A_major.wav']
           //src: ['./audio-samples/clarinete_F.mp3']
           //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
-          //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
-         // src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
+         //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
+         //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
+          
         });
       } else {
         ///Pizzicato
