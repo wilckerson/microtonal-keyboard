@@ -138,7 +138,7 @@ export default {
   },
   data() {
     return {
-      eqt: 2,
+      eqt: 12,
       base: 2,//1.4950347693089112,//Math.pow(5,1/4),
       ratioDiff: [],
       //ratiosArr:[],
