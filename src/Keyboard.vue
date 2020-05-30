@@ -138,8 +138,8 @@ export default {
   },
   data() {
     return {
-      eqt: 9,
-      base: 1.4950347693089112,//Math.pow(5,1/4),
+      eqt: 2,
+      base: 2,//1.4950347693089112,//Math.pow(5,1/4),
       ratioDiff: [],
       //ratiosArr:[],
       ratioAvg: 0,
