@@ -39,6 +39,10 @@
         guitarStringLength:
         <input type="number" v-model="guitarStringLength" step="1" />
       </span>
+       <span>
+        Test:
+        <input type="number" v-model="testValue" step="0.0001" />
+      </span>
     </p>
     <!-- <div>
       1.25 ({{Math.pow(ratio(2),5)-1.25}})
@@ -150,7 +154,7 @@ export default {
       equivalence: 2,//2.0125,
       normalize: false,
       repeatScale: false,
-      repeatScaleValue: 2,//2,
+      repeatScaleValue: 1.4950347693089112,//2,
       applySort: false,
       activeKeys: [],
       activeRatio: "",
@@ -160,6 +164,7 @@ export default {
       ratioListIdx: true,
       inCents: false,
       guitarStringLength: 65, //65
+      testValue: 1,
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -4461,17 +4466,34 @@ export default {
 // 2/(32/(32-(64-(64/(Math.pow(this.base, 11/this.eqt)))))),
 // 2/(32/(32-(64-(64/(Math.pow(this.base, 12/this.eqt)))))),
 
-//  1, 2,
-//          3, 3/2,
-//           4, 4/2, 4/3,
-//           5, 5/2, 5/3, 5/4,
-//           6, 6/2, 6/3, 6/4, 6/5,
-//          7, 7/2, 7/3, 7/4, 7/5, 7/6,
-          // 8, 8/2, 8/3, 8/4, 8/5, 8/6, 8/7, 8/8
-//           9, 9/2, 9/3, 9/4, 9/5, 9/6, 9/7, 9/8,
-//         //  10, 10/2, 10/3, 10/4, 10/5, 10/6, 10/7, 10/8, 10/9,
-//         //  11, 11/2, 11/3, 11/4, 11/5, 11/6, 11/7, 11/8, 11/9, 11/10,
-//         //  12, 12/3, 12/3, 12/4, 12/5, 12/6, 12/7, 12/8, 12/9, 12/10, 12/11
+/*Codigo para gerar sequencia N
+var r = "";
+var n = 50;
+var nn = parseInt(n/2);
+for(var i = 0; i <= nn; i++)
+{
+    r += `${n}/${n-i}, `
+}
+console.log(r)
+*/
+ // 1, 
+  //2,
+          //3, 3/2,
+           //4, 4/2, 4/3,
+           //5, 5/2, 5/3, 5/4,
+           //6, 6/2, 6/3, 6/4, 6/5,
+         // 7, 7/2, 7/3, 7/4, 7/5, 7/6,
+           //8, 8/2, 8/3, 8/4, 8/5, 8/6, 8/7, 8/8,
+           //9, 9/2, 9/3, 9/4, 9/5, 9/6, 9/7, 9/8,
+           //10, 10/2, 10/3, 10/4, 10/5, 10/6, 10/7, 10/8, 10/9,
+           //11, 11/2, 11/3, 11/4, 11/5, 11/6, 11/7, 11/8, 11/9, 11/10,
+           //12, 12/3, 12/3, 12/4, 12/5, 12/6, 12/7, 12/8, 12/9, 12/10, 12/11
+           //13, 13/2, 13/3, 13/4, 13/5, 13/6, 13/7, 13/8, 13/9, 13/10, 13/11, 13/12,
+           //14, 14/2, 14/3, 14/4, 14/5, 14/6, 14/7, 14/8, 14/9, 14/10, 14/11, 14/12, 14/13, 
+           //20, 20/2, 20/3, 20/4, 20/5, 20/6, 20/7, 20/8, 20/9, 20/10, 20/11, 20/12, 20/13, 20/14, 20/15, 20/16, 20/17, 20/18, 20/19,
+           //28, 28/2, 28/3, 28/4, 28/5, 28/6, 28/7, 28/8, 28/9, 28/10, 28/11, 28/12, 28/13, 28/14, 28/15, 28/16, 28/17, 28/18, 28/19, 28/20, 28/21, 28/22, 28/23, 28/24, 28/25, 28/26, 28/27
+          // 50/50, 50/49, 50/48, 50/47, 50/46, 50/45, 50/44, 50/43, 50/42, 50/41, 50/40, 50/39, 50/38, 50/37, 50/36, 50/35, 50/34, 50/33, 50/32, 50/31, 50/30, 50/29, 50/28, 50/27, 50/26, 50/25
+           
 
 //http://www.anaphoria.com/centaur.html
 //Centaur 19
@@ -4619,13 +4641,28 @@ export default {
 // ,1.6707970034850368
 // ,1.867222582402752
 
-// ,this.repeatScaleValue * 1
-// ,this.repeatScaleValue * 1.117564
-// ,this.repeatScaleValue * 1.248949294096
-// ,this.repeatScaleValue * 1.3377620783991666
-// ,this.repeatScaleValue * 1.4950347393840864
-// ,this.repeatScaleValue * 1.6707970034850368
-// ,this.repeatScaleValue * 1.867222582402752
+// ,Math.pow(this.repeatScaleValue, 1) * 1
+// ,Math.pow(this.repeatScaleValue, 1) * 1.117564
+// ,Math.pow(this.repeatScaleValue, 1) * 1.248949294096
+// ,Math.pow(this.repeatScaleValue, 1) * 1.3377620783991666
+// ,Math.pow(this.repeatScaleValue, 1) * 1.4950347393840864
+// ,Math.pow(this.repeatScaleValue, 1) * 1.6707970034850368
+// ,Math.pow(this.repeatScaleValue, 1) * 1.867222582402752
+
+
+//Golden Pentatônica \o/ (L/s = PHI)
+1
+,1.117564
+,1.3377620783991666
+,1.4950347393840864
+,1.7896073784028579
+
+//Golden Pentatônica Reversa
+,1
+,1.177778248966296
+,1.3031164676231177
+,1.5347822314363007
+,1.698112528190552
 
 
 //Golden Diatônica Reversa (Pelog? 16EDO aproxima bem)
@@ -4648,6 +4685,15 @@ export default {
 // 1.133893419027682,
 // 1.24721912892464712/1.064844316803016,
 // 1.24721912892464712,
+
+// 1
+// ,(1.3377620783991666 / 1.248949294096)
+// ,1.1472766320999999
+//,1.117564
+// ,1.117564 * (1.3377620783991666 / 1.248949294096)
+ //,1.248949294096
+// ,1.3377620783991666
+// ,1.3957807689071022
 
 
 // 1
@@ -4909,7 +4955,59 @@ export default {
 //1, 1.25, 1.5, 2, 2.5, 3, 4, 0, 0,
 //1, 1.25, 5/3, 25/12, 25/9, 125/36
 //1, 4/3, 5/3, 2, 7/3, 8/3, //3
-1, 1.25, 1.5
+
+//Sequencia de padovan
+///*1, 1, 1, 2,*/ 2, 3, 4, 5, 7, 9, 12, 16, 21, 28, 37, 49, 65, 86, 114, 151, 200, 265
+
+// 1
+// ,1.0433717363454582
+// ,1.1175644807212748
+// ,1.1660351927281667
+// ,1.2489503685698122
+
+//1
+//,1.117564
+//,1.3377620783991666
+//,1.4950347393840864
+//,1.3377620783991666*1.3377620783991666
+
+// ,Math.pow(this.testValue, 1) * 1
+// ,Math.pow(this.testValue, 1) * 1.117564
+// ,Math.pow(this.testValue, 1) * 1.3377620783991666
+// ,Math.pow(this.testValue, 1) * 1.4950347393840864
+// ,Math.pow(this.testValue, 1) * 1.3377620783991666*1.3377620783991666
+
+// ,Math.pow(this.testValue, 2) * 1
+// ,Math.pow(this.testValue, 2) * 1.117564
+// ,Math.pow(this.testValue, 2) * 1.3377620783991666
+// ,Math.pow(this.testValue, 2) * 1.4950347393840864
+// ,Math.pow(this.testValue, 2) * 1.3377620783991666*1.3377620783991666
+
+// ,1.117564 * 1.117564
+// ,1.117564 * 1.117564 * this.testValue
+// //,(2/ (1.117564 * 1.117564))
+// ,(2/ (1.117564 * 1.117564)) * this.testValue
+// ,(2/ (1.117564 * 1.117564)) * this.testValue * this.testValue
+
+// ,Math.pow(this.testValue, 3) * 1
+// ,Math.pow(this.testValue, 3) * 1.117564
+// ,Math.pow(this.testValue, 3) * 1.3377620783991666
+// ,Math.pow(this.testValue, 3) * 1.4950347393840864
+// ,Math.pow(this.testValue, 3) * 1.3377620783991666*1.3377620783991666
+
+// ,Math.pow(this.testValue, 4) * 1
+// ,Math.pow(this.testValue, 4) * 1.117564
+// ,Math.pow(this.testValue, 4) * 1.3377620783991666
+// ,Math.pow(this.testValue, 4) * 1.4950347393840864
+// ,Math.pow(this.testValue, 4) * 1.3377620783991666*1.3377620783991666
+
+// ,Math.pow(this.testValue, 5) * 1
+// ,Math.pow(this.testValue, 5) * 1.117564
+// ,Math.pow(this.testValue, 5) * 1.3377620783991666
+// ,Math.pow(this.testValue, 5) * 1.4950347393840864
+// ,Math.pow(this.testValue, 5) * 1.3377620783991666*1.3377620783991666
+
+
 ]; //AQUI!
 
       //CentsToRatios
@@ -5157,7 +5255,7 @@ export default {
         //var lineRatios = [1, 1.2, 1.5, 2];        
         //var lineRatios = [1, 1.25, 1.4953487812212205, 1.4953487812212205*1.25, 2.25];     
         //var lineRatios = [1, 1.2467583092848906, 1.5061955531706115,  1.877861821323412];     
-        var lineRatios = [1, 4/3, 5/3, 7/3];
+        //var lineRatios = [1, 4/3, 5/3, 7/3];
         //var lineRatios = [1, 1.25, 1.5, 1.75];        
         //var lineRatios = [1, 4/3, 5/3, 2]; 
         //var lineRatios = [1, 1.2, 5/3, 2]; 
@@ -5177,15 +5275,15 @@ export default {
         //var lineRatios = [1, 7/6, 4/3];
         
         //Especify value
-        //var lineRatios = [1, Math.pow(this.repeatScaleValue,1), Math.pow(this.repeatScaleValue,2), Math.pow(this.repeatScaleValue,3)];
+        var lineRatios = [1, Math.pow(this.repeatScaleValue,1), Math.pow(this.repeatScaleValue,2), Math.pow(this.repeatScaleValue,3)];
 
         //Afinações legais
         //45Ed(PI^2) ou 19Ed(PHI^2) (string step 4.5)
         //31EdPI (string step 6)
 
         //N from Scale
-        var n = this.repeatScaleValue;
-        var lineRatios = [1,Math.pow(this.base, n/this.eqt), Math.pow(this.base, (n*2)/this.eqt), Math.pow(this.base, (n*3)/this.eqt),Math.pow(this.base, (n*4)/this.eqt)]; 
+        //var n = this.repeatScaleValue;
+        //var lineRatios = [1,Math.pow(this.base, n/this.eqt), Math.pow(this.base, (n*2)/this.eqt), Math.pow(this.base, (n*3)/this.eqt),Math.pow(this.base, (n*4)/this.eqt)]; 
         //var lineRatios = [1,Math.pow(this.base, (n*2)/this.eqt)/2,Math.pow(this.base, n/this.eqt),  Math.pow(this.base, (n*4)/this.eqt)/4, Math.pow(this.base, (n*3)/this.eqt)]; 
 
         //var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)]; 
@@ -5225,7 +5323,11 @@ export default {
         //var lineRatios = [1, 2, 3, 4];
         //var lineRatios = [1, 1.25, 1.5, 1.75];
         //var lineRatios = [1, 4/3, 1.5, 2];
-        var lineRatios = [1, 4/3, 5/3, 7/3];
+        var lineRatios = [1, 1.324717957244746, 1.4950347693089112,2]
+        //var lineRatios = [1, 4/3, 5/3, 7/3];
+        //var lineRatios = [1, Math.pow(1.3077590684505787,1), Math.pow(1.3077590684505787,2), Math.pow(1.3077590684505787,3)];
+        //var lineRatios = [1, Math.pow(1.3373293784088067,1), Math.pow(1.3373293784088067,2), Math.pow(1.3373293784088067,3)];
+        //var lineRatios = [1, Math.pow(1.2505655196145855,1), Math.pow(1.2505655196145855,2), Math.pow(1.2505655196145855,3)];
         //var lineRatios = [1, Math.pow(2,5/31), 1.4955142597767768, Math.pow(2,23/31)]; //Possibilidade de afinação para 31ed4
         //var lineRatios = [1, Math.pow(2,23/31), Math.pow(2,46/31), Math.pow(2,23*3/31)];
         //var lineRatios = [1, 1.4955142597767768, 1.4955142597767768*1.4955142597767768, 1.4955142597767768*1.4955142597767768*1.4955142597767768];
@@ -5261,7 +5363,16 @@ export default {
 //         ];
         // var colRatios = [1, 1.143572939715946, 1.3077590684505704, 1.4955178823482058,1.710233781114704,2,0,0,0];
         //var colRatios = [1, 25/24, 12/11, 8/7, 6/5, 5/4];
-        var colRatios = [1, 1.05, 1.125, 1.185185 ,1.25, 4/3, 1.4,];
+        //var colRatios = [1, 1.05, 1.125, 1.185185 ,1.25, 4/3, 1.4,];
+        var colRatios = [
+        1
+,1.0590169943749475
+,1.2360679774997896
+,1.3090169943749475
+,1.5278640450004204
+,1.618033988749895
+,1.8885438199983173
+];
         //var colRatios = [36/36, 37/36, 38/36, 39/36, 40/36, 41/36, 42/36, 43/36, 44/36];
 //         var colRatios = [
 //           //Armodue
@@ -5370,12 +5481,13 @@ export default {
       //   }
       // }
 
-//  if ( this.normalize) {
-//         for (var i = 0; i < ratiosArr.length; i++) {
-//           var v = ratiosArr[i] || 1;
-//           ratiosArr[i] = this.normalizeValue(v);
-//         }
-//       }
+//For WTG
+ if ( this.normalize) {
+        for (var i = 0; i < ratiosArr.length; i++) {
+          var v = ratiosArr[i] || 1;
+          ratiosArr[i] = this.normalizeValue(v);
+        }
+      }
 
         if (this.applySort) {
         Array.prototype.unique = function() {
@@ -5401,12 +5513,12 @@ export default {
         ratiosArr = ratiosArr.concat(octArr);
       }
 
-       if (this.normalize) {
-        for (var i = 0; i < ratiosArr.length; i++) {
-          var v = ratiosArr[i] || 1;
-          ratiosArr[i] = this.normalizeValue(v);
-        }
-      }
+      //  if (this.normalize) {
+      //   for (var i = 0; i < ratiosArr.length; i++) {
+      //     var v = ratiosArr[i] || 1;
+      //     ratiosArr[i] = this.normalizeValue(v);
+      //   }
+      // }
 
 
      
@@ -5443,7 +5555,7 @@ export default {
        //ratiosArr = [1, rPartials[0], this.base, rPartials[0]*2 ]
 
       //AQUI!
-      //return ratiosArr[idx-1] || 0;
+      return ratiosArr[idx-1] || 0;
 
       //#endregion
 

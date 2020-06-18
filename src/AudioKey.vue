@@ -280,6 +280,10 @@ export default {
       //this.vca = vca;
     },
     keyUp: function(e) {
+
+if(this.isIgnoredKey(e.key)){ return; }
+
+      //console.log("keyUp",e)
       var keyName = String.fromCharCode(e.keyCode);
       var stopArrowUpOrDown = e.keyCode == 38 || e.keyCode == 40;
       if (
@@ -292,7 +296,10 @@ export default {
       }
     },
     keyDown: function(e) {
-      //console.log(e.keyCode);
+       
+if(this.isIgnoredKey(e.key)){ return; }
+
+      //console.log("keyDown",e)
       var keyName = String.fromCharCode(e.keyCode);
       if (
         !this.active &&
@@ -302,6 +309,11 @@ export default {
 
         this.playSoundNote();
       }
+    },
+    isIgnoredKey(key){
+      var ignoreList = ['Control','Alt','AltGraph', 'Shift', 'Tab', ' '];
+      var ignore = ignoreList.indexOf(key) != -1;
+      return ignore;
     },
     mouseDown: function() {
       clearTimeout(this.clickTimer);
