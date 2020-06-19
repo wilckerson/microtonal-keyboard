@@ -25,7 +25,7 @@
       <span>
         Repeat
         <input type="checkbox" v-model="repeatScale" />
-        <input type="number" v-model="repeatScaleValue" step="1" />
+        <input type="number" v-model="repeatScaleValue" step="0.0001" />
       </span>
       <span>
         Chart:
@@ -165,6 +165,7 @@ export default {
       inCents: false,
       guitarStringLength: 65, //65
       testValue: 1,
+      wtg:false,
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -4651,19 +4652,18 @@ console.log(r)
 
 
 //Golden Pentatônica \o/ (L/s = PHI)
-1
-,1.117564
-,1.3377620783991666
-,1.4950347393840864
-,1.7896073784028579
+// 1
+// ,1.117564
+// ,1.3377620783991666
+// ,1.4950347393840864
+// ,1.7896073784028579
 
 //Golden Pentatônica Reversa
-,1
-,1.177778248966296
-,1.3031164676231177
-,1.5347822314363007
-,1.698112528190552
-
+// ,1
+// ,1.177778248966296
+// ,1.3031164676231177
+// ,1.5347822314363007
+// ,1.698112528190552
 
 //Golden Diatônica Reversa (Pelog? 16EDO aproxima bem)
 // 1
@@ -5418,6 +5418,31 @@ console.log(r)
                
       }
 
+       //Generator6 (Golden)
+      if (false) {
+        ratiosArr = [1];
+        var qtd = this.eqt;
+
+        var baseC = this.ratioToCents(this.repeatScaleValue);
+        var ns = 2;
+        var nL = 5;
+        var s = baseC / (ns + (nL*PHI));
+        var L = s * PHI;
+
+        //var mode = [s, L, s, L]; //Pentatonica
+        var mode = [L, L, s, L, L, L]; //Diatonica
+        //var mode = [L, s, L, s]; //Anti-Pentatonica
+        //var mode = [s, s, L, s, s, s]; //Anti-Diatonica
+        //var mode = [L, L, s, L, s, s, s];
+               
+        var currentValue = 1;
+        for (let i = 0; i < mode.length; i++) {
+          currentValue = currentValue + mode[i];
+          var vRatio = this.centsToRatio(currentValue);
+          ratiosArr.push(vRatio);
+        }   
+      }
+
       //Well Tempered Generator - WTG
       //base: PHI edt: 4 norm: 1.5 repeat sort
       //base: 5 eqt: 13 norm: 3 repeat 3 sort
@@ -5425,7 +5450,8 @@ console.log(r)
       //WTG 1.143572939715946 (base9)
       //WTG 1.2458005985895744 (base9)
       //1.4950347693089112
-      if (false) {
+      if (true) {
+        this.wtg = true;
         ratiosArr = [1];
 
 //ratiosArr.push(2/this.base);
@@ -5439,7 +5465,7 @@ console.log(r)
 
         //Under
         for (let index = 1; index < this.eqt; index++) {
-          ratiosArr.unshift(Math.pow(this.base,-index))
+          //ratiosArr.unshift(Math.pow(this.base,-index))
 
           //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
           //ratiosArr.push(Math.pow(this.base, -(index + 1)));
@@ -5452,7 +5478,7 @@ console.log(r)
       }
 
       //Well Tempered Generator - WTG2
-      if (false) {
+      if (true) {
         ratiosArr = [1];
 
         //Over
@@ -5482,7 +5508,7 @@ console.log(r)
       // }
 
 //For WTG
- if ( this.normalize) {
+ if (this.wtg && this.normalize) {
         for (var i = 0; i < ratiosArr.length; i++) {
           var v = ratiosArr[i] || 1;
           ratiosArr[i] = this.normalizeValue(v);
@@ -5513,12 +5539,13 @@ console.log(r)
         ratiosArr = ratiosArr.concat(octArr);
       }
 
-      //  if (this.normalize) {
-      //   for (var i = 0; i < ratiosArr.length; i++) {
-      //     var v = ratiosArr[i] || 1;
-      //     ratiosArr[i] = this.normalizeValue(v);
-      //   }
-      // }
+//Normal
+       if (!this.wtg &&  this.normalize) {
+        for (var i = 0; i < ratiosArr.length; i++) {
+          var v = ratiosArr[i] || 1;
+          ratiosArr[i] = this.normalizeValue(v);
+        }
+      }
 
 
      
@@ -5555,7 +5582,7 @@ console.log(r)
        //ratiosArr = [1, rPartials[0], this.base, rPartials[0]*2 ]
 
       //AQUI!
-      return ratiosArr[idx-1] || 0;
+      //return ratiosArr[idx-1] || 0;
 
       //#endregion
 

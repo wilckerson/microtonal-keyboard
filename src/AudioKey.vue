@@ -62,12 +62,16 @@ export default {
           //src: ["./audio-samples/sine.wav"]
           //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
           //src: ['./audio-samples/guitar-note_G.wav']
-          src: ["./audio-samples/violaoMicrotonal2.wav"] //132hz
+          //src: ["./audio-samples/violaoMicrotonal2.wav"] //132hz
           //src: ['./audio-samples/piano-a_A_major.wav']
           //src: ['./audio-samples/clarinete_F.mp3']
           //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
          //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
          //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
+
+          //Marimbas
+         src: ['./audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav'] 
+         //src: ['./audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav'] 
           
         });
       } else {
