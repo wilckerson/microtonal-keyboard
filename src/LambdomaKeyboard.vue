@@ -4,14 +4,21 @@
 <!-- <input type="number" v-model="limit"/> -->
 <span>Normalize: <input type="checkbox" v-model="normalize" /> 
 <input type="number" v-model="equivalence" min="0.1" step="0.01" /> </span>
+ <span>
+        Chart:
+        <input type="checkbox" v-model="showChart" />
+      </span>
+
 <div>
-    Lattice X: <input type="number" v-model="latticeX" min="1" step="0.0001" />
-    Lattice Y: <input type="number" v-model="latticeY" min="1" step="0.0001" />
+  Lattice X: <input type="number" v-model="latticeX" min="1"  step="0.0001" />
+  Lattice Y: <input type="number" v-model="latticeY" min="1" step="0.0001" />   <!-- step="0.0001" -->
 </div>
 <div>
-    Shift X: <input type="number" v-model="shiftX" />
-    Shift Y: <input type="number" v-model="shiftY" />
+    Skip X: <input type="number" v-model="skipX" />
+    Skip Y: <input type="number" v-model="skipY" />
 </div>
+
+
 <table border="0">
     <tr>
         <td></td>
@@ -24,16 +31,35 @@
         <td v-else><small>{{i+skipY}}</small></td> -->
 
         <td v-for="j in Math.round(limit/1)" v-bind:key="j">
-            <!-- <audio-key :keyName="getKeyName(i,j)" :text="getRatioText(i,j)"  :freq="mainFreq * ratio(i,j)" :style="color(i,j)"/> -->
-            <div :style="color(i,j)">&nbsp;</div>
+            <audio-key :keyName="getKeyName(i,j)" :text="getRatioText(i,j)"  :freq="mainFreq * ratio(i,j)" :style="color(i,j)"/>
+            <!-- <div :style="color(i,j)">&nbsp;</div> -->
             <!-- <div :style="color(i,j)">{{ratio(i,j)}}</div> -->
         </td>
     </tr>
 </table>
 
-<!-- <p>
+<p>Notes per octave: {{resultList.length}}</p>
+<p>
     {{resultList}}
-</p> -->
+</p>
+<div v-if="showChart">
+      <chartjs-line
+        :width="500"
+        :height="150"
+        :labels="chartLabels()"
+        :data="chartData"
+        :bind="true"
+        style="display:inline-block;"
+      ></chartjs-line>
+      <chartjs-line
+        :width="500"
+        :height="150"
+        :labels="chartLabels()"
+        :data="ratioDiff"
+        :bind="true"
+        style="display:inline-block;"
+      ></chartjs-line>
+    </div>
 
 
 </div>
@@ -49,9 +75,9 @@ export default {
     data(){
         return {
             model: 1,
-            limit: 70, //(N*2)-1
-            skipX:0,
-            skipY:0,
+            limit: 7, //(N*2)-1
+            skipX:1,
+            skipY:1,
             mainFreq: 110,
             currentRow: 0,
             resultList: [],
@@ -61,6 +87,8 @@ export default {
             latticeY: 5,
             shiftX: 0,
             shiftY: 0,
+            ratioDiff: [],
+             showChart: false,
         }
     },
      mounted: function() {
@@ -83,7 +111,58 @@ export default {
             _this.currentRow = r;
         });
     },
+    computed: {
+    chartData() {
+      var data = [];
+      var arrDiff = [];
+      var max = Math.max(73, this.eqt); //Math.max(this.ratiosArr.length,this.eqt);
+      for (var i = 1; i <= max; i++) {
+        var v = this.freqBased ? this.freq(i) : this.ratio(i);
+
+        //var v = this.freq(i);
+
+        data.push(v);
+
+        if (i > 1) {
+          var vAnterior = 0;
+          if (this.diffRoot) {
+            vAnterior = this.freqBased ? this.freq(1) : this.ratio(1);
+          } else {
+            vAnterior = this.freqBased ? this.freq(i - 1) : this.ratio(i - 1);
+          }
+          var vDiff = v / vAnterior;
+          if (vDiff > 0) {
+            arrDiff.push(vDiff);
+          }
+        }
+      }
+      data.push(2);
+
+      this.ratioDiff = arrDiff;
+
+      if (this.ratioDiff.length) {
+        var sum = this.ratioDiff.reduce(function(a, b) {
+          return a + b;
+        });
+        var avg = sum / this.ratioDiff.length;
+        this.ratioAvg = avg;
+      }
+
+      return data;
+    },
+  },
     methods:{
+        chartLabels() {
+      var data = [];
+      var max = Math.max(73, this.eqt); //this.eqt;
+      //var max = Math.max(this.ratiosArr.length,this.eqt);
+      for (var i = 1; i <= max; i++) {
+        var v = i.toString();
+        data.push(v);
+      }
+      data.push("O");
+      return data;
+    },
         color(i,j){
             var ratio = this.ratio(i,j);
 
@@ -175,11 +254,11 @@ export default {
             //var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
             
             //Default Lambdoma (UxO)
-            // var r = (col+this.skipX)/(row+this.skipY);
+            var r = (col+(this.skipX-1))/(row+(this.skipY-1));
             //return r;
 
             //Default Lambdoma (OxU)
-            return (row+this.skipY)/(col+this.skipX);
+            //var r = (row+this.skipY)/(col+this.skipX);
 
             //Default Lambdoma (UxU)
             //var r = 1/(row+this.skipY)/(col+this.skipX);
@@ -202,6 +281,7 @@ export default {
             //var scale = [9/9, 10/9, 11/9, 12/9, 13/9, 14/9, 15/9, 16/9, 17/9 , 18/9];
             //var scale = [1, 1.25, 4/3, 5/3]
             //var scale = [1,3,5,7,11,13,17]; //64/45        
+            var scale = [1,9,5,3,7];         
             //17EDO
             //var scale = [ 1 ,1.0416160106505838 ,1.084963913643637 ,1.1301157834293298 ,1.177146693908918 ,1.2261348432599308 ,1.2771616839560882 ,1.3303120581981223 ,1.3856743389806956 ,1.4433405770299568 ,1.5034066538560553 ,1.5659724411750875 ,1.631141966965551 ,1.6990235884354035 ,1.7697301721873244 ,1.8433792818817316 ,1.9200933737095873]
             //Carlos Gamma
@@ -215,13 +295,16 @@ export default {
             //var scale = [1,17,9,19,5,11,3,13,7,15];
             //var scale = [1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2]
             //var scale = [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2]
-            var scale = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
+            //var scale = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
             //var scale = [1, 7/6, 6/5, 5/4, 4/3, 7/5, 3/2, 5/3, 7/4, 2]
             //var scale = [1,17,9,19,5,21,11,23,3,25,13,27,7,29,15,31,2]//             
             //var scale = [1, 1.0666666, 1.125, 1.171875, 1.25, 4/3, 1.40625, 1.5, 1.5625, 5/3, 1.757813, 15/8]
             //var scale = [12/12, 13/12, 14/12, 15/12, 16/12, 17/12, 18/12, 19/12, 20/12, 21/12, 22/12, 23/12, 24/12]
              //var scale = [1, 1.2, 1.25, 1.5, 1.6]
              //var scale = [1, 1.25, 1.5, 1.777777]
+             //var scale = [1, 1.25, 1.5, 1.875, 2.25]
+             //var scale = [ 1, 1.1428571428571428, 1.25, 1.3333333333333333, 1.5, 1.6, 1.75]
+             //var scale = [ 1, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75]
              //var scale = [1/12, 1/11, 1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5, 6, 7,8,9,10,11,12]; 
              //var scale = [1/12, 1/11, 1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5, 6, 7,8,9,10,11,12]; 
              //var scale = [1, 1.041666666666666667, 1.090909, 8/7, 1.2, 1.25, 1.3, 1.333333333];            
@@ -289,6 +372,9 @@ export default {
 
              //var scale2 = [1/12, 1/11, 1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5, 6, 7,8,9,10,11,12];        
              //var scale2 = [1, 3, 5, 7];             
+             //var scale2 = [1, 9, 5, 3, 25, 15];             
+             //var scale2 = [1, 10, 4, 5, 2, 7, 8]; //Normalize 3       
+             var scale2 = [4, 5, 6, 7];             
              //var scale2 = [8/8,9/8,10/8,11/8,12/8,13/8,14/8,15/8,16/8];
               //var scale2 = [ 1, 5/4, 32/25, 25/16, 8/5];
              //var scale2 = [1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8,2];
@@ -310,15 +396,21 @@ export default {
             //var scale2 = [1,1.2513882056240933,1.3303120581981225, 1.664736819428643,2, 2*1.2513882056240933]; 
             //var scale2 = [1,1.249827834539069,1.3282012399433354, 1.6600228795504854, 1.9923018599150024, 1.9923018599150024*1.249827834539069]; //Carlos Gamma
             //var scale2 = [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2]
-            var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
+            //var scale2 = [1, 1.25, 1.5, 1.875, 2.25]
+            //var scale2 = [1, 1.25, 1.5, 1.75, 2.25, 15/4]
+            //var scale2 = [ 1, 1.1428571428571428, 1.25, 1.3333333333333333, 1.5, 1.6, 1.75]
+            //var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
+            //var scale2 = [1, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75];
 
             var s2 = scale2[(row-1) % scale2.length];
-            
+            s = scale2[(col-1) % scale2.length];
+            //Aqui
+
             //Multiply
             //var r = s * s2;
 
             //Tonality Diamond
-            //var r = s / s2;
+            var r = s / s2;
 
             //Lattice
             //var r = Math.pow(this.latticeX, col-1-this.shiftX) * Math.pow(this.latticeY, row-1-this.shiftY);
@@ -336,10 +428,20 @@ export default {
             }
             
             //Result List
-            if(this.resultList.indexOf(r) == -1){
+            var elmContains = false;// this.resultList.indexOf(r) != -1;
+            for (let index = 0; index < this.resultList.length; index++) {
+                const element = this.resultList[index];
+
+                if(Math.abs(r - element) < 0.001){
+                    elmContains = true;
+                    break;
+                }                
+            }
+            if(elmContains == false && r >= 1 && r < this.equivalence){//  && r < 2){
+                
                 this.resultList.push(r);
                 this.resultList.sort(function(a, b) { return a - b;});
-            }
+            }            
 
             return r;
             //return r;

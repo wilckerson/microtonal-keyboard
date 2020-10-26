@@ -61,8 +61,9 @@ export default {
         window.audioCache[this.keyName] = new Howl({
           //src: ["./audio-samples/sine.wav"]
           //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
-          //src: ['./audio-samples/guitar-note_G.wav']
-          src: ["./audio-samples/violaoMicrotonal2.wav"] //132hz
+          src: ['./audio-samples/guitar-note_G.wav']
+          //src: ["./audio-samples/violaoMicrotonal2.wav"] 
+          //src: ["./audio-samples/tampaPanela2.wav"] //132hz
           //src: ['./audio-samples/piano-a_A_major.wav']
           //src: ['./audio-samples/clarinete_F.mp3']
           //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!

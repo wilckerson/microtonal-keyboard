@@ -5,12 +5,15 @@
 </template>
 
 <script>
+import overtones from "./core/overtones";
+
 export default {
   data() {
     return {};
   },
   created() {
-    this.calc();
+    //this.calc();
+    this.calcV2();
   },
   methods: {
     getDivisorsCnt(n) {
@@ -43,26 +46,33 @@ export default {
 
       return numDivisors;
     },
+    calcV2(){
+      console.clear();
+      console.log("calc3 v2");
+
+      
+    },
     calc() {
       console.clear();
       console.log("calc3");
 
       //var targetIntervals = [1.25, 1.5, 4/3, 5/3, 1.2, 1.6];
       //var targetIntervals = [4/3, 1.25, 1.2];
-      var targetIntervals = [1.25, 1.5];
+      var targetIntervals = [1.2, 1.25, 1.5];
       //var targetIntervals = [1.25, 1.5, 4 / 3, 1.6];
       var harmonicStart = 2;
       var harmonicLimit = 64;
-      var minRelations = 1;
+      var minRelations = 2;
       var divisorsBased = false;
 
       var result = [];
 
       //Para cada harmônico
       for (let h = harmonicStart; h <= harmonicLimit; h++) {
+        var rScale = [];
         //Monta a escala
         var hScale = [];
-        var scaleSize = h; //Uma oita
+        var scaleSize = h; //Uma oitava
         //var scaleSize = h + h * 2; //Duas oitavas
         for (let scaleIdx = 0; scaleIdx <= scaleSize; scaleIdx++) {
           var note = (h + scaleIdx) / h;
@@ -82,6 +92,8 @@ export default {
             var keyA = noteA.toFixed(4);
             notesCount[keyA] = divisorsCount;
           } else {
+            var tempScale = [noteA];
+
             for (
               let idxNoteB = idxNoteA + 1;
               idxNoteB < hScale.length;
@@ -101,10 +113,16 @@ export default {
                 var keyA = noteA.toFixed(4);
                 notesCount[keyA] = (notesCount[keyA] || 0) + 1;
 
-                var keyB = noteB.toFixed(4);
-                notesCount[keyB] = (notesCount[keyB] || 0) + 1;
+                tempScale.push(noteB);
+
+                //var keyB = noteB.toFixed(4);
+                //notesCount[keyB] = (notesCount[keyB] || 0) + 1;
               }
             }
+          }
+
+          if(tempScale.length -1 >= minRelations){
+            rScale = rScale.concat(tempScale);
           }
         }
 
@@ -122,6 +140,9 @@ export default {
           filteredTotalCount += item.value;
         });
 
+
+        var rScaleUnique = rScale.filter((value, index, self) => self.indexOf(value) === index);
+
         //var notesCountValues = notesCountValuesPrep.sort((a,b) => a.value - b.value);
 
         // var notesCountValues = Object.values(notesCount)
@@ -135,30 +156,32 @@ export default {
         result.push({
           harmonic: h,
           //rank: (count / notesCountSize) / notesCountSize, //h + count,
-          rank: filteredTotalCount / notesCountSize, //h + count,
+          //rank: filteredTotalCount / notesCountSize, //h + count,
+          rank: 1/((rScaleUnique.length / h) || 1), //h + count,
           count: filteredTotalCount, //count,
+          rScaleUnique : rScaleUnique.sort(),
           notesCountSize: notesCountSize,
           scale: hScale,
           //notesCount: notesCount,
           notesCountList: notesCountValues
             .map(item => parseFloat(item.key))
             .sort(),
-          notesCountValues: notesCountFiltered
+          notesCountValues: notesCountFiltered,
         });
       }
 
       var sortedResult = result.sort(function(item1, item2) {
         // Sort by Rank
-        // if (item1.rank > item2.rank) return -1;
-        // if (item1.rank < item2.rank) return 1;
+        if (item1.rank > item2.rank) return -1;
+        if (item1.rank < item2.rank) return 1;
 
         // Sort by count
-        if (item1.count > item2.count) return -1;
-        if (item1.count < item2.count) return 1;
+        // if (item1.count > item2.count) return -1;
+        // if (item1.count < item2.count) return 1;
 
-        // Sort by harmonic
-        if (item1.harmonic > item2.harmonic) return 1;
-        if (item1.harmonic < item2.harmonic) return -1;
+        // // Sort by harmonic
+        // if (item1.harmonic > item2.harmonic) return 1;
+        // if (item1.harmonic < item2.harmonic) return -1;
       });
 
       console.log(sortedResult);

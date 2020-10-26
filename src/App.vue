@@ -11,6 +11,7 @@
 <!-- <KeyGrid v-if="route == '#grid'"/> -->
 <lambdoma-keyboard v-else-if="route == '#lambdoma'"/>
 <keyboard2 v-else-if="route == '#keyboard2'"/>
+<keyboardMos v-else-if="route == '#keyboardmos'"/>
   <keyboard v-else/>
 
     <!-- <audio-key keyName="W" freq="220"/> 
@@ -28,6 +29,7 @@ import Calc2 from './Calc2.vue';
 import Calc3 from './Calc3.vue';
 import Keyboard from './Keyboard.vue';
 import Keyboard2 from './Keyboard2.vue';
+import KeyboardMos from './KeyboardMos.vue';
 import LambdomaKeyboard from './LambdomaKeyboard.vue';
 import AudioKey from './AudioKey.vue';
 
@@ -36,7 +38,7 @@ import {Howl, Howler} from 'howler';
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi, Guitar
+    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi, Guitar, KeyboardMos
   },
   data() {
     return {
