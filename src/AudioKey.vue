@@ -55,10 +55,10 @@ export default {
       window["audioCache"] = {};
     }
 
-    if (!window.audioCache[this.keyName]) {
+    if (!window.audioCache[this.freq]) {
       if (!this.wave) {
         ///Howler
-        window.audioCache[this.keyName] = new Howl({
+        window.audioCache[this.freq] = new Howl({
           //src: ["./audio-samples/sine.wav"]
           //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
           src: ['./audio-samples/guitar-note_G.wav']
@@ -96,11 +96,11 @@ export default {
         //     mix: 0.5
         // });
         // sound.addEffect(reverb);
-        window.audioCache[this.keyName] = sound;
+        window.audioCache[this.freq] = sound;
       }
     }
 
-    this.sound = window.audioCache[this.keyName];
+    this.sound = window.audioCache[this.freq];
 
     //From File
     //     var sound = new Pizzicato.Sound({
