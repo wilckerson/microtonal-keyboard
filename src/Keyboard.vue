@@ -6066,7 +6066,9 @@ var L = 1;
        //ratiosArr = [1, rPartials[0], this.base, rPartials[0]*2 ]
 
       //AQUI!
-      return ratiosArr[idx-1] || 0;
+      if(this.wtg){
+        return ratiosArr[idx-1] || 0;
+      }
 
       //#endregion
 
