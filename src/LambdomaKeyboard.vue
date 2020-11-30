@@ -1,9 +1,16 @@
 <template>
-  <div>
+  <div class="full">
     <!-- <h5>Lambdoma Keyboard</h5> -->
     Limit:
     <!-- <input type="number" v-model.number="limit" step="1" :max="maxLimit" /> -->
     <input id="inputLimit" type="number" :value="limit" @input="limit = Math.min(parseInt($event.target.value),maxLimit)"  step="1" />
+    
+    <!-- Z:
+    <input id="inputLimit" type="number" :value="z" @input="z = Math.min(parseInt($event.target.value),maxLimit)"  step="1" /> -->
+
+    MinRatio:
+    <input id="inputLimit" type="number" v-model="minRatio" step="0.00025" min="1" />
+
     <span
       >Normalize: <input type="checkbox" v-model="normalize" />
       <input type="number" v-model="equivalence" min="0.1" step="0.01" />
@@ -31,18 +38,18 @@
 
         <!-- <td v-for="j in limit" v-bind:key="j"><small>{{j}}</small> </td> -->
       </tr>
-      <tr v-for="i in limit+1" v-bind:key="'r' + i">
+      <tr v-for="i in limit" v-bind:key="'r' + i">
         <!-- <td v-if="i-1 >= currentRow && i-1 <= currentRow+2" style="background-color:#ff8080;"><small>{{i+skipY}}</small></td>
         <td v-else><small>{{i+skipY}}</small></td> -->
 
-        <td v-for="j in limit+1" v-bind:key="i + '-' + j">
+        <td v-for="j in limit" v-bind:key="i + '-' + j">
           <audio-key
             :keyName="getKeyName(i, j)"
             :text="getRatioText(i, j)"
             :freq="mainFreq * ratio(i, j)"
             :style="color(i, j)"
           />
-          <!-- <div :style="color(i,j)">&nbsp;</div> -->
+          <!-- <div class="square" :style="color(i,j)">&nbsp;</div> -->
           <!-- <div :style="color(i,j)">{{ratio(i,j)}}</div> -->
           <!-- <div :style="color(i,j)">{{i}} - {{j}}</div> -->
         </td>
@@ -92,10 +99,10 @@ export default {
     return {
       model: 1,
       limit: 8, //(N*2)-1
-      maxLimit: 16,
+      maxLimit: 300,
       skipX: 1,
       skipY: 1,
-      mainFreq: 110,
+      mainFreq: 110*2,
       currentRow: 0,
       //resultList: [],
       normalize: false,
@@ -106,6 +113,8 @@ export default {
       shiftY: 0,
       ratioDiff: [],
       showChart: false,
+      z:1,
+      minRatio: 1.0125
     };
   },
   mounted: function () {
@@ -165,10 +174,21 @@ export default {
           list.push(normR);
         }
       }
+      list.push(2);
+      list = list.sort((a, b) => a - b);
+      var unique = [ list[0] ];
+      for (let i = 1; i < list.length; i++) {
+        const element = list[i];
+        const ultimoLista = unique[unique.length-1];
 
-      var rList = list.unique().sort((a, b) => a - b);
+        if((element / ultimoLista) >= this.minRatio){
+          unique.push(element);
+        }  
+      }
+      return unique;
 
-      return rList;
+      //var rList = list.unique().sort((a, b) => a - b);
+      //return rList;
     },
   },
   methods: {
@@ -282,15 +302,26 @@ export default {
     ratio(row, col) {
       //console.log(row, col);
 
-      //Based on limit (OxO)
-    //   var l = (this.limit - 1 + col) / this.limit;
-    //   var c = (this.limit - 1 + row) / this.limit;
-    //   var r = l * c;
+      //Scale
+      //var scale = [1,1.125,4/3,1.5,16/9];
+      //var s = scale[(row-1) % scale.length];
 
-    //Based on limit (OxU)
-      var l = (this.limit - 1 + col) / this.limit;
-      var c = this.limit/ (this.limit - 1 + row);
-      var r = l * c;
+      //Based on limit 
+      //OxO (circular) OxU (linear) UxU (circular invertido)
+      //OxOxO (circular) OxOxU (circular invertido) OxUxU (linear) UxUxU (circular)
+      
+      //var l = (this.limit - 1 + col) / this.limit; //O
+      //var l = this.limit/ (this.limit - 1 + col); //U
+
+      //var c = (this.limit - 1 + row) / this.limit; //O
+      //var c = this.limit/ (this.limit - 1 + row); //U
+
+      //var vz = (this.limit - 1 + this.z) / this.limit; //O
+      //var divZ = this.limit - 1 + this.z;
+      //var vz = this.limit/ (divZ == 0 ? 1 : divZ); //U
+
+      //var r = l * c// * vz;
+      //var r = s * l// * vz;
 
 
       //Scale vs Overtone
@@ -348,7 +379,7 @@ export default {
       //var scale = [9/9, 10/9, 11/9, 12/9, 13/9, 14/9, 15/9, 16/9, 17/9 , 18/9];
       //var scale = [1, 1.25, 4/3, 5/3]
       //var scale = [1,3,5,7,11,13,17]; //64/45
-      var scale = [1, 9, 5, 3, 7];
+      //var scale = [1, 9, 5, 3, 7];
       //17EDO
       //var scale = [ 1 ,1.0416160106505838 ,1.084963913643637 ,1.1301157834293298 ,1.177146693908918 ,1.2261348432599308 ,1.2771616839560882 ,1.3303120581981223 ,1.3856743389806956 ,1.4433405770299568 ,1.5034066538560553 ,1.5659724411750875 ,1.631141966965551 ,1.6990235884354035 ,1.7697301721873244 ,1.8433792818817316 ,1.9200933737095873]
       //Carlos Gamma
@@ -362,7 +393,7 @@ export default {
       //var scale = [1,17,9,19,5,11,3,13,7,15];
       //var scale = [1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2]
       //var scale = [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2]
-      //var scale = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
+      var scale = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/6, 7/5, 7/4, 8/7, 8/5, 9/8, 9/7, 9/5] //Partials
       //var scale = [1, 7/6, 6/5, 5/4, 4/3, 7/5, 3/2, 5/3, 7/4, 2]
       //var scale = [1,17,9,19,5,21,11,23,3,25,13,27,7,29,15,31,2]//
       //var scale = [1, 1.0666666, 1.125, 1.171875, 1.25, 4/3, 1.40625, 1.5, 1.5625, 5/3, 1.757813, 15/8]
@@ -441,17 +472,17 @@ export default {
       //var scale2 = [1, 9, 5, 3, 25, 15];
       //var scale2 = [1, 10, 4, 5, 2, 7, 8]; //Normalize 3
       //var scale2 = [4, 5, 6, 7];
-      var scale2 = [
-        8 / 8,
-        9 / 8,
-        10 / 8,
-        11 / 8,
-        12 / 8,
-        13 / 8,
-        14 / 8,
-        15 / 8,
-        16 / 8,
-      ];
+      // var scale2 = [
+      //   8 / 8,
+      //   9 / 8,
+      //   10 / 8,
+      //   11 / 8,
+      //   12 / 8,
+      //   13 / 8,
+      //   14 / 8,
+      //   15 / 8,
+      //   16 / 8,
+      // ];
       //var scale2 = [ 1, 5/4, 32/25, 25/16, 8/5];
       //var scale2 = [1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8,2];
       //var scale2 = [1,1/3,1/5,1/7,1/11,1/13,1/17];
@@ -477,13 +508,14 @@ export default {
       //var scale2 = [ 1, 1.1428571428571428, 1.25, 1.3333333333333333, 1.5, 1.6, 1.75]
       //var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
       //var scale2 = [1, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75];
+      var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/6, 7/5, 7/4, 8/7, 8/5, 9/8, 9/7, 9/5] //Partials
 
       var s2 = scale2[(row - 1) % scale2.length];
-      s = scale2[(col - 1) % scale2.length];
+      //s = scale2[(col - 1) % scale2.length];
       //Aqui
 
       //Multiply
-      //var r = s * s2;
+      var r = s * s2;
 
       //Tonality Diamond
       //var r = s / s2;
@@ -571,7 +603,7 @@ export default {
 </script>
 
 <style>
-table {
+.full table {
   width: 100%;
   max-width: 1200px;
 }
@@ -583,7 +615,12 @@ td {
   padding: 0;
 }
 
-table td {
+.full table td {
   width: 130px;
+}
+
+.square{
+  width:24px;
+  height:24px;
 }
 </style>

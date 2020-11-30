@@ -173,7 +173,7 @@ export default {
       guitarStringLength: 65, //65
       testValue: 1,
       testValueInt:1,
-      wtg:false,
+      wtg:true,
       sDisplay: undefined,
       lDisplay: undefined,
       keys: [
@@ -5285,17 +5285,53 @@ console.log(r)
 
 
 //Double BH (26ed3) MOS[11] (Generator: 2.2318527209480608)
+// 1
+// ,1.1351479063236496
+// ,1.2352477953659549
+// ,1.4021889487005679
+// ,1.5258371159564523
+// ,1.6603888560010873
+// ,1.8847869335727543
+// ,2.050991673825543
+// ,2.2318527209480608
+// ,2.533482943406932
+// ,2.7568911531326
+
+// 1, 1.0909090909090908, 1.1111111111111112, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.222222222222222, 1.25, 1.2727272727272727, 1.3333333333333333, 1.375, 1.4000000000000001, 1.4285714285714286, 1.4545454545454544, 1.5, 1.5555555555555556, 1.5999999999999999, 1.6363636363636362, 1.6666666666666667, 1.7142857142857142, 1.75, 1.7777777777777777, 1.7999999999999998, 1.8333333333333333
+//1, 1.0666666666666667, 1.09375, 1.125, 1.1428571428571428, 1.1666666666666665, 1.2000000000000002, 1.25, 1.2800000000000002, 1.3061224489795917, 1.3125, 1.3333333333333333, 1.4000000000000001, 1.4285714285714284, 1.5, 1.5238095238095237, 1.53125, 1.5625, 1.6, 1.6666666666666665, 1.7142857142857142, 1.75, 1.7777777777777777, 1.8285714285714285, 1.875
+//1, 10/9, 1.25, 4/3, //1.5, 5/3, 15/8, 2, 9/4, 5/2, 15/8*3/2, 3, 9/4*3/2
+
 1
-,1.1351479063236496
-,1.2352477953659549
-,1.4021889487005679
-,1.5258371159564523
-,1.6603888560010873
-,1.8847869335727543
-,2.050991673825543
-,2.2318527209480608
-,2.533482943406932
-,2.7568911531326
+,1.1182868682116345
+,1.3373293784088152
+,1.4955178823482058
+,1.78844986635530811
+
+,1.169430765597686 * 1
+,1.169430765597686 * 1.1182868682116345
+,1.169430765597686 * 1.3373293784088152
+,1.169430765597686 * 1.4955178823482058
+,1.169430765597686 * 1.78844986635530811
+
+,1.3077590684505704 * 1
+,1.3077590684505704 * 1.1182868682116345
+,1.3077590684505704 * 1.3373293784088152
+,1.3077590684505704 * 1.4955178823482058
+,1.3077590684505704 * 1.78844986635530811
+
+,1.5293336886354674 *1
+,1.5293336886354674 *1.1182868682116345
+,1.5293336886354674 *1.3373293784088152
+,1.5293336886354674 *1.4955178823482058
+,1.5293336886354674 *1.78844986635530811
+
+,1.710233781114704 * 1
+,1.710233781114704 * 1.1182868682116345
+,1.710233781114704 * 1.3373293784088152
+,1.710233781114704 * 1.4955178823482058
+,1.710233781114704 * 1.78844986635530811
+
+
 ]; //AQUI!
 
       //CentsToRatios
@@ -5510,12 +5546,12 @@ console.log(r)
       }
 
       //Generator3
-      if (true) {
+      if (false) {
         ratiosArr = [];
         var start = 1;
         var value = start;
 
-        var shift = 3;
+        var shift = 2;
         var qtd = 9;
         //var lineRatios = [1, Math.pow(1.5, 14/20), Math.pow(1.5, 28/20), Math.pow(1.5, 42/20)]; //Gamma 1ed1.0627073611568032
         //var lineRatios = [1, Math.pow(2, 14/34), Math.pow(2, 28/34), Math.pow(2, 42/34)]; //34ed8
@@ -5591,6 +5627,17 @@ console.log(r)
         //var lineRatios = [1, 7/6, 4/3];
         //var lineRatios = [ Math.pow(2, 8/31), Math.pow(2, 15/31), Math.pow(2, 23/31), Math.pow(2, 30/31)]; //31ed4
         
+         //Golden Diatonic
+//         var lineRatios = [
+// 1
+// //,1.117564002635853
+// ,1.248949299987469
+// //,1.337761815878635
+// ,1.4950344495267345
+// //,1.6707966834915866
+// //,1.337761815878635*1.337761815878635
+// ,1.867222229193566
+// ,2]
         
         //Especify value
         //var lineRatios = [1, Math.pow(this.repeatScaleValue,1), Math.pow(this.repeatScaleValue,2), Math.pow(this.repeatScaleValue,3)];
@@ -5640,7 +5687,14 @@ console.log(r)
         var qtd = 9;
         //var lineRatios = [1, 2, 3, 4];
         //var lineRatios = [1, 1.25, 1.5, 1.75];
-        var lineRatios = [1, 1.2, 1.4, 1.6, 1.8];
+        //var lineRatios = [1, 1.2, 1.4, 1.6, 1.8];
+        //Golden Pentatonic
+        var lineRatios = [1
+,1.117564002635853
+,1.337761815878635
+,1.4950344495267345
+,1.7896066760229032
+,2]
         //var lineRatios = [1, 4/3, 1.5, 2];
         //var lineRatios = [1, 1.324717957244746, 1.4950347693089112,2]
         //var lineRatios = [1, 4/3, 5/3, 7/3];
@@ -5745,7 +5799,7 @@ console.log(r)
       }
 
        //Generator6 (Golden)
-      if (false) {
+      if (true) {
         ratiosArr = [1];
         //var qtd = this.eqt;
 var s = 0;
@@ -5761,9 +5815,8 @@ var L = 1;
         //var mode = [L,s, s, s, s, s, L, L, L]; 
 
         //var mode = [s, L, s, L, s]; //Pentatonica
-
         //var mode = [L, s, L, s, L]; //Anti-Pentatonica
-        var mode = [L, L, s, L, L, L, s]; //Diatonica (Jônio)
+        //var mode = [L, L, s, L, L, L, s]; //Diatonica (Jônio)
         //var mode = [L, s, L, L, L, s, L]; //Diatonica (Dórico)
         //var mode = [s, L, L, L, s, L, L]; //Diatonica (Frígio)
         //var mode = [L, L, L, s, L, L, s]; //Diatonica (Lídio)
@@ -5771,7 +5824,7 @@ var L = 1;
         //var mode = [L, s, L, L, s, L, L]; //Diatonica (Eólio)
         //var mode = [s, L, L, s, L, L, L]; //Diatonica (Lócrio)
 
-        //var mode = [s, s, L, s, s, s, L]; //Anti-Diatonica
+        var mode = [s, s, L, s, s, s, L]; //Anti-Diatonica
         //var mode = [L, L, s, L, s, s, s];
         //var mode = [L, s, s, L, s, s, L, s, s] // Magic[10]
 
@@ -5825,8 +5878,8 @@ var L = 1;
       //WTG 1.143572939715946 (base9)
       //WTG 1.2458005985895744 (base9)gg
       //1.4950347693089112
-      if (false) {
-        this.wtg = true;
+      if (this.wtg) {
+        //this.wtg = true;
         ratiosArr = [1];
 
 //ratiosArr.push(2/this.base);
@@ -5852,12 +5905,12 @@ var L = 1;
         }
 
         //Under
-        //for (let index = 1; index < this.eqt; index++) {
-          //ratiosArr.unshift(Math.pow(this.base,-index))
+        // for (let index = 1; index < this.eqt; index++) {
+        //   ratiosArr.unshift(Math.pow(this.base,-index))
 
-          //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
-          //ratiosArr.push(Math.pow(this.base, -(index + 1)));
-        //}
+        //   //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
+        //   //ratiosArr.push(Math.pow(this.base, -(index + 1)));
+        // }
 
 
         // if(this.repeatScale){
@@ -5934,16 +5987,15 @@ var L = 1;
       //   }
       // }
 
-//For WTG
-//  if (this.wtg && this.normalize) {
- if (this.normalize) {
+      //For WTG
+      if (this.wtg && this.normalize) {
         for (var i = 0; i < ratiosArr.length; i++) {
           var v = ratiosArr[i] || 1;
           ratiosArr[i] = this.normalizeValue(v);
         }
       }
 
-        if (this.applySort) {
+      if (this.applySort) {
         Array.prototype.unique = function() {
           return this.filter(function(value, index, self) {
             return self.indexOf(value) === index;
@@ -5956,7 +6008,7 @@ var L = 1;
       //Gerar repetição da escala (oitava)
       if (this.repeatScale) {
         var base = this.repeatScaleValue;
-        var numOct = 9;
+        var numOct = 12;
         var octArr = [];
         for (var t = 0; t < numOct; t++) {
           for (let i = 0; i < ratiosArr.length; i++) {
@@ -5967,14 +6019,13 @@ var L = 1;
         ratiosArr = ratiosArr.concat(octArr);
       }
 
-//Normal
-       //if (!this.wtg &&  this.normalize) {
-      //  if (this.normalize) {
-      //   for (var i = 0; i < ratiosArr.length; i++) {
-      //     var v = ratiosArr[i] || 1;
-      //     ratiosArr[i] = this.normalizeValue(v);
-      //   }
-      // }
+      //Normal
+      if (!this.wtg &&  this.normalize) {      
+        for (var i = 0; i < ratiosArr.length; i++) {
+          var v = ratiosArr[i] || 1;
+          ratiosArr[i] = this.normalizeValue(v);
+        }
+      }
 
 
      
@@ -6033,14 +6084,14 @@ var L = 1;
       //idx = idx + mapIdx;
 
       //Ls Mapped Steps
-      if(true && idx > 1){
+      if(false && idx > 1){
         //var mode = "2 2 1 2 2 2 1"; //Diatônica 12ed2
         //var mode = "3 3 3 3 3 3 3 1"; //Porcupine[8] 22edo
         //var mode = "3 3 3 3 3 3 4"; //Porcupine[7] 22edo
         //var mode = "3 4 2 4 3 3 3"; //Porcupine[7] 22edo MODMOS
         //var mode = "4 2 3 4 3 3 3"; //Porcupine[7] 22edo MODMOS        
-        var mode = "3 2 2 2 2 3 2 2 2 2"; //Pajara[10] 22edo MOS (Symmetric)       
-        //var mode = "3 2 2 2 2 2 3 2 2 2"; //Pajara[10] 22edo MODMOS (Pentacordal)
+        //var mode = "3 2 2 2 2 3 2 2 2 2"; //Pajara[10] 22edo MOS (Symmetric)       
+        var mode = "3 2 2 2 2 2 3 2 2 2"; //Pajara[10] 22edo MODMOS (Pentacordal)
         //var mode = "1 2 1 2 1 2 1 2 1 2 1 2 1 2 1"; //Porcupine[15] 22edo
         //var mode = "3 1 3 1 3 1 1 3 1 3 1 1"; //Superpyth[12] 22edo
         //var mode = "1 3 1 1 3 1 3 1 1 3 1"; //kleismic[11] 19edo

@@ -1,15 +1,15 @@
 <template>
   <div
     class="key"
-    :class="{ 'active' : active}"
+    :class="{ active: active }"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
     @touchstart="mouseDown"
     @touchend="mouseUp"
-    :style="{'background-color':color}"
+    :style="{ 'background-color': color }"
   >
-    <div class="key-label">{{keyName}}</div>
-    <div class="key-tone">{{ text || parseFloat(freq).toFixed(2) + 'Hz'}}</div>
+    <div class="key-label">{{ keyName }}</div>
+    <div class="key-tone">{{ text || parseFloat(freq).toFixed(2) + "Hz" }}</div>
   </div>
 </template>
 
@@ -17,6 +17,7 @@
 import Vue from "vue";
 
 import Pizzicato from "pizzicato";
+const AUDIO_CACHE_SIZE = 6;
 
 export default {
   props: ["keyName", "freq", "text", "color", "idx"],
@@ -30,15 +31,17 @@ export default {
         "<": 188,
         ">": 190,
         ";": 191,
-        "\\": 226
+        "\\": 226,
       },
       sound: undefined,
       soundFreq: 1,
       pressed: false,
-      clickTimer: 0
+      clickTimer: 0,
+      audioFile: undefined,
+      audioCacheIdx: -1,
     };
   },
-  mounted: function() {
+  mounted: function () {
     //return;
     //if ((!this.freq && this.freq != 0) || !this.keyName) {
     if (!this.freq && this.freq != 0) {
@@ -51,56 +54,57 @@ export default {
     //this.soundFreq = 174.61;
     //this.soundFreq = 622.25;
 
-    if (!window["audioCache"]) {
-      window["audioCache"] = {};
-    }
+    // if (!window["audioCache"]) {
+      //   window["audioCache"] = {};
+    // }
 
-    if (!window.audioCache[this.freq]) {
-      if (!this.wave) {
-        ///Howler
-        window.audioCache[this.freq] = new Howl({
-          //src: ["./audio-samples/sine.wav"]
-          //src: ["./audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav"]
-          src: ['./audio-samples/guitar-note_G.wav']
-          //src: ["./audio-samples/violaoMicrotonal2.wav"] 
-          //src: ["./audio-samples/tampaPanela2.wav"] //132hz
-          //src: ['./audio-samples/piano-a_A_major.wav']
-          //src: ['./audio-samples/clarinete_F.mp3']
-          //src: ['./audio-samples/HangDrum_C03.wav'] ///Hang!!!
-         //src: ['./audio-samples/163[kb]shamisen-pluck.wav.mp3'] //Muito bom
-         //src: ['./audio-samples/869[kb]tinshaw.aif.mp3'] // Legal
+    // if (!window.audioCache[this.freq]) {
+      //   if (!this.wave) {
+        this.audioFile = "./audio-samples/guitar-note_G.wav";  
+        //this.audioFile = './audio-samples/sine.wav';
+        //this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
+        //this.audioFile = './audio-samples/violaoMicrotonal2.wav';
+        //this.audioFile = './audio-samples/tampaPanela2.wav'; //132hz
+        //this.audioFile = './audio-samples/piano-a_A_major.wav';
+        //this.audioFile = './audio-samples/clarinete_F.mp3';
+        //this.audioFile = './audio-samples/HangDrum_C03.wav'; ///Hang!!!
+        //this.audioFile = './audio-samples/163[kb]shamisen-pluck.wav.mp3'; //Muito bom
+        //this.audioFile = './audio-samples/869[kb]tinshaw.aif.mp3'; // Legal
+        //this.audioFile = './audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav'; //Marimba1
+        //this.audioFile = './audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav'; //Marimba1
+        //this.audioFile = './audio-samples/F2_MelloKalimbaTape_SP_01_376.mp3'; //Kalimba
 
-          //Marimbas
-         //src: ['./audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav'] 
-         //src: ['./audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav'] 
-          
-        });
-      } else {
-        ///Pizzicato
-        //From wave
-        var sound = new Pizzicato.Sound({
-          source: "wave",
-          options: {
-            type: "sine", //sine, square, triangle or sawtooth
-            frequency: this.freq
-          }
-        });
-        sound.volume = 1 / 6;
-        sound.atack = 0.1;
-        sound.release = 0.3;
 
-        // var reverb = new Pizzicato.Effects.Reverb({
-        //     time: 0.5,
-        //     decay: 0.01,
-        //     reverse: false,
-        //     mix: 0.5
-        // });
-        // sound.addEffect(reverb);
-        window.audioCache[this.freq] = sound;
-      }
-    }
+    //     ///Howler
+    //     window.audioCache[this.freq] = new Howl({
+    //       src: [this.audioFile]
+    //     });
+    //   } else {
+    //     ///Pizzicato
+    //     //From wave
+    //     var sound = new Pizzicato.Sound({
+    //       source: "wave",
+    //       options: {
+    //         type: "sine", //sine, square, triangle or sawtooth
+    //         frequency: this.freq
+    //       }
+    //     });
+    //     sound.volume = 1 / 6;
+    //     sound.atack = 0.1;
+    //     sound.release = 0.3;
 
-    this.sound = window.audioCache[this.freq];
+    //     // var reverb = new Pizzicato.Effects.Reverb({
+    //     //     time: 0.5,
+    //     //     decay: 0.01,
+    //     //     reverse: false,
+    //     //     mix: 0.5
+    //     // });
+    //     // sound.addEffect(reverb);
+    //     window.audioCache[this.freq] = sound;
+    //   }
+    // }
+
+    // this.sound = window.audioCache[this.freq];
 
     //From File
     //     var sound = new Pizzicato.Sound({
@@ -151,51 +155,111 @@ export default {
     //window.addEventListener("click", this.playSoundNote);
     // window.addEventListener("click", this.start);
 
+this.initAudioCache();
+
     window.addEventListener("keydown", this.keyDown);
     window.addEventListener("keyup", this.keyUp);
   },
-  beforeDestroy: function() {
+  beforeDestroy: function () {
     window.removeEventListener("keydown", this.keyDown);
 
     window.removeEventListener("keyup", this.keyUp);
   },
   methods: {
-    stopSoundNote() {
-      if (!this.sound) {
-        return;
-      }
+    // stopSoundNote() {
+    //   if (!this.sound) {
+    //     return;
+    //   }
 
-      if (!this.wave) {
-        //Howler
-        this.sound.fade(1, 0, 500);
-      } else {
-        //Pizzicato
-        this.sound.stop();
+    //   if (!this.wave) {
+    //     //Howler
+    //     this.sound.fade(1, 0, 500);
+    //   } else {
+    //     //Pizzicato
+    //     this.sound.stop();
+    //   }
+    // },
+    initAudioCache(){
+       //Get sound from cache
+      if (!window["audioCache"]) {
+        window["audioCache"] = [];
+        for (let index = 0; index < AUDIO_CACHE_SIZE; index++) {
+          var audioCacheItem = {
+            inUse: false,
+            sound: new Howl({ src: [this.audioFile] }),
+          };
+          window["audioCache"].push(audioCacheItem);
+        }
+      }
+    },
+    stopSoundNote() {
+      if (this.audioCacheIdx != -1) {
+        var sound = window["audioCache"][this.audioCacheIdx].sound;
+        sound.fade(1, 0, 500);
+
+        window["audioCache"][this.audioCacheIdx].inUse = false;
       }
     },
     playSoundNote() {
-      if (!this.sound) {
-        return;
-      }
       var rate = parseFloat(this.freq) / this.soundFreq;
 
-      if (!this.wave) {
+     
+
+      //Busca um cache disponivel
+      this.audioCacheIdx = window["audioCache"].findIndex(
+        (i) => i.inUse == false
+      );
+
+      if (this.audioCacheIdx != -1) {
+        window["audioCache"][this.audioCacheIdx].inUse = true;
+
+        var sound = window["audioCache"][this.audioCacheIdx].sound;
         //Howler
-        this.sound.volume(1);
-        this.sound.rate(rate);
-        this.sound.play();
-      } else {
-        //Pizzicato
-        if (!this.sound.sourceNode.playbackRate) {
-          this.sound.frequency = this.freq;
-        }
-        this.sound.play();
+        sound.volume(1);
+        sound.rate(rate);
+        sound.play();
       }
+
+      // if (!this.wave) {
+      //   //Howler
+      //   this.sound.volume(1);
+      //   this.sound.rate(rate);
+      //   this.sound.play();
+      // } else {
+      //   //Pizzicato
+      //   if (!this.sound.sourceNode.playbackRate) {
+      //     this.sound.frequency = this.freq;
+      //   }
+      //   this.sound.play();
+      // }
 
       // if(this.sound.sourceNode.playbackRate){
       //   this.sound.sourceNode.playbackRate.value = rate;
       // }
     },
+    // playSoundNote() {
+    //   if (!this.sound) {
+    //     return;
+    //   }
+    //   var rate = parseFloat(this.freq) / this.soundFreq;
+
+    //   if (!this.wave) {
+    //     //Howler
+    //     this.sound.volume(1);
+    //     this.sound.rate(rate);
+    //     this.sound.play();
+    //   } else {
+    //     //Pizzicato
+    //     if (!this.sound.sourceNode.playbackRate) {
+    //       this.sound.frequency = this.freq;
+    //     }
+    //     this.sound.play();
+    //   }
+
+    //   // if(this.sound.sourceNode.playbackRate){
+    //   //   this.sound.sourceNode.playbackRate.value = rate;
+    //   // }
+    // },
     start() {
       return;
 
@@ -284,9 +348,10 @@ export default {
       // vca.connect(audioCtx.destination);
       //this.vca = vca;
     },
-    keyUp: function(e) {
-
-if(this.isIgnoredKey(e.key)){ return; }
+    keyUp: function (e) {
+      if (this.isIgnoredKey(e.key)) {
+        return;
+      }
 
       //console.log("keyUp",e)
       var keyName = String.fromCharCode(e.keyCode);
@@ -300,9 +365,10 @@ if(this.isIgnoredKey(e.key)){ return; }
         this.stopSoundNote();
       }
     },
-    keyDown: function(e) {
-       
-if(this.isIgnoredKey(e.key)){ return; }
+    keyDown: function (e) {
+      if (this.isIgnoredKey(e.key)) {
+        return;
+      }
 
       //console.log("keyDown",e)
       var keyName = String.fromCharCode(e.keyCode);
@@ -315,19 +381,19 @@ if(this.isIgnoredKey(e.key)){ return; }
         this.playSoundNote();
       }
     },
-    isIgnoredKey(key){
-      var ignoreList = ['Control','Alt','AltGraph', 'Shift', 'Tab', ' '];
+    isIgnoredKey(key) {
+      var ignoreList = ["Control", "Alt", "AltGraph", "Shift", "Tab", " "];
       var ignore = ignoreList.indexOf(key) != -1;
       return ignore;
     },
-    mouseDown: function() {
+    mouseDown: function () {
       clearTimeout(this.clickTimer);
       this.clickTimer = setTimeout(() => {
         this.active = true;
         this.playSoundNote();
       }, 50);
     },
-    mouseUp: function() {
+    mouseUp: function () {
       this.active = false;
       this.stopSoundNote();
     },
@@ -347,14 +413,14 @@ if(this.isIgnoredKey(e.key)){ return; }
         }
       }
       return gVco;
-    }
+    },
   },
   watch: {
-    active: function(val, oldVal) {
+    active: function (val, oldVal) {
       this.$emit("onChangeActive", {
         freq: this.freq,
         keyName: this.keyName,
-        idx: this.idx
+        idx: this.idx,
       });
 
       // var m = 0.05;
@@ -380,13 +446,13 @@ if(this.isIgnoredKey(e.key)){ return; }
       //   }
       // }
     },
-    freq: function(val) {
+    freq: function (val) {
       //console.log("freq", val);
       if (this.vco) {
         this.vco.frequency.value = val;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
