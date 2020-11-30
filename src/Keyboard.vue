@@ -47,6 +47,10 @@
         Test (int):
         <input type="number" v-model="testValueInt" step="1" style="width:70px;" />
       </span>
+       <span>
+        Regular temperament:
+        <input type="checkbox" v-model="wtg" />
+      </span>
     </p>
     <p v-if="sDisplay && lDisplay">
       s: {{sDisplay}} L: {{lDisplay}}
@@ -173,7 +177,7 @@ export default {
       guitarStringLength: 65, //65
       testValue: 1,
       testValueInt:1,
-      wtg:true,
+      wtg:false,
       sDisplay: undefined,
       lDisplay: undefined,
       keys: [
@@ -5885,24 +5889,24 @@ var L = 1;
 //ratiosArr.push(2/this.base);
 
         //Alternated (Horagrams)
-        // var vUp = 1;
-        // var vDown = 1;
-        // for (let index = 1; index < this.eqt; index++) {
-        //   if((index-1) % 2 == 0){
-        //     vUp = vUp * this.base;
-        //     ratiosArr.push(vUp);
-        //   }else{
-        //     vDown = vDown / this.base;
-        //     ratiosArr.push(vDown);
-        //   }                    
-        // }
+        var vUp = 1;
+        var vDown = 1;
+        for (let index = 1; index < this.eqt; index++) {
+          if((index-1) % 2 == 0){
+            vUp = vUp * this.base;
+            ratiosArr.push(vUp);
+          }else{
+            vDown = vDown / this.base;
+            ratiosArr.push(vDown);
+          }                    
+        }
 
         //Over
-        for (let index = 1; index < this.eqt; index++) {
-          ratiosArr.push(Math.pow(this.base,index))
-          //ratiosArr.push(Math.pow(this.base, index + 1) / 1.2);
-          //ratiosArr.push(Math.pow(this.base, index + 1));
-        }
+        // for (let index = 1; index < this.eqt; index++) {
+        //   ratiosArr.push(Math.pow(this.base,index))
+        //   //ratiosArr.push(Math.pow(this.base, index + 1) / 1.2);
+        //   //ratiosArr.push(Math.pow(this.base, index + 1));
+        // }
 
         //Under
         // for (let index = 1; index < this.eqt; index++) {
