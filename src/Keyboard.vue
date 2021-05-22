@@ -190,7 +190,7 @@
 
     <table v-if="showChart" width="100%">
       <tr style="vertical-align: top;">
-        <td >
+        <td style="width: 45%;">
           <chartjs-line
             :width="500"
             :height="150"
@@ -215,7 +215,7 @@
           </div>
 
         </td>
-        <td >
+        <td style="width: 45%;">
           <chartjs-line
             :width="500"
             :height="150"

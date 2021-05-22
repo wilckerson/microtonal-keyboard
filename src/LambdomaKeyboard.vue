@@ -1,19 +1,37 @@
 <template>
-  <div class="full">
+  <div class="full2">
     <!-- <h5>Lambdoma Keyboard</h5> -->
     Limit:
     <!-- <input type="number" v-model.number="limit" step="1" :max="maxLimit" /> -->
-    <input id="inputLimit" type="number" :value="limit" @input="limit = Math.min(parseInt($event.target.value),maxLimit)"  step="1" />
-    
-    <!-- Z:
-    <input id="inputLimit" type="number" :value="z" @input="z = Math.min(parseInt($event.target.value),maxLimit)"  step="1" /> -->
+    <input
+      id="inputLimit"
+      type="number"
+      :value="limit"
+      @input="limit = Math.min(parseInt($event.target.value), maxLimit)"
+      step="1"
+    />
+
+    Z:
+    <input
+      id="inputLimit"
+      type="number"
+      :value="z"
+      @input="z = Math.min(parseInt($event.target.value), maxLimit)"
+      step="1"
+    />
 
     MinRatio:
-    <input id="inputLimit" type="number" v-model="minRatio" step="0.00025" min="1" />
+    <input
+      id="inputLimit"
+      type="number"
+      v-model="minRatio"
+      step="0.00025"
+      min="1"
+    />
 
     <span
       >Normalize: <input type="checkbox" v-model="normalize" />
-      <input type="number" v-model="equivalence" min="0.1" step="0.01" />
+      <input type="number" v-model="equivalence" min="0.1" step="0.0001" />
     </span>
     <span>
       Chart:
@@ -49,7 +67,7 @@
             :freq="mainFreq * ratio(i, j)"
             :style="color(i, j)"
           />
-          <!-- <div class="square" :style="color(i,j)">&nbsp;</div> -->
+          <!-- <div class="square" :style="color(i, j)">&nbsp;</div> -->
           <!-- <div :style="color(i,j)">{{ratio(i,j)}}</div> -->
           <!-- <div :style="color(i,j)">{{i}} - {{j}}</div> -->
         </td>
@@ -113,8 +131,8 @@ export default {
       shiftY: 0,
       ratioDiff: [],
       showChart: false,
-      z:1,
-      minRatio: 1.0125
+      z: 1,
+      minRatio: 1.0125,
     };
   },
   mounted: function () {
@@ -176,14 +194,14 @@ export default {
       }
       list.push(2);
       list = list.sort((a, b) => a - b);
-      var unique = [ list[0] ];
+      var unique = [list[0]];
       for (let i = 1; i < list.length; i++) {
         const element = list[i];
-        const ultimoLista = unique[unique.length-1];
+        const ultimoLista = unique[unique.length - 1];
 
-        if((element / ultimoLista) >= this.minRatio){
+        if (element / ultimoLista >= this.minRatio) {
           unique.push(element);
-        }  
+        }
       }
       return unique;
 
@@ -306,23 +324,22 @@ export default {
       //var scale = [1,1.125,4/3,1.5,16/9];
       //var s = scale[(row-1) % scale.length];
 
-      //Based on limit 
+      //Based on limit
       //OxO (circular) OxU (linear) UxU (circular invertido)
       //OxOxO (circular) OxOxU (circular invertido) OxUxU (linear) UxUxU (circular)
-      
-      //var l = (this.limit - 1 + col) / this.limit; //O
-      //var l = this.limit/ (this.limit - 1 + col); //U
 
-      //var c = (this.limit - 1 + row) / this.limit; //O
-      //var c = this.limit/ (this.limit - 1 + row); //U
+      // var l = (this.limit - 1 + col) / this.limit; //O
+      // //var l = this.limit/ (this.limit - 1 + col); //U
 
-      //var vz = (this.limit - 1 + this.z) / this.limit; //O
-      //var divZ = this.limit - 1 + this.z;
-      //var vz = this.limit/ (divZ == 0 ? 1 : divZ); //U
+      // var c = (this.limit - 1 + row) / this.limit; //O
+      // //var c = this.limit/ (this.limit - 1 + row); //U
 
-      //var r = l * c// * vz;
+      // var vz = (this.limit - 1 + this.z) / this.limit; //O
+      // //var divZ = this.limit - 1 + this.z;
+      // //var vz = this.limit/ (divZ == 0 ? 1 : divZ); //U
+
+      // var r = l * c * vz;
       //var r = s * l// * vz;
-
 
       //Scale vs Overtone
       // var scale = [1,1.125,1.25,4/3,1.5,5/3,15/8,2];
@@ -366,10 +383,13 @@ export default {
       //var r = (row+this.skipY)*(col+this.skipX);
 
       //Full Lambdoma (Quatro quadrantes)
-      // var size = (this.limit+1)/2;
-      // var rr = (row-size-1) < 0 ? 1/Math.abs(row-size-1) :  row-size+1
-      // var cc = (col-size-1) < 0 ? 1/Math.abs(col-size-1) : col-size+1
-      // var r = rr * cc;
+      var size = (this.limit + 1) / 2;
+      var rr =
+        row - size - 1 < 0 ? 1 / Math.abs(row - size - 1) : row - size + 1;
+      var cc =
+        col - size - 1 < 0 ? 1 / Math.abs(col - size - 1) : col - size + 1;
+
+      var r = rr * cc;
 
       //Scale
       //var scale = [8/8,9/8,10/8,11/8,12/8,13/8,14/8,15/8,16/8];
@@ -459,9 +479,16 @@ export default {
       //     ,1.9166666666666667
       //  ]
       //  var scale = [1, Math.pow(1.0416666,1), Math.pow(1.0416666,2), Math.pow(1.0416666,3),Math.pow(1.0416666,4), Math.pow(1.0416666,5), Math.pow(1.0416666,6), Math.pow(1.0416666,7)]
+      //var scale = [1 ,1.2001027195781024 ,1.388651142614655 ,1.6068224531337627,1.792664192275709]
       var scale = [
-        1 ,1.2001027195781024 ,1.388651142614655 ,1.6068224531337627,1.792664192275709
-      ]
+        1,
+        1.0666666666666664,
+        1.1940519805174479,
+        1.3366501239165378,
+        1.4257601321776399,
+        1.5960297277214341,
+        1.7866335537660958,
+      ];
 
       var s = scale[(col - 1) % scale.length];
       //var s = scale[Math.min(col-1,scale.length-1)];
@@ -514,16 +541,23 @@ export default {
       //var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8] //Partials
       //var scale2 = [1, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75];
       //var scale2 = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/6, 7/5, 7/4, 8/7, 8/5, 9/8, 9/7, 9/5] //Partials
- var scale2 = [
-        1 ,1.2001027195781024 ,1.388651142614655 ,1.6068224531337627,1.792664192275709
-      ]
+      //var scale2 = [1 ,1.2001027195781024 ,1.388651142614655 ,1.6068224531337627,1.792664192275709]
+      var scale2 = [
+        1,
+        1.1194237317351077,
+        1.2531094911717544,
+        1.4027605028801673,
+        1.4962778697388448,
+        1.674968956655715,
+        1.8750000000000004,
+      ];
 
       var s2 = scale2[(row - 1) % scale2.length];
       //s = scale2[(col - 1) % scale2.length];
       //Aqui
 
       //Multiply
-      var r = s * s2;
+      //var r = s * s2;
 
       //Tonality Diamond
       //var r = s / s2;
@@ -627,8 +661,8 @@ td {
   width: 130px;
 }
 
-.square{
-  width:24px;
-  height:24px;
+.square {
+  width: 24px;
+  height: 24px;
 }
 </style>

@@ -45,30 +45,39 @@
       <input type="checkbox" v-model="priorityOrder" /> Ordem de prioridade
     </div>
     <br />
+
     <button v-on:click="calc">Calcular</button>
 
     <div v-if="sortedResult.length > 0">
       <h3>Result</h3>
+
       <table border="1">
         <thead>
           <tr>
             <th>Idx</th>
             <th>Value</th>
             <th>TotalDiff (cents)</th>
+            <th>AvgDiff (cents)</th>
+            <th>MinDiff (cents)</th>
+            <th>MaxDiff (cents)</th>
             <th>Result</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item,idx) in sortedResult" v-bind:key="idx">
-            <td>{{idx+1}}</td>
-            <td>{{item.value}}</td>
-            <td>{{(item.diff).toFixed(5)}}</td>
+          <tr v-for="(item, idx) in sortedResult" v-bind:key="idx">
+            <td>{{ idx + 1 }}</td>
+            <td>{{ item.value }}</td>
+            <td>{{ item.diff.toFixed(5) }}</td>
+            <td>{{ item.avgDiff.toFixed(5) }}</td>
+            <td>{{ item.minDiff.toFixed(5) }}</td>
+            <td>{{ item.maxDiff.toFixed(5) }}</td>
             <td>
               <span
-                v-for="(ratio,idx) in item.ratios"
+                v-for="(ratio, idx) in item.ratios"
                 :key="idx"
-                style="padding-right: 10px;"
-              >{{ratio.ratio}} <i> ({{(ratio.diff).toFixed(3)}}¢)</i></span>
+                style="padding-right: 10px"
+                >{{ ratio.ratio }} <i> ({{ ratio.diff.toFixed(3) }}¢)</i></span
+              >
             </td>
           </tr>
         </tbody>
@@ -89,7 +98,7 @@ export default {
       genStep: 0.0001,
       textData: "",
       sortedResult: [],
-      priorityOrder: false
+      priorityOrder: false,
     };
   },
   methods: {
@@ -111,69 +120,72 @@ export default {
       var results = [];
       if (this.calcType == "eqt") {
         results = this.calcEqt(ratioData);
-      }
-      else  if (this.calcType == "gen") {
+      } else if (this.calcType == "gen") {
         results = this.calcGen(ratioData);
-      }
-       else  if (this.calcType == "lin") {
+      } else if (this.calcType == "lin") {
         results = this.calcLin(ratioData);
       }
 
-      var sortedResult = results        
-        .sort(function compare(a, b) {
-        // if (a.diff < b.diff) return -1;
-        // if (a.diff > b.diff) return 1;
-
-        if (Math.abs(a.diff) < Math.abs(b.diff)) return -1;
-        if (Math.abs(a.diff) > Math.abs(b.diff)) return 1;
-        return 0;
-      })
-      //.reverse()
-      .slice(0,100);
+      var sortedResult = results
+        .sort((a, b) => {
+          if (Math.abs(a.diff) < Math.abs(b.diff)) return -1;
+          if (Math.abs(a.diff) > Math.abs(b.diff)) return 1;
+          return 0;
+        })
+        //.reverse()
+        .slice(0, 100);
       //console.log("sorted");
       //console.log(sortedResult);
 
       this.sortedResult = sortedResult;
     },
-    calcGen(ratioData){
-
-var maxRatioData = Math.max(...ratioData);
+    calcGen(ratioData) {
+      var maxRatioData = Math.max(...ratioData);
 
       var gMin = parseFloat(this.genMin);
       var gMax = parseFloat(this.genMax);
       var gStep = parseFloat(this.genStep);
 
-var results = [];
+      var results = [];
       //var currentMinDiff = 1;
-      for (let i = gMin; i <= gMax; i+=gStep) {
+      for (let i = gMin; i <= gMax; i += gStep) {
         var interval = i;
         var qtd = Math.ceil(Math.log(maxRatioData) / Math.log(interval)) + 1;
         var ratios = this.generateArrRatios(interval, qtd);
-        
-         var totalDiff = 0;
+
+        var totalDiff = 0;
         var resultRatios = [];
+
         for (let j = 0; j < ratioData.length; j++) {
           const ratio = ratioData[j];
 
           var diffResult = this.diffFromRatio(ratios, ratio);
-          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff});
+
+          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff });
           if (this.priorityOrder) {
             totalDiff += Math.abs(diffResult.diff) * (ratioData.length - j);
           } else {
             totalDiff += Math.abs(diffResult.diff);
           }
         }
+        var avgDiff = totalDiff / ratioData.length;
 
         //Only best results
         // if (totalDiff < currentMinDiff) {
         //   currentMinDiff = totalDiff;
         //   results.push({ value: i, diff: totalDiff });
         // }
-        results.push({ value: i, diff: totalDiff, ratios: resultRatios });
+        results.push({
+          value: i,
+          diff: totalDiff,
+          ratios: resultRatios,
+          avgDiff,
+          minDiff: 0,
+          maxDiff: 0
+        });
       }
 
       return results;
-
     },
     calcEqt(ratioData) {
       var maxRatioData = Math.max(...ratioData);
@@ -186,24 +198,38 @@ var results = [];
 
         var totalDiff = 0;
         var resultRatios = [];
+        var minDiff = 999;
+        var maxDiff = -999;
+
         for (let j = 0; j < ratioData.length; j++) {
           const ratio = ratioData[j];
 
           var diffResult = this.diffFromRatio(ratios, ratio);
-          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff});
+           minDiff = Math.min(minDiff, diffResult.diff);
+          maxDiff = Math.max(maxDiff, diffResult.diff);
+
+          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff });
           if (this.priorityOrder) {
             totalDiff += Math.abs(diffResult.diff) * (ratioData.length - j);
           } else {
             totalDiff += Math.abs(diffResult.diff);
           }
         }
+        var avgDiff = totalDiff / ratioData.length;
 
         //Only best results
         // if (totalDiff < currentMinDiff) {
         //   currentMinDiff = totalDiff;
         //   results.push({ value: i, diff: totalDiff });
         // }
-        results.push({ value: i, diff: totalDiff, ratios: resultRatios });
+        results.push({
+          value: i,
+          diff: totalDiff,
+          ratios: resultRatios,
+          avgDiff,
+          minDiff,
+          maxDiff
+        });
       }
 
       return results;
@@ -213,29 +239,34 @@ var results = [];
       var results = [];
       //var currentMinDiff = 1;
       for (let i = 2; i <= this.maxDiv; i++) {
-        
         var ratios = this.generateArrRatiosLinear(i);
 
-         var totalDiff = 0;
+        var totalDiff = 0;
         var resultRatios = [];
         for (let j = 0; j < ratioData.length; j++) {
           const ratio = ratioData[j];
 
           var diffResult = this.diffFromRatio(ratios, ratio);
-          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff});
+          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff });
           if (this.priorityOrder) {
             totalDiff += Math.abs(diffResult.diff) * (ratioData.length - j);
           } else {
             totalDiff += Math.abs(diffResult.diff);
           }
         }
-        
+        var avgDiff = totalDiff / ratioData.length;
+
         //Only best results
         // if (totalDiff < currentMinDiff) {
         //   currentMinDiff = totalDiff;
         //   results.push({ value: i, diff: totalDiff });
         // }
-        results.push({ value: i, diff: totalDiff, ratios: resultRatios });
+        results.push({
+          value: i,
+          diff: totalDiff,
+          ratios: resultRatios,
+          avgDiff,
+        });
       }
 
       return results;
@@ -270,7 +301,7 @@ var results = [];
       }
       return ratios;
     },
-     generateArrRatiosLinear(num) {
+    generateArrRatiosLinear(num) {
       var ratios = [];
       for (var i = 0; i < num; i++) {
         var r = (num + i) / num;
@@ -286,7 +317,7 @@ var results = [];
         var arrRatio = arr[i];
         //var diff = this.calcDiff(arrRatio, ratio);
         var diff = this.calcDiffCents(arrRatio, ratio);
-        
+
         if (Math.abs(diff) < Math.abs(currentDiff)) {
           currentDiff = diff;
           currentIdx = i;
@@ -297,12 +328,12 @@ var results = [];
       return { idx: currentIdx, diff: currentDiff, ratio: resultRatio };
     },
 
-    calcDiff(ratioA, ratioB){
+    calcDiff(ratioA, ratioB) {
       var diff = arrRatio > ratio ? arrRatio / ratio : ratio / arrRatio;
       return diff;
     },
 
-    calcDiffCents(ratioA, ratioB){
+    calcDiffCents(ratioA, ratioB) {
       var centsA = this.ratioToCents(ratioA);
       var centsB = this.ratioToCents(ratioB);
 
@@ -313,7 +344,7 @@ var results = [];
       var cents = 1200 * Math.log2(parseFloat(ratio));
       return cents;
     },
-  }
+  },
 };
 </script>
 
