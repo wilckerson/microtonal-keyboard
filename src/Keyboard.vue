@@ -100,6 +100,16 @@
             style="width: 70px"
           />
         </span>
+
+        <span v-if="mode == 'gtr'">
+          Shift by:
+          <input
+            type="number"
+            v-model="shiftCount"
+            :step="1"
+            style="width: 70px"
+          />
+        </span>
       </p>
 
 
@@ -277,6 +287,7 @@ export default {
       wtg: false,
       wtgMode: "alternated",
       harmMode: "over",
+      shiftCount: 3,
       sDisplay: undefined,
       lDisplay: undefined,
       keys: [
@@ -5792,7 +5803,7 @@ console.log(r)
         var start = 1;
         var value = start;
 
-        var shift = 3;
+        var shift = this.shiftCount;
         var qtd = 9;
         //var lineRatios = [1, Math.pow(1.5, 14/20), Math.pow(1.5, 28/20), Math.pow(1.5, 42/20)]; //Gamma 1ed1.0627073611568032
         //var lineRatios = [1, Math.pow(2, 14/34), Math.pow(2, 28/34), Math.pow(2, 42/34)]; //34ed8
@@ -6377,7 +6388,7 @@ console.log(r)
       }
 
       //AQUI!
-      if (this.mode == "wtg" || this.mode == "code") {
+      if (this.mode == "wtg" || this.mode == "code" || this.mode == "gtr") {
         return ratiosArr[idx - 1] || 0;
       }
 
