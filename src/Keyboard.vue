@@ -1,68 +1,121 @@
 <template>
   <div>
     <p>
-      <button v-on:click="setPhi">φ</button>
-      <button v-on:click="setPi">π</button>
-      Base:
-      <input type="number" step="0.0001" v-model="base" />
-      Eqt:
-      <input type="number" step="1" v-model="eqt" />
-      <span>Ratio: {{ratio(2)}}</span>
-      <span>
-        DiffRoot:
-        <input type="checkbox" v-model="diffRoot" />
-      </span>
+    Mode:
+    <select v-model="mode">
+      <option value="eqt">Equal temperament</option>
+      <option value="harm">Harmonics</option>
+      <option value="wtg">Regular temperament</option>
+      <option value="gtr">Guitar strings</option>
+      <option value="code">Custom notes (code edit only)</option>
+    </select>
+
+
       <span>
         MainFreq:
-        <input type="text" v-model="mainFreq" />
-      </span>
-      <br />
-      <span>
-        Normalize:
-        <input type="checkbox" v-model="normalize" />
-        <input type="number" v-model="equivalence" step="0.0001" />
+        <input type="text" v-model="mainFreq" style="width: 70px;" />
       </span>
       <span>
-        Repeat
-        <input type="checkbox" v-model="repeatScale" />
-        <input type="number" v-model="repeatScaleValue" step="0.0001" />
+        Guitar string length (cm):
+        <input type="number" v-model="guitarStringLength" step="1" style="width: 70px;" />
       </span>
-      <span>
-        Chart:
-        <input type="checkbox" v-model="showChart" />
-      </span>
-      <span>
-        Sort:
-        <input type="checkbox" v-model="applySort" />
-      </span>
-      <span>
-        guitarStringLength:
-        <input type="number" v-model="guitarStringLength" step="1" />
-      </span>
-       <span>
-        Test:
-        <input type="number" v-model="testValue" step="0.0001" style="width:70px;" />
-      </span>
-       <span>
-        Test (int):
-        <input type="number" v-model="testValueInt" step="1" style="width:70px;" />
-      </span>
-       <span>
-        Regular temperament:
-        <input type="checkbox" v-model="wtg" />
-        <div style="display:inline-block;" v-if="wtg">
-          Mode:
-        <select v-model="wtgMode">
-          <option value="up">Up</option>
-          <option value="alternated">Up/Down</option>
-          <option value="down">Down</option>
+
+     </p>
+    <div>
+      <div v-if="mode == 'eqt' || mode =='gtr' || mode =='code'">
+        <button v-on:click="setPhi">φ</button>
+        <button v-on:click="setPi">π</button>
+        <span>Base:</span>
+        <input type="number" step="0.0001" v-model="base" />
+        <span>Eqt:</span>
+        <input type="number" step="1" v-model="eqt" />
+      </div>
+
+       <div v-if="mode =='wtg'">
+        <button v-on:click="setPhi">φ</button>
+        <button v-on:click="setPi">π</button>
+        <span>Generator:</span>
+        <input type="number" step="0.0001" v-model="base" />
+
+        <span>
+          <input type="checkbox" v-model="normalize" />
+          <span>Period:</span>
+          <input type="number" v-model="equivalence" step="0.0001" />
+        </span>
+        <p>
+          <span>Quantity:</span>
+          <input type="number" step="1" v-model="eqt" style="width: 70px;" />
+
+          <span>Direction:</span>
+          <select v-model="wtgMode">
+            <option value="up">Up</option>
+            <option value="alternated">Up/Down</option>
+            <option value="down">Down</option>
+          </select>
+
+          <span>
+            <input type="checkbox" v-model="repeatScale" />
+            Repeat
+            <input type="number" v-model="repeatScaleValue" step="0.0001" />
+          </span>
+          <span>
+            <input type="checkbox" v-model="applySort" />
+            Sort
+          </span>
+        </p>
+      </div>
+
+       <div v-if="mode == 'harm'">
+         Harmonic number:
+         <input type="number" step="1" v-model="eqt" />
+         Type:
+          <select v-model="harmMode">
+          <option value="over">Overtone</option>
+          <option value="under">Undertone</option>
         </select>
-        </div>
-      </span>
-    </p>
-    <p v-if="sDisplay && lDisplay">
-      s: {{sDisplay}} L: {{lDisplay}}
-    </p>
+       </div>
+
+
+
+      <!-- <span>Ratio: {{ ratio(2) }}</span> -->
+      <!-- <span>
+        DiffRoot:
+        <input type="checkbox" v-model="diffRoot" />
+      </span> -->
+
+
+
+       <p  v-if="mode != 'wtg'">
+
+        <input type="checkbox" v-model="normalize" />
+        <span>Equivalence Period:</span>
+        <input type="number" v-model="equivalence" step="0.0001" />
+
+        <span v-if="mode == 'gtr'">
+          Steps by string:
+          <input
+            type="number"
+            v-model="testValueInt"
+            :step="1 / 2"
+            style="width: 70px"
+          />
+        </span>
+      </p>
+
+
+      <!-- <span>
+        Test:
+        <input
+          type="number"
+          v-model="testValue"
+          step="0.0001"
+          style="width: 70px"
+        />
+      </span> -->
+
+
+    </div>
+    <p v-if="sDisplay && lDisplay">s: {{ sDisplay }} L: {{ lDisplay }}</p>
     <!-- <div>
       1.25 ({{Math.pow(ratio(2),5)-1.25}})
     </div>
@@ -77,13 +130,22 @@
     </div>
 
     <table class="keyboard">
-      <tr v-for="(krow,ridx) in keys" v-bind:key="ridx + base">
-        <td v-for="(key,kidx) in krow" v-bind:key="(ridx+''+kidx)">
+      <tr v-for="(krow, ridx) in keys" v-bind:key="ridx + base">
+        <td v-for="(key, kidx) in krow" v-bind:key="ridx + '' + kidx">
           <template v-if="!freqBased">
-            <small>{{key.idx}} : {{parseFloat(ratio(key.idx)).toFixed(4)}}</small>
+            <small
+              >{{ key.idx }} :
+              {{ parseFloat(ratio(key.idx)).toFixed(4) }}</small
+            >
 
             <!-- Distancia do fret em relação ao inicio do braço -->
-            <small >({{(guitarStringLength-(guitarStringLength/ratio(key.idx))).toFixed(3)}}cm)</small>
+            <small
+              >({{
+                (
+                  guitarStringLength - (guitarStringLength / (ratio(key.idx) || 1))
+                ).toFixed(3)
+              }}cm)</small
+            >
             <!-- <small >({{(65-(65/ratio(key.idx))).toFixed(2)}}cm)</small> -->
 
             <!-- Distancia entre frets em relação ao inicio do braço -->
@@ -94,54 +156,81 @@
             <audio-key
               :keyName="key.k"
               :idx="key.idx"
-              :freq="(mainFreq * factor * ratio(key.idx))"
-              :text="text(key.idx)"
+              :freq="mainFreq * factor * ratio(key.idx)"
+              :text="parseFloat(ratioToCents(ratio(key.idx) || 1)).toFixed(3) + '¢'"
               :color="color(key.idx)"
               @onChangeActive="onChangeActive"
             />
           </template>
           <template v-if="freqBased">
-            <small>{{key.idx}} : {{parseFloat(freq(key.idx)).toFixed(3)}}</small>
-            <audio-key :keyName="key.k" :freq="freq(key.idx)"  :color="color(key.idx)" @onChangeActive="onChangeActive" />
+            <small
+              >{{ key.idx }} : {{ parseFloat(freq(key.idx)).toFixed(3) }}</small
+            >
+            <audio-key
+              :keyName="key.k"
+              :freq="freq(key.idx)"
+              :color="color(key.idx)"
+              @onChangeActive="onChangeActive"
+            />
           </template>
         </td>
       </tr>
     </table>
+    <p>Active interval ratio:
+      <br/>
+      {{ activeRatio ? (parseFloat(activeRatio).toFixed(12)+" ("+parseFloat(ratioToCents(activeRatio)).toFixed(6)+"c)") : "None" }}
+      </p>
+    <div>
+      <input type="checkbox" v-model="showChart" />
+      Display chart and infos
+    </div>
     <div v-if="showChart">
-      <chartjs-line
-        :width="500"
-        :height="150"
-        :labels="chartLabels()"
-        :data="chartData"
-        :bind="true"
-        style="display:inline-block;"
-      ></chartjs-line>
-      <chartjs-line
-        :width="500"
-        :height="150"
-        :labels="chartLabels()"
-        :data="ratioDiff"
-        :bind="true"
-        style="display:inline-block;"
-      ></chartjs-line>
+      <input type="checkbox" v-model="inCents" />In cents
     </div>
-    <div>ActiveRatio: {{activeRatio}}</div>
-    <div>Avg ratio: {{ratioAvg}}</div>
-    <div>Ratios diff: {{ratioDiff}}</div>
-    <div style="text-align:left;" v-if="!freqBased">
-      <h4 style="display:inline-block;">Ratio List:</h4>
-      <span>
-        <input type="checkbox" v-model="ratioListIdx" />Idx
-      </span>
-      <span style="margin-left:20px;">
-        <input type="checkbox" v-model="inCents" />In cents
-      </span>
-      <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
-      <div v-for="ii in Math.max(73,nEqt)" v-bind:key="ii">
-        <span v-if="ratioListIdx">{{ii}}:</span>
-        <span>{{inCents ? ratioToCents(ratio(ii)) : ratio(ii)}}</span>
-      </div>
-    </div>
+
+    <table v-if="showChart" width="100%">
+      <tr style="vertical-align: top;">
+        <td >
+          <chartjs-line
+            :width="500"
+            :height="150"
+            :labels="chartLabels()"
+            :data="chartData"
+            :bind="true"
+
+            datalabel="Chart of notes"
+          ></chartjs-line>
+
+          <div style="text-align: left" v-if="!freqBased">
+            <b>Notes list: </b>
+            <input type="checkbox" v-model="ratioListIdx" />
+            Index
+            <br/>
+            <br/>
+            <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
+            <div v-for="ii in Math.max(73, nEqt)" v-bind:key="ii">
+              <span v-if="ratioListIdx">{{ ii }}:</span>
+              <span>{{ inCents ? parseFloat(ratioToCents(ratio(ii))).toFixed(6) : parseFloat(ratio(ii)).toFixed(12) }}</span>
+            </div>
+          </div>
+
+        </td>
+        <td >
+          <chartjs-line
+            :width="500"
+            :height="150"
+            :labels="chartLabels()"
+            :data="ratioDiff"
+            :bind="true"
+            datalabel="Chart of intervals"
+          ></chartjs-line>
+
+          <p><b>Average ratio:</b> {{ ratioAvg  }}</p>
+          <div><b>Ratios difference:</b> {{ ratioDiff }}</div>
+        </td>
+      </tr>
+    </table>
+
   </div>
 </template>
 
@@ -154,15 +243,15 @@ require("hchs-vue-charts");
 
 Vue.use(VueCharts);
 
-
 export default {
   components: {
-    AudioKey
+    AudioKey,
   },
   data() {
     return {
-      eqt: 22, //12,
-      base: 2,//1.4950347693089112,//Math.pow(5,1/4),
+      mode: "eqt",
+      eqt: 12, //12,
+      base: 2, //1.4950347693089112,//Math.pow(5,1/4),
       ratioDiff: [],
       //ratiosArr:[],
       ratioAvg: 0,
@@ -170,7 +259,7 @@ export default {
       factor: 1,
       freqBased: false,
       diffRoot: false,
-      equivalence: 2,//2.0125,
+      equivalence: 2, //2.0125,
       normalize: false,
       repeatScale: false,
       repeatScaleValue: 2,
@@ -184,9 +273,10 @@ export default {
       inCents: false,
       guitarStringLength: 65, //65
       testValue: 1,
-      testValueInt:1,
-      wtg:false,
+      testValueInt: 1,
+      wtg: false,
       wtgMode: "alternated",
+      harmMode: "over",
       sDisplay: undefined,
       lDisplay: undefined,
       keys: [
@@ -235,10 +325,10 @@ export default {
         //   { k: "<", idx: 8 },
         //   { k: ">", idx: 9 }
         // ]
-      ]
+      ],
     };
   },
-  mounted: function() {
+  mounted: function () {
     var _this = this;
     //Transposição nos números
     // window.addEventListener("keydown", e => {
@@ -274,10 +364,12 @@ export default {
           }
           var vDiff = v / vAnterior;
           if (vDiff > 0) {
-            if(this.inCents){
-              arrDiff.push(this.ratioToCents(vDiff));
-            }else{
-              arrDiff.push(vDiff);
+            if (this.inCents) {
+              arrDiff.push(
+                parseFloat(parseFloat(this.ratioToCents(vDiff)).toFixed(6))
+                );
+            } else {
+              arrDiff.push(parseFloat(vDiff.toFixed(12)));
             }
           }
         }
@@ -287,7 +379,7 @@ export default {
       this.ratioDiff = arrDiff;
 
       if (this.ratioDiff.length) {
-        var sum = this.ratioDiff.reduce(function(a, b) {
+        var sum = this.ratioDiff.reduce(function (a, b) {
           return a + b;
         });
         var avg = sum / this.ratioDiff.length;
@@ -297,9 +389,9 @@ export default {
       return data;
     },
 
-    nEqt: function() {
+    nEqt: function () {
       return parseInt(this.eqt);
-    }
+    },
   },
   methods: {
     mountKeyboardKeys() {
@@ -307,7 +399,7 @@ export default {
         ["Z", "X", "C", "V", "B", "N", "M", "<", ">"],
         ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
         ["Q", "W", "E", "R", "T", "Y", "U", "I", "O"],
-        ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
       ];
 
       var result = [];
@@ -743,30 +835,30 @@ export default {
         // 4374
 
         100,
-        100+(this.base*1),
-        100+(this.base*2),
-        100+(this.base*3),
-        100+(this.base*4),
-        100+(this.base*5),
-        100+(this.base*6),
-        100+(this.base*7),
-        100+(this.base*8),
-        100+(this.base*9),
-        100+(this.base*10),
-        100+(this.base*11),
-        100+(this.base*12),
-        100+(this.base*13),
-        100+(this.base*14),
-        100+(this.base*15),
-        100+(this.base*16),
-        100+(this.base*17),
-        100+(this.base*18),
-        100+(this.base*19),
-        100+(this.base*20),
-        100+(this.base*21),
-        100+(this.base*22),
-        100+(this.base*23),
-        100+(this.base*24),
+        100 + this.base * 1,
+        100 + this.base * 2,
+        100 + this.base * 3,
+        100 + this.base * 4,
+        100 + this.base * 5,
+        100 + this.base * 6,
+        100 + this.base * 7,
+        100 + this.base * 8,
+        100 + this.base * 9,
+        100 + this.base * 10,
+        100 + this.base * 11,
+        100 + this.base * 12,
+        100 + this.base * 13,
+        100 + this.base * 14,
+        100 + this.base * 15,
+        100 + this.base * 16,
+        100 + this.base * 17,
+        100 + this.base * 18,
+        100 + this.base * 19,
+        100 + this.base * 20,
+        100 + this.base * 21,
+        100 + this.base * 22,
+        100 + this.base * 23,
+        100 + this.base * 24,
       ];
       //freqArr = freqArr.sort();
       return freqArr[idx - 1] || 0;
@@ -915,7 +1007,6 @@ export default {
         // ,1.817120593
         // ,1.912931183
         // ,2
-
         //GoldNumber
         //1,
         // 1.05901505294051048425,
@@ -931,27 +1022,24 @@ export default {
         // 1.8146448535748479194150313051368,
         // 1.9217362156767924652488517475003,
         //2
-
         //Sequencia Fibonacci
         //1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711,28657,46368,75025,121393,196418,317811,514229,832040,1346269,2178309,3524578,5702887,9227465,14930352,24157817,39088169,63245986,102334155,165580141,267914296,433494437
-
-// 1
-// ,1.618033988749895
-// ,2.618033988749895
-// ,1.4120226591665965
-// ,2.284700655416562
-// ,1.2322411048610529
-// ,1.993807989999907
-// ,1.0753496982869866
-// ,1.739952361620289
-// ,2.815302059907276
-// ,1.5184181405091886
-// ,2.4568521604782805
-// ,1.3250901003291566
-// ,2.144040820488583
-// ,1.1563769736059133
-// ,1.8710572471021079
-
+        // 1
+        // ,1.618033988749895
+        // ,2.618033988749895
+        // ,1.4120226591665965
+        // ,2.284700655416562
+        // ,1.2322411048610529
+        // ,1.993807989999907
+        // ,1.0753496982869866
+        // ,1.739952361620289
+        // ,2.815302059907276
+        // ,1.5184181405091886
+        // ,2.4568521604782805
+        // ,1.3250901003291566
+        // ,2.144040820488583
+        // ,1.1563769736059133
+        // ,1.8710572471021079
         //1,2,3/2,5/4,8/4,13/8,21/16,34/32,55/32,89/64,144/128,233/128,377/256,610/512,987/512,1597/1024,2584/2048,4181/4096,6765
         //8/4,13/8,21/16,34/32,1
         //2,55/32,89/64,144/128,1
@@ -966,12 +1054,10 @@ export default {
         //  ,1.777777777
         //  ,1.8
         //  ,2
-
         // 1
         // ,1.857142857
         // ,1.909090909
         // ,2
-
         // 1,
         // //1.2, //6/5
         // 1.125, //9/8 (1.5/1.333)
@@ -987,7 +1073,6 @@ export default {
         // 1.77777, //16/9 (1.333/1.5*2)
         // //1.8984375, //243/128
         // 2
-
         //1, 1.041666666666667, 1.1111111111, 1.125, 1.2,  1.25, 1.33333333, 1.5, 1.666666666, 2
         //1,(2*Math.PI*(60/360)), 3/2,(Math.PI/2),2
         //2/Math.sqrt(3), Math.sqrt(2), 3/2, Math.sqrt(3),   1.0606601717798212*2, 2/Math.sqrt(3)*2
@@ -996,22 +1081,17 @@ export default {
         //8192/6561
         // 1,
         // 2,
-
         // 3/3,
         // 4/3,
         // 5/3,
         // 6/3,
-
         //1,3/2,5/4,7/4,9/8,2,11/8,13/8,15/8,17/16,19/16,21/16,23/16,25/16,27/16,29/16,31/16,2//Root1(5,8,12,16)
         //3/2, 9/8, 15/8, 21/16, 27/16, 33/32, 39/32, 45/32, 51/32, 57/32, 63/32 //Root3(5,11)
-
         //5/4,15/8,25/16,(35/32)*2,2.5,
         //1.25,45/32,55/32,65/32,(75/64)*2,2.5//,(85/64)*2,(95/64)*2,105/64,115/64,125/64,//,45/32 //Root5(4,5,7)
-
         // 7/4,21/16,35/32,49/32,63/32 //Root7
         //9/8,25/16,45/32,63/32,81/64 //Root9
         // 11/8,33/32,55/32,77/64,99/64,121/64,143/128,165/128,187/128,209/128,231/128,253/128,(1.0313*2)//Root11
-
         // 1,
         // ////1.058823529,
         // ////1.0625,
@@ -1030,22 +1110,16 @@ export default {
         // 1.77777777,
         // //1.875,
         // 2
-
         //Serie harmonica de acordo com Helmholtz Roughness function
         //1,2,3/2,4/3,5/3,5/4,7/4,6/5,8/5,9/5,7/6,7/5,8/7,9/8
-
         //Serie harmonica de acordo com Euler's Gradus function
         //1,2,3/2,4/3,5/4,5/3,6/5,9/8,8/5,7/4,7/6,8/7,9/5,7/5,9/7
-
         //Serie harmonica de acordo com aparecimento (notas normalizadas)
         //1,1.5,2,1.25,1.5,1.75,2,1.125,1.25,1.375,1.5,1.675,1.75,1.875,2
-
         //Serie harmonica complemetnar de acordo com aparecimento (notas normalizadas)
         //1,1.5,1.33333,1.25,1.2,1.166666,1.142857,1.125,1.11111,1.1
-
         //Major scale Just Intonation
         //1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2
-
         // 1,
         // 1.125,
         // 1.25,
@@ -1054,11 +1128,9 @@ export default {
         // 1.66666,
         // 2
         //1.111111111, 1.142857, 1.16666, 1.2, 1.285714, 1.4, 1.6, 1.75, 1.8,
-
         //Acima e abaixo (Abaixo tem todas as notas de Last of Moicans)
         //0.5, 1/(3/2) ,1/(4/3), 1/(5/4), 1/(9/8), 1, 1,
         //1, 9/8, 5/4, 4/3, 3/2,2
-
         //Diagrama Tonal
         // //2, 2/(9/8), 2/(5/4), 2/(4/3), 2/(3/2), 2/(27/16), 2/(15/8), 2/2,0,
         // 2/2, 2/(15/8),2/(27/16),2/(3/2),2/(4/3),2/(5/4), 2/(9/8), 2,0,
@@ -1066,11 +1138,9 @@ export default {
         // 9/8, 81/64, 45/32, 3/2, 27/16, 243/128,135/64,(9/8)*2,0,
         // //5/4, 45/32, 25/16, 5/3, 15/8, 135/64, 75/32, (5/4)*2,0,
         // //3/2, 27/16, 15/8, 2, 9/4, 81/32, 45/16, (3/2)*2
-
         // 2/2, 2/(15/8),2/(27/16),2/(3/2),2/(4/3),
         // 2/(5/4), 2/(9/8), 2,
         //4/(15/8),4/(27/16),4/(3/2),4/(4/3),4/(5/4), 4/(9/8), 4,
-
         //1, 9/8, 5/4, 4/3, 3/2,27/16, 15/8,2,
         //2*1, 2*9/8,2* 5/4,2* 4/3,2* 3/2,2* 27/16,2* 15/8,2*2,
         //9/8, 81/64, 45/32, 3/2, 27/16, 243/128,135/64,(9/8)*2,0,
@@ -1093,7 +1163,6 @@ export default {
         // (4/3)*1.3333333333333333,
         // (4/3)*(4/3)*1.0666666666666667,
         // (4/3)*(4/3)*1.125,
-
         // 2*        1,
         // 2*1.0666666666666667,
         // 2*1.125,
@@ -1111,11 +1180,9 @@ export default {
         //1.5,1.3333333333333333,1.1851851851851851,1.0666666666666667,
         //1, 1.125, 1.25, 1.3333333333333333, 1.5,
         //1.422186657778,
-
         //1,2,
         //3/2,4/3,5/4,6/5,7/6,8/7,9/8,10/9,11/10,12/11
         //2/(3/2), 2/(4/3), 2/(5/4), 2/(6/5), 2/(7/6), 2/(8/7), 2/(9/8), 2/(10/9), 2/(11/10), 2/(12/11)
-
         //Por3
         // 1
         // ,2
@@ -1129,7 +1196,6 @@ export default {
         //1,2,3,4,5,6,7,8,9,
         //2,4,6,8,10,12,14,16,18,
         //3,6,9,12,15,18,21,24,27
-
         //Pseudo Arabic
         // 1,
         // 16/15,
@@ -1138,7 +1204,6 @@ export default {
         // 3/2,
         // 8/5,
         // 15/8,
-
         // 1,
         // 16/15,
         // 5/4,
@@ -1149,7 +1214,6 @@ export default {
         // 5/3,
         // 15/8,
         // 2
-
         // 1,
         // 5/4,
         // 4/3,
@@ -1161,14 +1225,12 @@ export default {
         // 2*3/2,
         // 2*5/3,
         // 4
-
         // 1,
         // 1.125, //9/8
         // 1.25, //5/4
         // 1.5, //3/2
         // 1.6875, //27/16
         // 2,
-
         // 1,
         // 1.05349794238,
         // 1.125,
@@ -1181,7 +1243,6 @@ export default {
         // 1.8984375,
         // 2, //1.5
         // 2.25 //1.6875
-
         ////Diamante série Harmônica
         // 1,
         // 1.125, //9/8
@@ -1192,7 +1253,6 @@ export default {
         // 1.875, //27/19,
         // 2,
         // 0,
-
         // // 1.125*1,
         // // 1.125*1.125, //9/8
         // // 1.125*1.25, //5/4
@@ -1202,7 +1262,6 @@ export default {
         // // 1.125*1.875, //27/19,
         // // 1.125*2,
         // // 0,
-
         // 1.25*1,
         // 1.25*1.125, //9/8
         // 1.25*1.25, //5/4
@@ -1212,7 +1271,6 @@ export default {
         // 1.25*1.875, //27/19,
         // 1.25*2,
         // 0,
-
         // 1.33333333*1,
         // 1.33333333*1.125, //9/8
         // 1.33333333*1.25, //5/4
@@ -1222,7 +1280,6 @@ export default {
         // 1.33333333*1.875, //27/19,
         // 1.33333333*2,
         // 0,
-
         // 1.5*1,
         // 1.5*1.125, //9/8
         // 1.5*1.25, //5/4
@@ -1232,7 +1289,6 @@ export default {
         // 1.5*1.875, //27/19,
         // 1.5*2,
         // 0,
-
         // 1.666666666*1,
         // 1.666666666*1.125, //9/8
         // 1.666666666*1.25, //5/4
@@ -1242,16 +1298,13 @@ export default {
         // 1.666666666*1.875, //27/19,
         // 1.666666666*2,
         // 0,
-
         // 1,1.125,1.25, 1.3333,1.5,1.6666,//1.875,2,
         // /*1.265625,*/ /*1.40625,*/ /*1.6875,*/ /*1.0546875,*/
         // 1.5625, 1.0416666, 1.171875,
         // 1.777777, /*1.111111,*/
         // 1.3888888,
         // /*1.7578125*/
-
         // 1.851843631482,2
-
         //1,
         //2,
         //3/2,
@@ -1269,7 +1322,6 @@ export default {
         // 9/7,
         // 9/6,
         // 9/5,
-
         // 11/2,
         // 11/3,
         // 11/4,
@@ -1279,7 +1331,6 @@ export default {
         // 11/8,
         // 11/9,
         // 11/10
-
         // 1,
         // //8/7, //8/7
         // 1.25, //5/4
@@ -1288,7 +1339,6 @@ export default {
         // //1.6,
         // 1.75, //7/4
         // 2
-
         // 1,
         // Math.pow(2,1/12),
         // Math.pow(2,1/12)*Math.pow(2,1/12),
@@ -1299,7 +1349,6 @@ export default {
         // Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12),1.5,
         // Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12)*Math.pow(2,1/12),
         // 2
-
         //1,2,4/3,3/2,5/4,1.5555555,7/4,16/9,9/8//,11/8,13/8,15
         //1,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32
         // 8*1,
@@ -1310,7 +1359,6 @@ export default {
         // 8*1/6,
         // 8*1/7,
         // 8*1/8
-
         // 1,
         // 1.5,
         // 0.5*2,
@@ -1326,7 +1374,6 @@ export default {
         // 0.5*7,
         // 0.5*7.5,
         // 0.5*8,
-
         // 4,
         // 4.5,
         // 5,
@@ -1336,14 +1383,12 @@ export default {
         // 7,
         // 7.5,
         // 8
-
         // 1,
         // 1.2360687328379581875029742903884,
         // //1.618033,
         // 1.5278659122996356532938132787012,
         // 1.88888,
         // 2
-
         // 1,
         // 1.0534979423868312757201646090535,
         // 1.1851851851851851851851851851852,
@@ -1352,7 +1397,6 @@ export default {
         // 1.5802469135802469135802469135802,
         // 1.777777,
         // 2
-
         //Pytagoream 1.5
         // 1
         // ,1.06787109375
@@ -1378,31 +1422,26 @@ export default {
         // ,2*1.6875
         // ,2*1.802032470703125
         // ,2*1.8984375
-
         // 4*4/8,
         // 4*5/8,
         // 4*6/8,
         // 4*7/8,
         // 4*8/8,
-
         // 5*4/8,
         // 5*5/8,
         // 5*6/8,
         // 5*7/8,
         // 5*8/8,
-
         // 6*4/8,
         // 6*5/8,
         // 6*6/8,
         // 6*7/8,
         // 6*8/8,
-
         // 7*4/8,
         // 7*5/8,
         // 7*6/8,
         // 7*7/8,
         // 7*8/8,
-
         // 8*4/8,
         // 8*5/8,
         // 8*6/8,
@@ -1410,11 +1449,9 @@ export default {
         // 8*8/8,
         //4/4,5/4,6/4,7/4,8/4,9/4,10/4,11/4,12/4
         //8/8,9/8,10/8,11/8,12/8,13/8,14/8,15/8,16/8
-
         //Computational Approach to Musical Consonance and Dissonance
         //https://www.frontiersin.org/articles/10.3389/fpsyg.2018.00381/full
         //1, 2/1, 3/2, 4/3, 5/3, 5/4, 7/4, 6/5, 7/5, 8/5, 9/5, 7/6, 9/7, 11/6, 8/7, 10/7, 9/8
-
         // 1,
         // 1*(3/2),
         // 1*(3/2)*(4/3),
@@ -1424,24 +1461,19 @@ export default {
         // 1*(3/2)*(4/3)*(5/4)*(6/5)*(7/6)*(8/7),
         // 1*(3/2)*(4/3)*(5/4)*(6/5)*(7/6)*(8/7)*(9/8),
         // 1*(3/2)*(4/3)*(5/4)*(6/5)*(7/6)*(8/7)*(9/8)*(10/9),
-
         //Arranjo geometrico
         //https://www.youtube.com/watch?v=SU2JztST_TY
         // 0,0,0,0,0,0,0,0,0,
         // 0,0,0,0,1,Math.pow(Math.pow(2,1/12),7),Math.pow(Math.pow(2,1/12),14),Math.pow(Math.pow(2,1/12),21),Math.pow(Math.pow(2,1/12),28),
         // 0,0,0,0,0,0,0,0,0,
-
         // 0,0,0,0,0.5,0,0,0,0,
         // Math.pow(Math.pow(2,1/12),-12),Math.pow(Math.pow(2,1/12),10),Math.pow(Math.pow(2,1/12),7),Math.pow(Math.pow(2,1/12),3),1,Math.pow(Math.pow(2,1/12),4),Math.pow(Math.pow(2,1/12),7),Math.pow(Math.pow(2,1/12),11),Math.pow(Math.pow(2,1/12),12),
         // 0,0,0,0,Math.pow(Math.pow(2,1/12),4),Math.pow(Math.pow(2,1/12),8),Math.pow(Math.pow(2,1/12),11),Math.pow(Math.pow(2,1/12),15),Math.pow(Math.pow(2,1/12),16),
-
         // 1, 3,  5,  7,  9,  11, 13, 15, 17,
         // 3, 9,  15, 21, 27, 33, 39, 45, 51,
         // 5, 15, 25, 35, 45, 55, 65, 75, 85,
-
         //1, 1.25, 1.5, 1.875,2.25,2.8125,3.375, 4.21875, 5.0625
         //1, 5/4, 3/2, 1.6875, 2.109375, 2.53125, 2.84765625
-
         //,1
         // ,1.125
         // ,1.25
@@ -1457,7 +1489,6 @@ export default {
         // ,2*1.6875
         // ,2*1.875
         // ,2*2
-
         // 1,
         // 10/9,
         // 5/4,
@@ -1467,7 +1498,6 @@ export default {
         // 15/8,
         // 2,
         // 2.25,
-
         // (5/4)*1,
         // (5/4)*10/9,
         // (5/4)*5/4,
@@ -1477,7 +1507,6 @@ export default {
         // (5/4)*15/8,
         // (5/4)*2,
         // (5/4)*2.25,
-
         // (3/2)*1,
         // (3/2)*10/9,
         // (3/2)*5/4,
@@ -1488,7 +1517,6 @@ export default {
         // (3/2)*2,
         // (3/2)*2.25
         //1,9,18,27,36,45,54,63,72,81,90,99,108,117,126,135,144
-
         //1,2,4,8,7,5
         // 1
         // ,1
@@ -1514,7 +1542,6 @@ export default {
         // ,8
         // ,1
         // ,9
-
         //1,2
         //2*Math.PI*1/4,2*Math.PI*2/4,2*Math.PI*3/4,2*Math.PI
         //1/3,2/3,3/3,
@@ -1534,7 +1561,6 @@ export default {
         //4/(8/4)*2,4/(7/4)*2,4/(6/4)*2,4/(5/4)*2,4,5,6,7,8
         //1,1.125, 1.25, 1.3125, 1.5, 1.6875, 1.875, 2
         //1,1.125, 1.25, 1.333333333, 1.5, 1.66666666, 1.875, 2
-
         //1, Math.pow(2*Math.PI*(60/360),1),Math.pow(2*Math.PI*(60/360),2),Math.pow(2*Math.PI*(60/360),3),Math.pow(2*Math.PI*(60/360),4),Math.pow(2*Math.PI*(60/360),5)
         //1, 2*Math.PI*(60/360),1.25,2*Math.PI*(60/360)*1.25, 1.33333, 2*Math.PI*(60/360)*1.3333333,1.5, 2*Math.PI*(60/360)*1.5
         //Triangulo Equilatero
@@ -1549,7 +1575,6 @@ export default {
         // 1.7320508075688772,
         // 1.8137993642342176,
         // 2
-
         //3
         // 1
         // ,1.333333333
@@ -1560,7 +1585,6 @@ export default {
         // ,3.0
         // ,3.333333333
         // ,3.666666667
-
         //4
         // ,1.0
         // ,1.25
@@ -1571,7 +1595,6 @@ export default {
         // ,2.5
         // ,2.75
         // ,3.0
-
         //5
         // ,1.
         // ,1.2
@@ -1582,7 +1605,6 @@ export default {
         // ,2.2
         // ,2.4
         // ,2.6
-
         //6
         // ,1
         // ,1.166666667
@@ -1593,7 +1615,6 @@ export default {
         // ,2.
         // ,2.166666667
         // ,2.333333333
-
         //7
         // ,1.
         // ,1.142857143
@@ -1603,7 +1624,6 @@ export default {
         // ,1.714285714
         // ,1.857142857
         // ,2.
-
         // ,1.
         // ,1.083333333
         // ,1.166666667
@@ -1617,7 +1637,6 @@ export default {
         // ,1.833333333
         // ,1.916666667
         // ,2.
-
         //24
         // 1
         // ,1.041666667
@@ -1644,13 +1663,10 @@ export default {
         // ,1.916666667
         // //,1.958333333
         // ,2
-
         // 1/18,1/15,1/12,1/9,1/6,1/3,2/3,3/3,4/3,//5/3,
         // 1/6,1/5,1/4,1/3,1/2,1,2,3,4,//5,
         // 3/6,3/5,3/4,3/3,3/2,3,6,9,12,//15
-
         //1,1/2,1/3,1/4,1/5,1/6,1/7,1/8,1/9,1/10
-
         // 16*0.083333333
         // ,16*0.076923077
         // ,16*0.071428571
@@ -1664,24 +1680,19 @@ export default {
         // ,16*0.045454545
         // ,16*0.043478261
         // ,16*0.041666667
-
         //1,1.043478255652174, 1.0909090712727274, 1.1428571428571428, 1.1999999904000003, 1.263157885894737, 1.3333333333333335, 1.4117646847058827, 1.4999999880000001, 1.5999999952000001, 1.7142856902857144, 1.8461538332307696, 2
-
         // 1.000000	,1.125000	,1.250000	,1.500000
         // ,1.066667	,1.200000	,1.333333	,1.600000
         // ,1.142857	,1.285714	,1.428571	,1.714286
         // ,1.230769	,1.384615	,1.538462	,1.846154
         // ,1.333333	,1.500000	,1.666667	,2
         // ,1.454545	,1.636364	,1.818182	,	1.090909*2
-
         // 1,2,3,4,5,6,7,0,0,
         // 2,9/5,7/4,5/3,8/5,3/2,10/7,7/5,4/3,9/7,5/4,6/5,7/6,8/7,9/8,10/9,1,
-
         //1.6,X
         //2,1.66666,1.33333     ,1.8,1.5,1.2      ,1.75,1.4,1.1666666/*m*/   ,1.666666,1.33333,1.11111/*m*/   ,1.5,1.25,1
         //2,1.66666,1.33333,1.11111     ,1.8,1.5,1.2,1      ,1.75,1.4,1.1666666,0.933333/*mX*/   ,1.666666,1.33333,1.11111,0.88888/*m*/   ,1.5,1.25,1
         //2,1.66666,1.33333,1.11111,0.888888,0.740740,0.592592,0.49382716,0.3950617
-
         //Escala pitagóreca
         // 1
         // ,1.125
@@ -1697,14 +1708,12 @@ export default {
         // ,2*1.5
         // ,2*1.6875
         // ,2*1.8984375,
-
         // //Escala pentatônica pitagórica
         // 1.06787109375
         // ,1.20135498046875
         // ,1.3515243530273438
         // ,1.601806640625
         // ,1.802032470703125
-
         // 1
         // ,1.25
         // ,1.5
@@ -1720,7 +1729,6 @@ export default {
         // ,4*2.8125
         // ,4*3.375
         // ,4*4
-
         //1
         // 1.125
         // ,1.25
@@ -1730,7 +1738,6 @@ export default {
         // ,1.875
         // ,2
         // ,1.125*2
-
         //***************************************************************
         //Wilckerson Scale \o/
         //7 primeiras notas normalizadas encontrada a partir da multiplicação por 1.25 e 1.2 de
@@ -1753,7 +1760,6 @@ export default {
         // 2*16/9,
         // 2*2,
         //***************************************************************
-
         // 1
         // ,1.125
         // ,1.25
@@ -1770,15 +1776,12 @@ export default {
         // ,2*1.875
         // ,2*2
         //
-
         //1,10/9,5/4,4/3,1.5,5/3, 15/8,2,2*9/8
         //9/8,5/4,1.40625,1.5,1.6875,15/8,2,2*9/8
         //1,1.1111111111111112, 1.25, 1.3333333333333333,1.40625, 1.5, 1.6666666666666667, 1.875, 2
         // 1,9/8,4/3,1.5,16/9,2,
         // 2*9/8,2*4/3,2*1.5,2*16/9,2*2
-
         //2, 1.5, 1.3333333333333333, 1.265625,0.8009033203125,// 1.25, 1.2, 1.1666666666666667, 1.1428571428571428, 1.125,1
-
         //Divisão de uma corda
         //2/2, 2/1, 0,0,0,0,0,0,0,
         //3/3, 3/2, 3/1, 0,0,0,0,0,0,
@@ -1790,34 +1793,26 @@ export default {
         //9/9,9/8,9/7,9/6,9/5,9/4,9/3,9/2,9/1,
         //10/10, 10/9 ,10/8,10/7,10/6,10/5,10/4,10/3,10/2,10/1,
         //22/22,22/21,22/20,22/19,22/18,22/17,22/16,22/15,22/14,22/13,22/12,22/11
-
         //,2*4/3,2*4/2
         //6/12,6/11,6/10,6/9,6/8,6/7,6/6,12/11,12/10,12/9,12/8,12/7,12/6
         //,2*6/5,2*6/4,2*6/3
-
         //8/8,8/7,8/6,8/5,8/4
         //10/10,10/9,10/8,10/7,10/6,10/5
         //12/12,12/11,12/10,12/9,12/8,12/7,12/6
         //14/14,14/13,14/12,14/11,14/10,14/9,14/8,14/7
-
         //20/20, 20/19, 20/18, 20/17, 20/16, 20/15, 20/14, 20/13, 20/12, 20/11, 20/10
-
         // 1,4/3,3/2,2
         // ,1,5/4,8/5,2
         // ,1,8/7,7/4,2
         // ,1,9/8,16/9,2
         // ,1,11/8,16/11,2
         // ,1,16/13,13/8,2
-
         //1,1.2,1.5,1.8,2.25,2.7,3.375,4.05,5.0625
-
         // (1/3)/9, (1/3)/7, (1/3)/5, (1/3)/3, 1/3, 1, 5/3, 7/3, 9/3
         // ,1/9,    1/7,     1/5,      1/3,    1,   3, 5,   7,   9
         // ,3/9,    3/7,     3/5,      3/3,    3,   9, 15,  21,  27
-
         //1,1.1111111111111112, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 1.7777777777777777, 2
         //1, 1.1111111111111112, 1.25, 1.3333333333333333, 1.4814814814814816, 1.6666666666666667, 1.777777777777778, 2
-
         // 1.3499999999999999
         // ,1.5
         // ,1.6874999999999998
@@ -1826,7 +1821,6 @@ export default {
         // ,2*1.125
         // ,2*1.2
         // ,0,0
-
         // ,1.423828125
         // ,1.58203125
         // ,1.77978515625
@@ -1835,28 +1829,22 @@ export default {
         // ,2*1.1865234375
         // ,2*1.265625
         // ,0,0
-
         //1,2,3/2,4/3,5/3,5/4,6/5,7/4,7/5,7/6
         //1,2,3/2,5/4,7/4,9/8,11/8,13/8
         //1,9/8,5/4,1.40625,3/2,1.6875,15/8,2
-
         //Escala Pitagórica: (Gerador *= 1.5)
         //1, 1.125, 1.265625, 1.3333333333333333, 1.5, 1.6875, 1.7777777777777777, 2,0
         //Escala Pitagórica Versão pentatônica:
         //1, 1.125, 1.265625, 1.5, 1.6875, 2
-
         //Escala Pitagórica Invertida: (Gerador /= 1.5)
         //,1,1.125, 1.265625, 1.3333333333333335, 1.5, 1.6875, 1.8984375, 2
-
         //Escala gerador 4/3
         //1, 1.125, 1.265625, 1.33333, 1.5, 1.6875, 1.8984375, 2
-
         // 1,10/9, 5/4, 4/3, 3/2, 5/3, 15/8, 2,0
         // ,1.125*1,1.125*10/9, 1.125*5/4, 1.125*4/3, 1.125*3/2, 1.125*5/3, 1.125*15/8, 1.125*2,0
         // ,1.25*1,1.25*10/9, 1.25*5/4, 1.25*4/3, 1.25*3/2, 1.25*5/3, 1.25*15/8, 1.25*2,0
         // ,(4/3)*1,(4/3)*10/9,(4/3)* 5/4, (4/3)*4/3, (4/3)*3/2, (4/3)*5/3, (4/3)*15/8, (4/3)*2,0
         // ,1.5*1,1.5*10/9, 1.5*5/4, 1.5*4/3, 1.5*3/2, 1.5*5/3, 1.5*15/8, 1.5*2,0
-
         //August temperament
         // (296.011+1200)/1200,
         // (400+1200)/1200,
@@ -1870,7 +1858,6 @@ export default {
         // 2.0833325,//(1200+1200)/1200,
         // (88.032+2400)/1200,
         // 2.4934//(192.021+2400)/1200,
-
         // 1,1.069510852527154, 1.128355339633198, 1.197866192160352, 1.2673777131317887, 1.3368885656589427, 1.4104508589843259, 1.4973820379662985 //, 1.5842129503058469, 1.6711100386293953, 1.663110765896775, 2.000038769768404
         // ,1.5780337699226763452737888590816,
         // 1.6695884464479505801819851406628,
@@ -1890,30 +1877,23 @@ export default {
         // 16/9,
         // //15/8,
         // 2
-
         //1,10/9, 1.2500000000000002, 1.3333333333333333, 1.5, 1.666666666, 1.875, 2
         //,2*10/9, 2*1.2500000000000002, 2*1.3333333333333333, 2*1.5, 2*1.666666666, 2*1.875, 2*2
-
         // |--|--|--|--|--|--|--|--|
         //16/15,6/5,4/3,8/5,2,2.4
-
         //16/16,16/15,16/14,16/13,16/12,16/11,16/10,16/9,16/8
         //10/10,10/9,10/8,10/7,10/6,10/5
         //1.06666666,1.3333, 1.6, 1.777777777,2
         //1, 1.272727272727, 1.5, 2
-
         //1,1.125,1.2,1.25,1.333333,1.5,1.6666666,1.7777777,1.875,
         //  1, 1.025, 1.05, 1.16, 1.21, 1.26, 1.31,0,0,
         //  1,1.25,1.5,1.875,2,0,0,0,0
-
         // 1,1.125, 1.25, 1.375, 1.5, 1.625, 1.75, 1.875, 2,
         // (1.125)*1,(1.125)*1.125, (1.125)*1.25, (1.125)*1.375, (1.125)*1.5, (1.125)*1.625, (1.125)*1.75, (1.125)*1.875, (1.125)*2,
         // (1.25)*1,(1.25)*1.125, (1.25)*1.25, (1.25)*1.375, (1.25)*1.5, (1.25)*1.625, (1.25)*1.75, (1.25)*1.875, (1.25)*2
         //1, 1.125, 1.25, 1.125, 1.265625, 1.40625, 1.265625, 1.423828125, 1.58203125,
         //1, 1.125, 1.25, 1.4063, 1.5625, 1.757875, 1.953125, 2.19734375
-
         //4/3,5/4,6/5,7/6,8/7,9/8,10/9
-
         //EDO 53
         // //1,9,17,22,31,40,48
         // 1,
@@ -1969,18 +1949,14 @@ export default {
         // //Math.pow(Math.pow(2,1/53),51),
         // //Math.pow(Math.pow(2,1/53),52),
         // 2,
-
         // //Escala diatônica Maior
         // 1, 1.125, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 1.875, 2,0
         // //Escala diatônica Menor
         // ,1,1.125, 1.2, 1.35, 1.5, 1.6, 1.8, 2,0
-
         //JI Limit-3
         //1, 9/8, 4/3, 3/2, 16/9 , 2
-
         //JI Limit-5
         //1, 16/15, 6/5, 5/4, 8/5, 5/3, 15/8, 2
-
         //JI Limit-7
         //1, 8/7, 7/6, 9/7, 7/5, 10/7, 14/9, 12/7, 7/4, 2
         //8/7, 10/7,  12/7, //M
@@ -1988,13 +1964,10 @@ export default {
         //7/6,7/5,7/4, //m
         //1, 1.1020408163265307, 1.2, 1.3333333333333333, 1.5, 1.6, 1.8, 2 //7/6,9/7,7/5,14/9,7/4,1.866666, 2.1, 2*7/6 //escalinha
         //1,  9/7, 14/9, 2
-
         //JI LIMIT-11
         //1, 14/11, 11/8, 16/11, 11/7, 2
-
         //JI Limit-13
         //1, 16/13, 13/8, 2
-
         // (1)*1, (1)*1.125, (1)*1.25,
         // (4/3)*1, (4/3)*1.125, (4/3)*1.25,
         // (16/9)*1, (16/9)*1.125, (16/9)*1.25,
@@ -2003,13 +1976,11 @@ export default {
         // (1024/243)*1, (1024/243)*1.125, (1024/243)*1.25,
         //1/8,1/9,1/10,1/11,1/12,1/13,1/14,1/15,1/16
         //,1,9,10,11,12,13,14,15,16
-
         //4/4,5/4,6/4,7/4,2
         //1,8/7,8/6,8/5,2,16/7,0,0,0
         // 1, Math.pow(1.5,2)/2,Math.pow(1.5,4)/4,Math.pow(1.5,6)/8,Math.pow(1.5,1),Math.pow(1.5,3)/2,Math.pow(1.5,5)/4,2,1.125*2,0,
         // 1,9/8,5/4,4/3,3/2,5/3,16/9,2
         //1,8/7,5/4,4/3,3/2,8/5,7/4,2
-
         // 1.25
         // ,1.3333
         // ,1.406
@@ -2023,10 +1994,8 @@ export default {
         // ,2.22222
         // ,2.344
         // ,1.25*2
-
         //Derivative 12tone
         //1,16/15, 9/8, 6/5, 5/4, 4/3, 64/45, 3/2, 8/5, 5/3, 16/9, 15/8, 2
-
         // 1, 1.25, 1.5
         // ,16/15, 16/15* 1.25, 16/15 * 1.5
         // ,9/8, 9/8* 1.25, 9/8 * 1.5
@@ -2035,15 +2004,11 @@ export default {
         // ,4/3, 4/3* 1.25, 4/3 * 1.5
         // , 25/18,  25/18* 1.25,  25/18 * 1.5
         // , 3/2,  3/2* 1.25,  3/2 * 1.5
-
         // 1,9/8, 5/4, 45/32, 3/2, 27/16, 15/8, 2,0
         // ,1,16/15,6/5,4/3,3/2,8/5,9/5,2
-
         //1,16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 27/16, 9/5, 15/8, 2,0
-
         //1, 6/5,45/32,  8/5, 8/5*10/9
         //1, 6/5, 45/32,1.609325408935547 //8/5, 16/9
-
         /*
 1.2
 1.171875,
@@ -2061,7 +2026,6 @@ export default {
         // 1.2 * 1.171875 * 1.1444091796875 * 1.117587089538574 * 1.091393642127514,
         // 1.2 * 1.171875 * 1.1444091796875 * 1.117587089538574 * 1.091393642127514 * 1.06581410364015,
         // 1.2 * 1.171875 * 1.1444091796875 * 1.117587089538574 * 1.091393642127514 * 1.06581410364015 * 1.040834085586084,
-
         //5/5,6/5,/*7/5,*/8/5,9/5,10/5,//11/5,12/5,13/5
         //6/6, /*7/6,*/ 8/6, 9/6, 10/6, /*11/6,*/ 12/6,
         ///*7/7,*/8/7,9/7,10/7,/*11/7,*/12/7/*,13/7,14/7*/,16/7
@@ -2071,15 +2035,12 @@ export default {
         //12/12,14/12,15/12,16/12,18/12,20/12,21/12,24/12
         //1,16/15, 10/9, 6/5, 5/4, 4/3, 25/18, 3/2, 8/5, 5/3, 16/9, 15/8, 2
         // ,2*16/15, 2*10/9, 2*6/5, 2*5/4, 2*4/3, 2*25/18, 2*3/2, 2*8/5, 2*5/3, 2*16/9, 2*15/8, 2
-
         ///*1,2,3,4,5,6,7,8,9,10,11,*/12/12,13/12,14/12,15/12,16/12,17/12,18/12,19/12,20/12,21/12,22/12,23/12,24/12/*,25,26,27,28*/
         //3,6,9,12,15,18,21,24,27
-
         //Grave fica legal
         //12/12,13/12,14/12,15/12,16/12,17/12,18/12,19/12,20/12//,21/12,22/12,23/12,24/12
         //,4/3*12/12, 4/3*13/12, 4/3*14/12, 4/3*15/12, 4/3*16/12, 4/3*17/12, 4/3*18/12, 4/3*19/12, 4/3*20/12//,21/12,22/12,23/12,24/12
         //16/16, 17/16, 18/16, 19/16, 20/16, 21/16, 22/16, 24/16, 26/16, 27/16, 28/16, 30/16, 32/16
-
         // Math.pow(1.618033,0)
         // ,Math.pow(1.618033,3)
         // ,Math.pow(1.618033,6)
@@ -2093,10 +2054,8 @@ export default {
         // ,Math.pow(1.618033,30)
         // ,Math.pow(1.618033,33)
         // ,Math.pow(1.618033,36)
-
         //1,  1.5, 1.5 * 1.5
         //4/3, 4/3*1.25, 4/3 * 1.5,
-
         // Math.pow(1.25,0),
         // Math.pow(1.25,1),
         // Math.pow(1.25,36),
@@ -2109,7 +2068,6 @@ export default {
         // Math.pow(1.25,3+0),
         // Math.pow(1.25,3+1),
         // Math.pow(1.25,3+36),
-
         //3/24, 3/23, 3/22, 3/21, 3/20, 3/19, 3/18, 3/17, 3/16, 3/15, 3/14, 3/13, 4, //3/11, 3/10, 3/9, 3/8, 3/7, 3/6, 3/5, 3/4, 3/3,3/2,3,4,5,6,7,8
         //4/8, 4/7, 4/6, 4/5, 4/4,
         // 5/10, 5/9, 5/8, 5/7, 5/6, 5/5,
@@ -2118,18 +2076,15 @@ export default {
         //8/16, 8/15, 8/14, 8/13, 8/12, 8/11, 8/10, 8/9, 8/8
         //,9/18, 9/17, 9/16, 9/15, 9/14, 9/13, 9/12, 9/11, 9/10, 9/9
         //12/24, 12/23, 12/22, 12/21, 12/20, 12/19, 12/18, 12/17, 12/16, 12/15, 12/14, 12/13, 4
-
         //1,2,3,5,8,13,21,34
         //1, 1.066666666, 1.111111, 1.2, 1.25, 1.3333333, 1.38888875, 1.5, 1.5625, 1.6,  1.666666, 1.8, 1.875,
         //2, 2*1.066666666, 2*1.111111, 2*1.2, 2*1.25, 2*1.3333333, 2*1.38888875, 2*1.5, 2*1.5625, 1.6,  1.666666, 1.8, 1.875, 2,0,0,0
-
         // 1,  5/4, 3/2,
         //  8/6,5/3,2,
         //  13/12, 13/10, 13/8,
         //  21/20, 21/16,
         //  34/32,34/24, 8/5,   34/20,34/26, 34/21,
         //      21/13, 2
-
         //Famílias Overtones
         //1, 3/2, 2,
         //,1, 4/3, 2,
@@ -2143,7 +2098,6 @@ export default {
         //,1, 12/11, 12/10, 12/9, 12/8, 12/7, 2
         //1, 13/12, 13/11, 13/10, 13/9, 13/8, 13/7, 2
         //1, 14/13, 14/12, 14/11, 14/10, 14/9, 14/8, 2
-
         //Geradores Normalizados
         //1, 1.125, 1.265625, 1.423828125, 1.5, 1.6875, 1.8984375 (3/2)
         //1, 1.0534976497751514153817100885416, 1.1851848562963045185185, 1.3333333, 1.4046635329984186321831084042094,  1.5802464750577887418370123182716,  1.7777777, (4/3)
@@ -2151,9 +2105,7 @@ export default {
         //1, 1.157407407, 1.3395919, 1.3888888888, 1.607510287, 1.66666666, 1.9290123456,   //(5/3)
         //1, 1.0368, 1.2, 1.24416, 1.44, 1.492992, 1.728,    //(6/5)
         //1, 1.0806970, 1.166666666,  1.26081318, 1.361111111111, 1.587962962, 1.85262345,   //(7/6)
-
         //1, 1.125, 1.265625, 1.423828125, 1.601806640625, 1.802032470703125
-
         //GregTom2 https://www.youtube.com/watch?v=1EP0KvbxW8o
         // Math.pow(2,0/118),
         // Math.pow(2,7/118),
@@ -2174,26 +2126,20 @@ export default {
         // Math.pow(2,107/118), //Seventh
         // Math.pow(2,114/118),
         // Math.pow(2,118/118), //Octave
-
         // 1, 2, 3, 4, 5, 6, 7, 8, 9,
         // 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5
         // ,1.25, 2.25, 3.25, 4.25, 5.25, 6.25
         //7, 8, 9, 10, 11, 12, 13, 14
         //,7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5
         //1, 1.0534977777777779, 1.125, 1.185185, 1.265625, 4/3, 1.4238283474731792, 1.5, 1.601806640625, 1.5802469135802468, 1.6875, 1.777777, 1.8984375
-
         //Comma: 1,0136432647705078125
         //1, 1.125, 1,265625, 1,423828125, 1,601806640625, 1,802032470703125, 2,027286529541015625
         //1, 1.1098579146132872698944944029535, 1.2485901539399481786313062033227, 1.404663923182441700960219478738, 1.5802469135802469135802469135802, 1.77777, 2
-
         //1, 1.1096513271331787109375, 1.2483577430248260498046875, 1.4044024609029293060302734375, 1.5799527685157954692840576171875, 1.7774468645802699029445648193359,   2
-
         //8/8, 9/8, 10/8, 11/8, 12/8, 13/8, 14/8, 16/8, 0,
         //16/16, 16/15, 16/14, 16/13, 16/12, 16/11, 16/10, 16/9, 16/8
-
         //1, 1.0625, 1.125, 1.25, 1.5, 0, 0, 0,0,
         //4/3, 1.6, 16/9, 1.8823529411764706, 2
-
         //1, 1.25, 1.5, 1.75, 2, 1, 1.166666666, 1.3333333, 1.5, 1.6666666, 1.83333333, 2, 1, 1.2, 1.4, 1.6, 1.8, 2
         //2, 2.25, 2.5, 2.75, 3
         //1, 9/8, 5/4, 11/8, 3/2, 13/8, 7/4, 15/8, 2
@@ -2206,7 +2152,6 @@ export default {
         //Gerador 18/17
         //1.03755 = 83/80 Aporx 28/27
         //8,1,9,10,11,12,13,14,15,16,17,18,19
-
         // 1, 1.5,
         // 1.125, 1.6875,
         // 1.25, 1.875,
@@ -2215,14 +2160,12 @@ export default {
         // 1.625, 1.21875,
         // 1.75, 1.3125,
         // 1.875, 1.40625
-
         // 1, 1.25, 1.5,
         // 1.125, 1.40625, 1.6875,
         // 1.25, 1.5, 1.875,
         // //4/3, 5/3, 2
         // //1.35, 1.6875, 2.025
         // 1.40625, 1.40625*1.25, 1.40625*1.5
-
         //1
         //1.125
         //1.25
@@ -2236,47 +2179,37 @@ export default {
         // ,2.8125
         // ,3
         // ,1.6875*2
-
         // /*1.125*/ 1, 1.1111111111111112, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 1.7777777777777777,
         // ///*1.25*/ 1, 1.125, 1.2, 1.35, 1.5, 1.6, 1.8,
         // //*1.40625*/ 1, 1.0666666666666667, 1.2, 1.3333333333333333, 1.4222222222222223, 1.6, 1.7777777777777777 ,
         // /*1.5*/ 1, 1.125, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 1.875,
         // ///*1.6875*/ 1, 1.1111111111111112, 1.1851851851851851, 1.3333333333333333, 1.4814814814814814, 1.6666666666666667, 1.7777777777777777,
         // ///*1.875*/ 1, 1.0666666666666667, 1.2, 1.3333333333333333, 1.5, 1.6, 1.8,
-
         //Campo harmonico
         // Math.pow(2, (0)/12)
         // ,Math.pow(2, (4)/12)
         // ,Math.pow(2, (7)/12)
-
         // ,Math.pow(2, (2+0)/12)
         // ,Math.pow(2, (2+3)/12)
         // ,Math.pow(2, (2+7)/12)
-
         // ,Math.pow(2, (4+0)/12)
         // ,Math.pow(2, (4+3)/12)
         // ,Math.pow(2, (4+7)/12)
-
         // ,Math.pow(2, (5+0)/12)
         // ,Math.pow(2, (5+4)/12)
         // ,Math.pow(2, (5+7)/12)
-
         // ,Math.pow(2, (7+0)/12)
         // ,Math.pow(2, (7+4)/12)
         // ,Math.pow(2, (7+7)/12)
-
         // ,Math.pow(2, (9+0)/12)
         // ,Math.pow(2, (9+3)/12)
         // ,Math.pow(2, (9+7)/12)
-
         // ,Math.pow(2, (11+0)/12)
         // ,Math.pow(2, (11+3)/12)
         // ,Math.pow(2, (11+6)/12)
-
         // ,Math.pow(2, (12+0)/12)
         // ,Math.pow(2, (12+4)/12)
         // ,Math.pow(2, (12+7)/12)
-
         // 1,
         // 9/8,
         // 5/4,
@@ -2284,7 +2217,6 @@ export default {
         // 3/2,
         // 5/3,
         // 15/8,0,0,
-
         // 16/15,
         // 6/5,
         // 4/3,
@@ -2292,7 +2224,6 @@ export default {
         // 8/5,
         // 16/9,
         // 2, 0,0,
-
         // 9/8,
         // 5/4,
         // 1.42222222222222,
@@ -2300,7 +2231,6 @@ export default {
         // 5/3,
         // 15/8,
         // 2*16/15,0,0,
-
         // 5/4,
         // 1.42222222222222,
         // 3/2,
@@ -2308,7 +2238,6 @@ export default {
         // 15/8,
         // 2*16/15,
         // 2*6/5
-
         //Carl Lumma’s VRWT temperament
         //http://ripnread.com/?page_id=25
         // 1,
@@ -2324,7 +2253,6 @@ export default {
         // 57/32,
         // 513/272,
         // 2
-
         // Math.pow(2, 0/53)
         // ,Math.pow(2, 9/53)
         // ,Math.pow(2, 17/53)
@@ -2333,7 +2261,6 @@ export default {
         // ,Math.pow(2, 39/53)
         // ,Math.pow(2, 48/53)
         // ,Math.pow(2, 53/53),0
-
         // ,Math.pow(2, (9+0)/53)
         // ,Math.pow(2, (9+9)/53)
         // ,Math.pow(2, (9+17)/53)
@@ -2342,7 +2269,6 @@ export default {
         // ,Math.pow(2, (9+39)/53)
         // ,Math.pow(2, (9+48)/53)
         // ,Math.pow(2, (9+53)/53),0
-
         // ,Math.pow(2, (17+0)/53)
         // ,Math.pow(2, (17+9)/53)
         // ,Math.pow(2, (17+17)/53)
@@ -2351,7 +2277,6 @@ export default {
         // ,Math.pow(2, (17+39)/53)
         // ,Math.pow(2, (17+48)/53)
         // ,Math.pow(2, (17+53)/53),0
-
         //53 ET
         // 1
         // // ,1.0131641430249148
@@ -2407,11 +2332,9 @@ export default {
         //  ,1.9483652413023287
         // // ,1.9740138000036054
         // ,2
-
         //a + b + c = L : b/a = phi c/b = phi
         //32.5; 20.086; 12.4140;
         //1/(32.5/65), 1/(20.086/65), 1/(12.4140/65)
-
         //Fibonacci Limit 8
         // 2/3, 2/5, 2/8,
         // 3/2, 3/5, 3/8,
@@ -2426,7 +2349,6 @@ export default {
         // ,1.6
         // ,1.6666666666666667
         // ,2
-
         //Fibonacci Limit 13
         // 2/3, 2/5, 2/8, 2/13,
         // 3/2, 3/5, 3/8, 3/13,
@@ -2452,7 +2374,6 @@ export default {
         // ,1.0833333333333333, 1.3, 1.625
         // ,1.2307692307692308, 1.5384615384615385, 1.8461538461538463
         // ,1.333333, 1.6, 1.666666, 2
-
         //http://www.huygens-fokker.org/bpsite/833cent.html
         // 1
         // ,1.059
@@ -2466,7 +2387,6 @@ export default {
         // ,1.713462
         // ,1.8540662
         // //,2.0000098000000004
-
         //N * 13/12 * 14/13 * ...
         // 1
         // ,1.0833333333333333
@@ -2486,22 +2406,17 @@ export default {
         // 1*2/1*3/2,
         // 1*2/1*3/2*4/3,
         // 1*2/1*3/2*4/3*5/4,
-
         //,1.618033
         // 1,
         // 1.618033,
         // 1.618033*1.618033,
         // 1.618033*1.618033*1.618033,
         // 1.618033*1.618033*1.618033*1.618033,
-
         //(1/1),
         //(1/2),
-
         //3,4,5,6,
         //1/3, 1/4, 1/5, 1/6
-
         //1, 1.4907407405, 1.5,
-
         // 1
         // ,1.0666666666666667
         // ,1.125
@@ -2522,7 +2437,6 @@ export default {
         // ,2.6666666
         // ,2.8125
         // ,3
-
         // 1,
         // 1.066666666,
         // 1.11111111,
@@ -2536,7 +2450,6 @@ export default {
         // 1.7777777,
         // 1.875,
         // 2
-
         // Math.log2(1),
         // Math.log2(1.2),
         // Math.log2(1.25),
@@ -2549,7 +2462,6 @@ export default {
         // Math.pow(2,0.4150374632114674),
         // Math.pow(2,0.5849625007211562),
         //Math.pow(2,1),
-
         //3,4,5
         //1,2,
         //3/2,
@@ -2560,9 +2472,7 @@ export default {
         //9/8, 9/7, 9/6, 9/5,
         //12/11, 12/10, 12/9, 12/8, 12/7, 12/6,
         //30/29, 30/28, 30/27, 30/26, 30/25, 30/24, 30/23, 30/22, 30/21, 30/20, 30/19, 30/18, 30/17, 30/16, 30/15
-
         //15/15, 16/15, 17/15, 18/15, 19/15, 20/15, 21/15, 22/15, 23/15, 24/15, 25/15, 26/15, 27/15, 28/15, 29/15
-
         //Ciclo 5
         // 1
         // ,1.06787109375
@@ -2577,7 +2487,6 @@ export default {
         // ,1.802032470703125
         // ,1.8984375
         // ,2.0272865295410157
-
         //Ciclo 4
         // 1
         // ,1.0534979423868311
@@ -2592,7 +2501,6 @@ export default {
         // ,1.7777777777777777
         // ,1.8728852309099218
         // ,1.9730807370902874
-
         //Media Ciclo 4 e 5
         // 1
         // ,1.06068451806841555
@@ -2607,10 +2515,8 @@ export default {
         // ,1.78990512424045135
         // ,1.8856613654549609
         // ,2
-
         //Triade Gerador 5/3
         //1, 1.2461850531623906, 1.4954220637948685
-
         //Primeiras 19 notas do gerador 5/3
         // 1
         // ,1.0384875443019923
@@ -2632,20 +2538,16 @@ export default {
         // ,1.8605443148910232
         // ,1.929012345679013
         // ,2
-
         //1, 1.25, 1.5, 1.75, 2, 2*1.25, 2*1.5, 2*1.75, 2*2,
         //1, 1.5, 2, 2.5, 3, 3*1.5, 3*2, 3*2.5, 3*3
         //1, 3, 5, 7, 9, 11, 13, 15, 0,
         //1, 1/3, 1/5, 1/7, 1/9, 1/11, 1/13, 1/15
-
         // 1,   1/2, 1/3,0,0,0,0,0,0,
         // 3/2, 3/3, 3/4,0,0,0,0,0,0,
         // 5/4, 5/5, 5/6,0,0,0,0,0
-
         //EDL - Equal division of length => N/N, N+1/N, N+2/N, ... N+N/N
         // 6/6, 7/6, 8/6, 9/6, 10/6, 11/6, 12/6, 0,0,
         // 1, Math.pow(2,1/6),  Math.pow(2,2/6),  Math.pow(2,3/6),   Math.pow(2,4/6),  Math.pow(2,5/6), 2
-
         //2/2, 2/1,
         //3/3, 3/2, 3/1,
         //4/4, 4/3, 4/2, 4/1,
@@ -2657,18 +2559,15 @@ export default {
         //10/10, 10/9, 10/8, 10/7, 10/6, 10/5,
         //11/11, 11/10, 11/9, 11/8, 11/7, 11/6,
         //12/12, 12/11, 12/10, 12/9, 12/8, 12/7,
-
         //20/20, 20/19, 20/18, 20/17, 20/16, 20/15, 20/14, 20/13, 20/12, 20/11
         //24/24, 24/23, 24/22, 24/21, 24/20, 24/19, 24/18, 24/17, 24/16, 24/15, 24/14, 24/13,
         //30/30, 30/29, 30/28, 30/27, 30/26, 30/25, 30/24, 30/23, 30/22, 30/21, 30/20, 30/19, 30/18, 30/17, 30/16
-
         //Escala baião derivado dá 20 EDL
         // 1
         // ,1.1111111111111112
         // ,1.1764705882352942
         // ,1.3333333333333333
         // ,1.6666666666666667
-
         // 1
         // ,1.0546875
         // ,1.125
@@ -2679,7 +2578,6 @@ export default {
         // ,1.6875
         // ,1.875
         // ,2
-
         //Expansão da escala
         // 1,
         //     1.0546875, 1.318359375, //1.58203125,
@@ -2695,18 +2593,15 @@ export default {
         // 1.875, 1.171875, 1.40625,
         //     //1.953125, /*1.220703125,*/ //1.46484375,
         // 2
-
         //Eagle 53
         //http://www.johnsmusic7.com/index.html
         //1, 1.067577, 1.124911, 1.200929, 1.248984, 1.333386, 1.404996, 1.499941, 1.601302, 1.665377, 1.801323, 1.873402, 2
-
         // 1,
         // Math.pow(2,1/5),
         // Math.pow(2,1/4),
         // Math.pow(2,1/3),
         // Math.pow(2,1/2),
         // 2,
-
         // 0.03333333333333333
         // ,0.034482758620689655
         // ,0.03571428571428571
@@ -2723,9 +2618,7 @@ export default {
         // ,0.058823529411764705
         // ,0.0625
         // ,0.06666666666666667
-
         //1,1.0344827586206897, 1.0714285714285714, 1.1111111111111112, 1.153846153846154, 1.2, 1.25, 1.3043478260869565, 1.3636363636363638, 1.4285714285714286, 1.5, 1.5789473684210527, 1.6666666666666665, 1.7647058823529411, 1.875,
-
         //PiScale
         //Originada pelos valores normalizados da sequencia
         //Math.pow(2, 1/Math.PI), Math.pow(2, 2/Math.PI), ...
@@ -2753,20 +2646,17 @@ export default {
         // ,1.8788622742061083
         // ,1.9384851168921098
         // ,2
-
         //Sequencia harmoniosa
         // 2-Math.cos(((0* (90/3))*Math.PI/180)),
         // 2-Math.cos(((1* (90/3))*Math.PI/180)),
         // 2-Math.cos(((2* (90/3))*Math.PI/180)),
         // 2-Math.cos(((3* (90/3))*Math.PI/180)),
-
         //Acorde menor
         // 2-Math.cos(((0* (90/4))*Math.PI/180)),
         // 2-Math.cos(((1* (90/4))*Math.PI/180)),
         // 2-Math.cos(((2* (90/4))*Math.PI/180)),
         // 2-Math.cos(((3* (90/4))*Math.PI/180)),
         // 2-Math.cos(((4* (90/4))*Math.PI/180)),
-
         //Phi Spiral 1
         // 1,
         // Math.pow(PHI, 31),
@@ -2797,7 +2687,6 @@ export default {
         // ,1.787347393398149
         // ,1.8549513777604896
         // //,1.994435462056465
-
         //Phi Spiral 2
         // Math.pow(PHI,39),
         // Math.pow(PHI,60),
@@ -2810,7 +2699,6 @@ export default {
         // Math.pow(PHI,207),
         // Math.pow(PHI,228),
         // Math.pow(PHI,249),
-
         //Progressão bonita [1,2,5]
         // 1.053678423166275
         // ,1.5740864946574218
@@ -2819,7 +2707,6 @@ export default {
         // ,1.3119887748567554
         // ,1.9599754215696419
         // ,1.4640001983159179
-
         // 39
         // ,60
         // ,81
@@ -2831,14 +2718,12 @@ export default {
         // ,207
         // ,228
         // ,249
-
         // 1,
         // 1.35,
         // 1.7,
         // 2.05,
         // 2.4,
         // 2.75
-
         // Math.pow(PHI,99),
         // Math.pow(PHI,120),
         // Math.pow(PHI,141),
@@ -2853,7 +2738,6 @@ export default {
         // Math.pow(PHI,330),
         // Math.pow(PHI,351),
         // Math.pow(PHI,372),
-
         // 99,
         // 120,
         // 141,
@@ -2868,7 +2752,6 @@ export default {
         // 330,
         // 351,
         // 372
-
         // 1,
         // 1.075195547424201,
         // 1.1158633567392826,
@@ -2880,7 +2763,6 @@ export default {
         // 1.606230850993854,
         // 1.6669843484582993,
         // 1.792334149088196,
-
         // 39
         // ,60
         // ,81
@@ -2892,7 +2774,6 @@ export default {
         // ,207
         // ,228
         // ,249
-
         // //Expansão 2
         // 1,
         //   //1.041665,
@@ -2917,7 +2798,6 @@ export default {
         //   //1.7777777,
         //   1.7677951388888888888888885,
         // 1.875,
-
         // 1,
         //   //9/8,
         // 7/6,
@@ -2929,7 +2809,6 @@ export default {
         // 5/3,
         // 7/4,
         // //2
-
         //Sequencia x1.5
         // 1,
         // 1.06787109375,
@@ -2943,7 +2822,6 @@ export default {
         // 1.6875,
         // 1.802032470703125,
         // 1.8984375,
-
         //Overtones 16:32
         // 1
         // ,1.0625
@@ -2961,7 +2839,6 @@ export default {
         // ,1.8125
         // ,1.875
         // ,1.9375
-
         // 1,
         // 9/8,
         // 8/7,
@@ -2975,7 +2852,6 @@ export default {
         // 7/6*1.5,
         // 6/5*1.5,
         // 5/4*1.5,
-
         //19EDO
         // 1
         // ,1.0371550444461919
@@ -2996,22 +2872,17 @@ export default {
         // ,1.7926641922757087
         // ,1.8592707100168093
         // ,1.9283519958849866
-
         //Balafon West Africa
         //1, 35/32, 7/6, 48/35, 32/21, 5/3, 9/5
-
         //Chinese WellTempered
         //http://www.microtonal-synthesis.com/scale_indian_shruti.html
         // 1/1,18/17,9/8,6/5,54/43,4/3,27/19,3/2,27/17,27/16,9/5,36/19
-
         //Indian shruti scale
         //http://www.microtonal-synthesis.com/scale_indian_shruti.html
         //1, 256/243, 16/15, 10/9, 9/8, 32/27, 6/5, 5/4, 81/64, 4/3, 27/20, 45/32, 729/512, 3/2, 128/81, 8/5, 5/3, 27/16, 16/9, 9/5, 15/8, 243/128
-
         //Wendy Carlos Super Just Intonation scale
         //http://www.microtonal-synthesis.com/scale_carlos_super_just.html
         //1, 17/16, 9/8, 6/5, 5/4, 4/3, 11/8, 3/2, 13/8, 5/3, 7/4, 15/8
-
         //Escala Árabe gerada por 1,1.25,1.5,1.875 e o inverso onde o 1.875 equivale a 2
         // 1
         //     ,1.0666666666
@@ -3020,7 +2891,6 @@ export default {
         // ,1.5
         //     ,1.6
         // ,1.875
-
         //Trabalhando com Well temperament a partir da expansão de triades invertidas
         // 1
         // ,1.0606601717798212866012665431573
@@ -3034,7 +2904,6 @@ export default {
         //   ,1.6865480854231356437327432236974
         //   ,1.77777777777//--
         // ,1.8856180831641267317355849656129
-
         // 1,
         // //1.166666666666666,
         // 1.3333333333333,
@@ -3042,7 +2911,6 @@ export default {
         // 1.6666666666666,
         // //1.83333333333333,
         // //2
-
         // 1,3/2,3
         // ,1,4/3,2,4
         // ,1, 5/4, 5/3, 5/2, 5
@@ -3057,16 +2925,13 @@ export default {
         //1, 15/14, 15/13, 15/12, 15/11, 15/10, 15/9, 15/8, 15/7, 15/6, 15/4, 15/3, 15/2, 15
         //1, 16/15, 16/14, 16/13, 16/12, 16/11, 16/10, 16/9, 16/8, 16/7, 16/6, 16/4, 16/3, 16/2, 16
         //1, 19/18, 19/17, 19/16, 19/15, 19/14, 19/13, 19/12, 19/11, 19/10, 19/9, 19/8, 19/7, 19/6, 19/5, 19/4, 19/3, 19/2, 19
-
         // 1
         // ,Math.pow(2,1/4)
         // ,Math.pow(2,1/3)
         // ,Math.pow(2, 9/15)
-
         //JI 12 (Acordes well tempered)
         //1, 1.041665, 10/9, 1.171875, 5/4, 4/3, 1.3888888, 3/2, 1.5625, 5/3, 16/9, 15/8
         //1,16/15,10/9,6/5,5/4,4/3,64/45,3/2,8/5,5/3,7/4,15/8
-
         //6ED3 Triade muito afinada, perdendo apenas para a Wndy Carlos Gamma de 20ED3/2
         //Wendy Carlos Beta 11ED3/2 (Aproximadamente igual a 19EDO, so que mais afinada na triade) (31ED_PI) (13ED_PHI)
         //Base 3 eqt 24  (Pareceida com Wendy Carlos Alhpa 9ED3/2, só que com melhor consonancia oitavar ) (48ED9) (25ED_PI)
@@ -3075,29 +2940,23 @@ export default {
         //Base Phi^48 eqt 1 (Normalizado)
         //5ED_PHI
         //15ED3 Norm 3
-
         //Harmonic diferences
         //2, 1.5, 1.3333333333333333, 1.25, 1.2, 1.1666666666666667, 1.1428571428571428, 1.125, 1.1111111111111112, 1.1, 1.0909090909090908, 1.0833333333333333, 1.0769230769230769, 1.0714285714285714, 1.0666666666666667, 1.0625, 1.0588235294117647, 1.0555555555555556, 1.0526315789473684, 1.05, 1.0476190476190477, 1.0454545454545454, 1.0434782608695652, 1.0416666666666667, 1.04, 1.0384615384615385
-
         //Scale from Timbre
         //1, 1.16666, 1.25, 1.33333, 1.41, 1.5, 1.6666, 1.76, 2
-
         // 1,1.25,1.5,
         // 1.4285714285714286,1.7142857142857142,1.0714285714285714*2,
         // 1.25, 1.4285714285714286, 1.0714285714285714*2,
         // 1, 1.5, 1.7142857142857142,
         // 1.25, 1.5, 1.0714285714285714*2,
         // 1, 1.4285714285714286, 1.7142857142857142
-
         //Hexany octahedron
         //http://www.musicandvirtualflowers.co.uk/tunes/mus_geom/musical_geometry.htm
         // 1, 15/14,  5/4, 10/7, 3/2,  12/7,
-
         // 24/24, 25/24, 26/24, 10/9, 28/24, 29/24, 30/24, 31/24, 32/24,
         // 24/24 *(3/2), 25/24 *(3/2), 26/24 *(3/2), 10/9 *(3/2), 28/24 *(3/2), 29/24 *(3/2), 30/24 *(3/2), 31/24 *(3/2), 32/24 *(3/2),
         // 24/24 *(2), 25/24 *(2), 26/24 *(2), 10/9 *(2), 28/24 *(2), 29/24 *(2), 30/24 *(2), 31/24 *(2), 32/24 *(2),
         //24/24 *(4/3)*(4/3), 25/24 *(4/3)*(4/3), 26/24 *(4/3)*(4/3), 27/24 *(4/3)*(4/3), 28/24 *(4/3)*(4/3), 29/24 *(4/3)*(4/3), 30/24 *(4/3)*(4/3), 31/24 *(4/3)*(4/3), 32/24 *(4/3)*(4/3),
-
         // 1, 1.041666666, 1.06666666, 10/9, 1.2, 1.25, 4/3, 1.44, 1.5,//1.6,
         // 1 *1.25, 1.041666666*1.25,  1.06666666*1.25, 10/9 * 1.25, 1.2 *1.25, 1.25 *1.25, 4/3 *1.25, 1.44*1.25, 1.5*1.25, //1.6*1.25,
         // 1 *1.5, 1.041666666*1.5,  1.06666666*1.5, 10/9 * 1.5, 1.2 *1.5, 1.25 *1.5, 4/3 *1.5, 1.44*1.5, 1.5*1.5,// 1.6*1.5,
@@ -3128,15 +2987,11 @@ export default {
         // ,1.8471515800843261
         // ,1.953124999999998
         // ,2.06517824890735
-
         //15ED3 => Muito legal!!!
         //
-
         //1, 16/15,  1.2, 1.28, 4/3, 1.44, 1.6, 1.92
         //1, 1.04166666, 10/9, 1.25, 4/3, 1.3888888, 5/3, 16/9
-
         //1,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32
-
         //Ponto de parada: 7elementos, 8, 15, 16
         //1
         // 1/2
@@ -3155,7 +3010,6 @@ export default {
         //  ,1/27
         //  ,1/29
         //  ,1/31
-
         // 1
         // ,1.125
         // ,1.25
@@ -3165,7 +3019,6 @@ export default {
         // ,1.75
         // ,1.875
         // ,2
-
         // ,1.25 * 1
         // ,1.25 * 1.125
         // ,1.25 * 1.25
@@ -3175,7 +3028,6 @@ export default {
         // ,1.25 * 1.75
         // ,1.25 * 1.875
         // ,1.25 * 2
-
         // ,1.5 * 1
         // ,1.5 * 1.125
         // ,1.5 * 1.25
@@ -3185,7 +3037,6 @@ export default {
         // ,1.5 * 1.75
         // ,1.5 * 1.875
         // ,1.5 * 2
-
         //Números primos
         // 2
         // ,3
@@ -3197,7 +3048,6 @@ export default {
         // //,19
         // ,53
         // ,1.4142
-
         // 2
         // ,3
         // ,5
@@ -3214,7 +3064,6 @@ export default {
         //  ,43
         //   ,47
         //   ,53
-
         //  ,59
         //  ,61
         //  ,67
@@ -3261,7 +3110,6 @@ export default {
         // ,281
         // ,283
         // ,293
-
         // 1,
         // Math.pow(this.base, Math.log2(9/8)),
         // Math.pow(this.base, Math.log2(5/4)),
@@ -3270,7 +3118,6 @@ export default {
         // Math.pow(this.base, Math.log2(5/3)),
         // Math.pow(this.base, Math.log2(15/8)),
         // Math.pow(this.base, Math.log2(2)),
-
         //Dissonance Curve
         //1, 2, 3/2, 4/3, 5/3, 5/4, 6/5, 7/4, 7/5, 7/6, 8/5, 8/7, 9/5, 9/7, 9/8
         // 1
@@ -3283,7 +3130,6 @@ export default {
         // ,1.6
         // ,1.8
         // ,1.4286
-
         // Math.pow(2, (0+0)/31),
         // Math.pow(2, (0+2)/31),
         // Math.pow(2, (0+4)/31),
@@ -3293,7 +3139,6 @@ export default {
         // Math.pow(2, (0+12)/31),
         // Math.pow(2, (0+14)/31),
         // Math.pow(2, (0+16)/31),
-
         // Math.pow(2, (13+0)/31),
         // Math.pow(2, (13+2)/31),
         // Math.pow(2, (13+4)/31),
@@ -3303,7 +3148,6 @@ export default {
         // Math.pow(2, (13+12)/31),
         // Math.pow(2, (13+14)/31),
         // Math.pow(2, (13+16)/31),
-
         // Math.pow(2, (23+0)/31),
         // Math.pow(2, (23+2)/31),
         // Math.pow(2, (23+4)/31),
@@ -3313,7 +3157,6 @@ export default {
         // Math.pow(2, (23+12)/31),
         // Math.pow(2, (23+14)/31),
         // Math.pow(2, (23+16)/31),
-
         // Math.pow(2, (31+0)/31),
         // Math.pow(2, (31+2)/31),
         // Math.pow(2, (31+4)/31),
@@ -3323,14 +3166,11 @@ export default {
         // Math.pow(2, (31+12)/31),
         // Math.pow(2, (31+14)/31),
         // Math.pow(2, (31+16)/31),
-
         //Composição numérica
         // 1, 5/4, 6/5, 3/2,
         // 1, 7/6, 8/7, 4/3,
         // 1, 9/8, 10/9, 5/4,
-
         //1, 16/15, 9/8, 6/5, 5/4, 4/3, 1.41424142, 3/2, 8/5, 5/3, 16/9, 15/8, 2
-
         //Otonal 32
         // 1
         // //,1.03125
@@ -3365,7 +3205,6 @@ export default {
         // //,1.9375
         // //,1.96875
         // ,2
-
         // 1,17,9,19,5,21, 11,23,3,25,13,27,7,29,15,31,
         // 33,35,37,39,41,43,45,47,51,53,55,57,59,61,63
         // 1/177147,
@@ -3391,21 +3230,15 @@ export default {
         // 19683,
         // 59049,
         // 177147,
-
         //Herry Patch 43 Tone Scale
         //1, 81/80, 33/32, 21/20, 16/15, 12/11, 11/10, 10/9, 9/8, 8/7, 7/6, 32/27, 6/5, 11/9, 5/4, 14/11, 9/7, 21/16, 4/3, 27/20, 11/8, 7/5, 10/7, 16/11, 40/27, 3/2, 32/21, 14/9, 11/7, 8/5, 18/11, 5/3, 27/16, 12/7, 7/4, 16/9, 9/5, 20/11, 11/6, 15/8, 40/21, 64/33, 160/81
-
         //2, Math.PI, Math.PI-2
-
         //Augusto Novaro - Natural System
         //1, 21/20, 16/15, 10/9, 9/8, 8/7, 7/6, 6/5, 5/4, 9/7, 4/3, 7/5, 10/7, 3/2, 14/9, 8/5, 5/3, 12/7, 7/4, 16/9, 9/5, 15/8, 40/21
         //Augusto Novaro - Natural Approximated
         //1, 1.0494, 1.0697, 1.117, 1.1224, 1.1443, 1.1665, 1.2007, 1.2479, 1.2845, 1.3348, 1.4007, 1.4983, 1.5572, 1.6027, 1.6657, 1.7145, 1.7479, 1.7818, 1.8697, 1.9060
-
         //1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441,
-
         //1, 3, 5, 7, 11, 13, 17, 19, 23, 29
-
         //Hercala harmonica baseada nos números com maiores divisores
         // 18/18	//6
         // //,19/18	//2
@@ -3425,15 +3258,12 @@ export default {
         // ,33/18	//4
         // ,34/18	//4
         // ,35/18	//4
-
         // Math.pow(5/3 ,-4),Math.pow(5/3 ,-3), Math.pow(5/3 ,-2),Math.pow(5/3 ,-1), 1, Math.pow(5/3 ,1),  Math.pow(5/3 ,2),  Math.pow(5/3 ,3),  Math.pow(5/3 ,4)
         //Math.pow(3/2 ,-9), Math.pow(3/2 ,-8),  Math.pow(3/2 ,-7),  Math.pow(3/2 ,-6),  Math.pow(3/2 ,-5), Math.pow(3/2 ,-4),Math.pow(3/2 ,-3), Math.pow(3/2 ,-2),Math.pow(3/2 ,-1),
         //1, Math.pow(3/2 ,1),  Math.pow(3/2 ,2),  Math.pow(3/2 ,3),  Math.pow(3/2 ,4),  Math.pow(3/2 ,5),  Math.pow(3/2 ,6),  Math.pow(3/2 ,7),  Math.pow(3/2 ,8),  Math.pow(3/2 ,9)
-
         //  (1)*1, (1)*10/9, (1)*1.25, (1)*4/3, (1)*1.5, (1)*5/3, (1)*1.875, 2,
         //  (Math.pow(10/9,1/3))*1, (Math.pow(10/9,1/3))*10/9, (Math.pow(10/9,1/3))*1.25, (Math.pow(10/9,1/3))*4/3, (Math.pow(10/9,1/3))*1.5, (Math.pow(10/9,1/3))*5/3, (Math.pow(10/9,1/3))*1.875, 2,
         //  (Math.pow(10/9,2/3))*1, (Math.pow(10/9,2/3))*10/9, (Math.pow(10/9,2/3))*1.25, (Math.pow(10/9,2/3))*4/3, (Math.pow(10/9,2/3))*1.5, (Math.pow(10/9,2/3))*5/3, (Math.pow(10/9,2/3))*1.875, 2,
-
         //(16/15)*1, (16/15)*1.25, (16/15)*1.5, (16/15)*1.75,
         //(1)*1, (1)*1.25, (1)*4/3, (1)*1.5, (1)*5/3, (1)* 2,
         //(1.25)*1, (1.25)*1.25, (1.25)*4/3, (1.25)*1.5, (1.25)*5/3, (1.25)* 2,
@@ -3444,9 +3274,7 @@ export default {
         //(Math.pow(this.base,3))*1, (Math.pow(this.base,3))*1.25, (Math.pow(this.base,3))*4/3, (Math.pow(this.base,3))*1.5, (Math.pow(this.base,3))*5/3, (Math.pow(this.base,3))* 2,
         //(25/24)*1, (25/24)*1.25, (25/24)*4/3, (25/24)*1.5, (25/24)*5/3, (25/24)*2,
         //(16/15)*1, (16/15)*1.25, (16/15)*4/3, (16/15)*1.5, (16/15)*5/3, (16/15)*2,
-
         //1, 1.5, 1.125, 5/3, 1.25, 1.875, 1.40625, 1.0546875,
-
         //===================================================================================
         //Ratios of the 17 frets on the neck of "Baglama" ("saz") according to Yalçýn Tura
         //  1
@@ -3467,17 +3295,13 @@ export default {
         //  ,32/17
         //  ,64/33
         //  ,2/1
-
         // 1
         // ,1.040041911525952
-
         //  ,(1.2009369551760027 / 1.040041911525952)/1.040041911525952
         //  ,1.2009369551760027 / 1.040041911525952
         //  //,1.040041911525952 * Math.pow(1.1547005383792515, 3/4)
-
         // ,1.2009369551760027
         // ,1.2490247664834064
-
         // //,1.33333333333
         // //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 1/5)
         // //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 2/5)
@@ -3485,15 +3309,11 @@ export default {
         // //  ,1.2490247664834064 * Math.pow(1.1547005383792515, 4/5)
         //  //,1.4422495703074085 / Math.pow(1.1547005383792515, 1/3)
         //  //,1.2490247664834064 * Math.pow(1.1547005383792515, 3/4)
-
         //  ,(1.4422495703074085 / 1.040041911525952)/1.040041911525952
         //  ,1.4422495703074085 / 1.040041911525952
-
         // ,1.4422495703074085
-
         // //,1.7320508075688774
         // //,1.5
-
         // 1
         // ,1.040041911525952
         //   ,1.074569931823542
@@ -3514,7 +3334,6 @@ export default {
         //   //,1.0416666666666667 * 1.25
         // ,1.3333333
         //   ,1.0416666666666667 * 1.3333333
-
         // 1
         // ,1.618033988749895
         // ,2.618033988749895
@@ -3531,15 +3350,12 @@ export default {
         // ,2.144040820488583
         // ,1.1563769736059133
         // ,1.8710572471021079
-
         //Dedução da escala de 12 a partir da escala de 7 deduzida a partir da pentatônica
         //1, 1.041666666, 10/9, 1.185185185185185, 1.2500000000000002, 4/3, 1.40625, 1.5, 1.5625, 5/3, 16/9, 15/8, 2
         //1, 16/15, 10/9, 1.2, 1.25, 4/3, 1.4, 1.5, 1.6, 5/3, 9/5, 15/8 //Utilizando as menores frações (Contém Wolf Tone!)
-
         // 1, 6/5, 5/4, 4/3, 3/2, 8/5, 5/3, 2,0
         // ,4/3, 4/3*6/5, 4/3*5/4, 4/3*4/3, 4/3*3/2, 4/3*8/5, 4/3*5/3, 4/3*2,0
         // ,1.5, 1.5*6/5, 1.5*5/4, 1.5*4/3, 1.5*3/2, 1.5*8/5, 1.5*5/3, 1.5*2,0
-
         // 1
         // ,1.0507566386532194
         // ,1.1111111111111111
@@ -3554,7 +3370,6 @@ export default {
         // ,1.75
         // ,1.8333333333333333
         // ,1.9033903060212396
-
         //=================================
         //  17-tone Well Temperament  de acordo com  o artigo "The 17-tone Puzzle — And the Neo-medieval Key That Unlocks It" by George Secor
         //http://www.anaphoria.com/Secor17puzzle.pdf?fbclid=IwAR2hUXDh3JRK_JvRLLIsOlVhEZS2iGDRjcprZrzzbPhJywi1QicAqxbAxdY
@@ -3575,10 +3390,8 @@ export default {
         // ,1.766996212
         // ,1.842488636
         // ,1.927526515
-
         //La Monte Young's - The Well-Tuned Piano By Kyle Gann https://www.kylegann.com/wtp.html
         //1/1,	567/512,	9/8,	147/128,	21/16,	1323/1024,	189/128,	3/2,	49/32,	7/4,	441/256,	63/32
-
         //Teste Well tempered 14EDO (22ED3)
         //1, 10/9, 11/9, 4/3, 1.5, 5/3, 11/6,
         //1, 10/9, 1.185185185, 12/9, 15/9, 16/9,
@@ -3590,7 +3403,6 @@ export default {
         //Math.sqrt(1.0400419)* 1, Math.sqrt(1.0400419)*9/8, Math.sqrt(1.0400419)* 5/4, Math.sqrt(1.0400419)* 4/3, Math.sqrt(1.0400419)*3/2, Math.sqrt(1.0400419)*5/3, Math.sqrt(1.0400419)*15/8,
         //Math.sqrt(1.081687177)* 1, Math.sqrt(1.081687177)*9/8, Math.sqrt(1.081687177)* 5/4, Math.sqrt(1.081687177)* 4/3, Math.sqrt(1.081687177)*3/2, Math.sqrt(1.081687177)*5/3, Math.sqrt(1.081687177)*15/8,
         //Math.sqrt(9/8), (9/8)*Math.sqrt((5/4) / (9/8)), (5/4)*Math.sqrt((4/3) / (5/4)),  (4/3)*Math.sqrt((3/2) / (4/3)), (3/2)*Math.sqrt((5/3) / (3/2)), (5/3)*Math.sqrt((15/8) / (5/3)),  (15/8)*Math.sqrt((2) / (15/8)),
-
         //1
         //,1.0606601717798212
         //,1.125//,1.118033//1.125//
@@ -3608,10 +3420,8 @@ export default {
         // ,1.7677669529663687
         // ,1.875
         // ,1.9364916731037083
-
         //14 tones 7 Limit Just Intonation http://www.dbdoty.com/OM/OMTuning.html
         //1, 15/14, 9/8, 7/6, 5/4, 9/7, 4/3, 7/5, 3/2, 14/9, 5/3, 7/4, 15/8, 27/14,
-
         //Interessante pq? 12Ed3 normalizado
         // 1
         // ,1.2009369551760027
@@ -3628,13 +3438,11 @@ export default {
         // ,1.1250000000000002
         // ,1.665391149
         // ,4/3//1.351013259
-
         //Interessante (Carlos Alpha Almost Just )
         //1, 1.0416666666, 1.0850694444, 1.152, 1.2, 1.25, 1.3020833333, 1.3563368, 1.44 //v1
         //1, 1.0416666666, 1.07584, 1.152, 1.1925, 1.25, 1.3020833333, 1.3448, 1.44 //v2
         //1, 1.0416666666, 1.0850694444, 1.152, 1.2, 1.25, 1.3020833333, 1.346688, 1.44 //v3
         //1, 1.0416666666, 1.11825, 1.142, 1.21, 1.25, 1.3020833333, 1.33333, 1.44 //v4
-
         //16 Well Tempered (oitava 1.4859942891) (oitava 1,141428)
         // 1
         // ,1.0442737824274138
@@ -3645,9 +3453,7 @@ export default {
         // //,1.296839554651009
         // //,1.354255546936892
         // //,1.414213562373094
-
         //1, 1.06666666666, 1.111111111, 1.2, 1.25, 4/3, 1.44
-
         //=============================================
         //22 Srutis indiano
         //=============================================
@@ -3678,7 +3484,6 @@ export default {
         // ,1.481481 //,1.4798105528136465
         // //,1.975308 //,1.9730807370843688
         //=============================================
-
         // 1
         // ,1.0546875
         // ,1.06666666666666
@@ -3701,7 +3506,6 @@ export default {
         // ,1.875
         // ,1.8962962962
         // ,1.975308641
-
         //15Ed3 normalizado e ordenado
         // 1
         // ,1.075989624725346
@@ -3723,16 +3527,13 @@ export default {
         // ,1.7366305087748892
         // ,1.8685964094232796
         //,2*1.0052951746692418
-
         //19 welltempered (oitava 1.118033)
         // 1,
         // 1.03583333,
         // 1.0733452
-
         //22 Weell tempered (oitava 1,0648)
         // 1,
         // 1.035798
-
         //22 Weell tempered v2 (oitava 1.3333333)
         // 1
         // ,1.040041911525952
@@ -3742,39 +3543,28 @@ export default {
         // ,9/8 * 1.0727659828236265
         // ,9/8 * 1.1111111109999998
         // ,1.299
-
         //1, 1.066666, 1.11803, 1.185185, 1.25
-
         //1, 1.25, 1.5, 1.75, 2,
         //2/ 1, 2/1.25, 2/1.5, 2/1.75, 2/2,
         //12/12, 13/12, 14/12, 15/12, 16/12, 17/12, 18/12, 19/12, 20/12, 21/12, 22/12, 23/12, 24/12,
         //2/(12/12), 2/(13/12), 2/(14/12), 2/(15/12), 2/(16/12), 2/(17/12), 2/(18/12), 2/(19/12), 2/(20/12), 2/(21/12), 2/(22/12), 2/(23/12), 2/(24/12)
-
         //12 weelTempered (Derivada do lambdoma 1,16/9, 4/3,3/2, 9/8, 2)
         //1, 1.0534979423868311, 1.125, 1.1851851851851851, 1.265625, 1.3333333333333333, 1.4046639231824416, 1.5, 1.5802469135802468, 1.6875, 1.7777777777777777, 1.8856613654549612, 2
-
         //Muito Legal!!!! Apesar de não ser oitavada (https://en.xen.wiki/w/88cET)
         //(Gerador) 1.052193343278766 => Terceira nota de 45EdPI => Aprox 11Ed7/4 ou 88cents e 41ed8
-
         //Maior
         //1, 1.125, 1.25, 1.5, 1.5625, 1.875,
-
         //Menor
         //1, 1.125, 1.2, 1.44, 1.5, 1.8,
-
         //Diamond
         //1, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6, 1.6666666666666667,
-
         //1, 1.0666666666666667, 1.125, 1.2, 1.25, 1.28, 1.3333333333333333, 1.44, 1.5, 1.5625, 1.6, 1.6666666666666665, 1.7777777777777777, 1.8, 1.875, 1.92
-
         //Extented Diamon
         //1 ,16/15 ,10/9 ,9/8 ,6/5 ,5/4 ,4/3 ,3/2 ,8/5 ,5/3 ,16/9 ,9/5 ,15/8
-
         //Golden cents progression (https://en.xen.wiki/w/Generating_a_scale_through_successive_divisions_of_the_octave_by_the_Golden_Ratio)
         //1, 1.0590, 1.1459, 1.2361,  1.3090,  1.4120, 1.5279
         //0, 66.844, 108.156, 175,241.844, 283.1566, 350, 391.3126, 458.1567,525, 566.3127, 633.1567,700, 741.3127, 808.1567, 849.4686, 916.3127, 983.1567,1024.4693,1091.3133, 1132.6253, 1200
         //0.000000, 66.873708, 175.077641, 283.281573, 350.155281, 458.359214, 566.563146, 633.436854, 741.640786, 808.514495, 916.718427, 1024.922359, 1091.796068, 1200.000000
-
         //Decatonic major Pajara22 Edo
         //0, 109.091, 218.182, 381.818, 490.909, 600, 709.091, 872.727, 981.818, 1090.909
         //1, 1.0650411453664965, 1.134312641323579, 1.2467581783474724, 1.3278487582622387, 1.4142135623730951, 1.5061956322626746, 1.655506298971982, 1.7631823248185694, 1.8778617227147314
@@ -3790,30 +3580,23 @@ export default {
         // ,1.655506559769621  , 2                  , 2*1.2467583092848906
         // ,1.7631825099920417 , 2*1.0650410894399605 , 2*1.3278488279891056
         // ,1.877861821323412  , 2*1.1343125221954624 , 2*1.4142135623730947
-
-//https://en.xen.wiki/w/12-22h
-//1, 109.09091, 218.18182, 327.27273, 436.36364, 490.90909, 600.00000, 709.09091, 818.18182, 927.27273, 1036.36364, 1145.45455, 2/1,
-//1, 1.065041089999228, 1.1343125233867437, 1.2080894463075924, 1.286664900712002, 1.3278488272918372, 1.4142135623730951, 1.5061955539615324, 1.6041601545431816, 1.7084964795280002, 1.819618952816345, 1.9379689528907738
-
+        //https://en.xen.wiki/w/12-22h
+        //1, 109.09091, 218.18182, 327.27273, 436.36364, 490.90909, 600.00000, 709.09091, 818.18182, 927.27273, 1036.36364, 1145.45455, 2/1,
+        //1, 1.065041089999228, 1.1343125233867437, 1.2080894463075924, 1.286664900712002, 1.3278488272918372, 1.4142135623730951, 1.5061955539615324, 1.6041601545431816, 1.7084964795280002, 1.819618952816345, 1.9379689528907738
         //Mathematics of the scale of twelve true fifths was discovered in 1962 by a German-American musicologist Maria Renold
         //1, 3/4*Math.sqrt(2), 9/8, 27/32*Math.sqrt(2), 81/64, 4/3, Math.sqrt(2), 3/2, 9/8*Math.sqrt(2), 27/16, 81/64*Math.sqrt(2), 243/128
-
         //Escala diatonica variável
         //1,Math.pow(this.base,2)/2, Math.pow(this.base,4)/4, 2/Math.pow(this.base,1), Math.pow(this.base,1), Math.pow(this.base,3)/2, Math.pow(this.base,5)/4
-
         //1, Math.pow(5,2/4)/2, ((2/Math.pow(5,2/4))*2)/Math.pow(5,1/4), 2/Math.pow(5,1/4),
         //12/12, 13/12, 14/12, 15/12, 16/12, 17/12
         //7/7, 8/7, 9/7, 10/7 //(Gerador 1.5 interessante)
         //18/18, 19/18, 20/18, 21/18, 22/18, 23/18, 24/18, 25/18, 26/18
         //24/24, 25/24, 26/24, 27/24, 28/24, 29/24, 30/24, 31/24, 32/24, 33/24, 34/24, 35/24
-
         //1, 1.11111, 1.22222222, 1.333333
         //1, Math.pow(this.repeatScaleValue,2)/2, Math.pow(this.repeatScaleValue,4)/4, 2/this.repeatScaleValue
         //1, 1.090909090909, 1.2, 1.33333
         //1, 32/27, 4/3
-
         //1, 256/243, 9/8, 32/27, 81/64, 4/3, Math.sqrt(2), 1.5, 128/81, 1.6875, 16/9, 243/128
-
         //https://en.xen.wiki/w/Arcturus (Gerador 3)
         // 1
         // ,1.1343052784801546
@@ -3828,9 +3611,7 @@ export default {
         // ,2.381496665904588
         // ,2.5720164197530866
         // ,2.7777777555555554
-
         //1,6685
-
         //https://en.xen.wiki/w/Armodue_theory
         //Semi-equalized Armodue
         // 0
@@ -3849,40 +3630,39 @@ export default {
         // ,967.74
         // ,1045.16
         // ,1122.58
-//         1
-// ,1.0457345379256116
-// ,1.0935607238104925
-// ,1.1435742182075628
-// ,1.1958750566609282
-// ,1.2505678497940804
-// ,1.3077619925490385
-// ,1.367571882994946
-// ,1.430108890487043
-// ,1.4955142597767768
-// ,1.563910913408831
-// ,1.6354356563904051
-// ,1.7102315504424894
-// ,1.7489026668813836
-// ,1.8288879222280738
-// ,1.9125312662689065
-
-//Armodue semi-equilized with other temperaments
-// 1
-// ,1.0458607114007321
-// ,1.0938246276516452
-// ,1.1439882032233906
-// ,1.1964523160572604
-// ,1.2513224704286998
-// ,1.3087090091142815
-// ,1.3687273352888094
-// ,1.399760922774874
-// ,1.4639549544842747
-// ,1.5310929701555498
-// ,1.601309982987543
-// ,1.6747471979804458
-// ,1.7515522958962118
-// ,1.8318797302415974
-// ,1.915891037871058
+        //         1
+        // ,1.0457345379256116
+        // ,1.0935607238104925
+        // ,1.1435742182075628
+        // ,1.1958750566609282
+        // ,1.2505678497940804
+        // ,1.3077619925490385
+        // ,1.367571882994946
+        // ,1.430108890487043
+        // ,1.4955142597767768
+        // ,1.563910913408831
+        // ,1.6354356563904051
+        // ,1.7102315504424894
+        // ,1.7489026668813836
+        // ,1.8288879222280738
+        // ,1.9125312662689065
+        //Armodue semi-equilized with other temperaments
+        // 1
+        // ,1.0458607114007321
+        // ,1.0938246276516452
+        // ,1.1439882032233906
+        // ,1.1964523160572604
+        // ,1.2513224704286998
+        // ,1.3087090091142815
+        // ,1.3687273352888094
+        // ,1.399760922774874
+        // ,1.4639549544842747
+        // ,1.5310929701555498
+        // ,1.601309982987543
+        // ,1.6747471979804458
+        // ,1.7515522958962118
+        // ,1.8318797302415974
+        // ,1.915891037871058
         //Armodue Just
         // 1/1
         // ,16/15
@@ -3900,7 +3680,6 @@ export default {
         // ,16/9
         // ,9/5
         // ,15/8
-
         //1, Math.pow(this.base,1), Math.pow(this.base,2)/2, Math.pow(this.base,3)/2, Math.pow(this.base,4)/4, Math.pow(this.base,5)/4, Math.pow(this.base,6)/8, Math.pow(this.base,7)/16, Math.pow(this.base,8)/16, Math.pow(this.base,9)/32, Math.pow(this.base,10)/32, Math.pow(this.base,11)/64, Math.pow(this.base,12)/128,
         //2, Math.pow(this.base,-1)*2, Math.pow(this.base,-2)*4, Math.pow(this.base,-3)*4, Math.pow(this.base,-4)*8, Math.pow(this.base,-5)*8, Math.pow(this.base,-6)*16, Math.pow(this.base,-7)*32, Math.pow(this.base,-8)*32, Math.pow(this.base,-9)*64, Math.pow(this.base,-10)*64, Math.pow(this.base,-11)*128, Math.pow(this.base,-12)*256,
         //22 Well Tempered
@@ -3926,19 +3705,15 @@ export default {
         // ,1.8159492297873598
         // ,(1.8713741888174138 + 1.8832853591863405)/2
         // ,1.9407654980374835
-
         //1, Math.pow(this.base,1/4), Math.pow(this.base,2/4), Math.pow(this.base,3/4), Math.pow(this.base,4/4), Math.pow(this.base,5/4), Math.pow(this.base,6/4), Math.pow(this.base,7/4), 0,
         //1*this.repeatScaleValue, Math.pow(this.base,1/4)*this.repeatScaleValue, Math.pow(this.base,2/4)*this.repeatScaleValue, Math.pow(this.base,3/4)*this.repeatScaleValue, Math.pow(this.base,4/4)*this.repeatScaleValue, Math.pow(this.base,5/4)*this.repeatScaleValue, Math.pow(this.base,6/4)*this.repeatScaleValue, Math.pow(this.base,7/4)*this.repeatScaleValue,
         // //1,02058
         // //0,9837
-
         // 1, 1.125, 1.2000000000000002, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 1.8000000000000003, 2,
         // 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 1.8000000000000003, 2, 2* 1.125, 2*1.2000000000000002, 2*1.25,
         // 1.5, 1.6666666666666667, 1.8000000000000003, 2, 2*1.125, 2*1.2000000000000002, 2*1.25, 2*1.3333333333333333, 2*1.5
-
         //Lambdoma 7x7
         //1, 1.0666666666666667, 1.09375, 1.125, 1.1428571428571428, 1.1666666666666665, 1.2000000000000002, 1.25, 1.2800000000000002, 1.3061224489795917, 1.3125, 1.3333333333333333, 1.4000000000000001, 1.4285714285714284, 1.5, 1.5238095238095237, 1.53125, 1.5625, 1.6, 1.6666666666666665, 1.7142857142857142, 1.75, 1.7777777777777777, 1.8285714285714285, 1.875
-
         // 1,
         // (1.0666666666666667+1.09375)/2,
         // (1.125+1.1428571428571428)/2,
@@ -3952,7 +3727,6 @@ export default {
         // (((1.7142857142857142+1.75)/2)+1.7777777777777777)/2,
         // (1.8285714285714285 + 1.875)/2
         //1, 8/7, 5/4, 4/3, 3/2, 8/7*3/2, 1.875
-
         // 1, 2,
         // 3, 3/2,
         // 4, 4/2, 4/3,
@@ -3964,29 +3738,23 @@ export default {
         // 10, 10/2, 10/3, 10/4, 10/5, 10/6, 10/7, 10/8, 10/9,
         // 11, 11/2, 11/3, 11/4, 11/5, 11/6, 11/7, 11/8, 11/9, 11/10,
         // 12, 12/3, 12/3, 12/4, 12/5, 12/6, 12/7, 12/8, 12/9, 12/10, 12/11
-
         //Progressão muito legal!!!
         //1, 2 //Normalize 5 Repeat 3
-
         //Teste 15 welltempered
         // 1, 8/7, 4/3, 3/2, 7/4, 2,
         // 1.09375*1, 1.09375*8/7, 1.09375*4/3, 1.09375*3/2, 1.09375*7/4, 1.09375*2,
         // 1.0472941*1, 1.0472941*8/7, 1.0472941*4/3, 1.0472941*3/2, 1.0472941*7/4, 1.0472941*2,
-
         //1, 1.040041911,1.0816871777305,8/7,1.040041911*8/7,1.0816871777305*8/7, 4/3,1.386722548701269409686, 1.4422495703074,
         //3/2, 1.040041911*1.5, 1.0816871777305*1.5,7/4,1.040041911*7/4,1.0816871777305*7/4
         //1, Math.sqrt(4/3), 4/3, 3/2, Math.sqrt(4/3)*1.5, 2,
-
         //Gerador genérico
         //==============================================
         //   1, this.base, 2/this.base, 2,0,0,0,0,0,
         //  (this.base)*1, (this.base)*this.base, (this.base)*(2/this.base), (this.base)*2,0,0,0,0,0,
         //  (2/this.base)* 1, (2/this.base)*this.base, (2/this.base)*2/this.base, (2/this.base)*2,0,0,0,0,0,
-
         //1, 1.1547, 1.33333209, //1.5, 1.732051615138131
         //1, this.base
         //1, 1.2505655196145855 //1.4955178823482058
-
         //12 Oriental WeellTempered
         // 1
         // ,1.0534977580247056
@@ -4000,14 +3768,12 @@ export default {
         // ,1.6647864973429227
         // ,1.777777600000007
         // ,1.8728848095107882
-
         //Gerador
         // 1, Math.pow(Math.pow(this.base,2)/2,1/3), Math.pow(Math.pow(this.base,2)/2,2/3),
         // Math.pow(this.base,2)/2, Math.pow(Math.pow(this.base,2)/2,1/3)*(Math.pow(this.base,2)/2), Math.pow(Math.pow(this.base,2)/2,2/3)*(Math.pow(this.base,2)/2),
         // 2/(this.base), (Math.pow(Math.pow(this.base,2)/2,1/3)*2)/(this.base), (Math.pow(Math.pow(this.base,2)/2,2/3))*2/(this.base),
         // this.base, this.base*Math.pow(Math.pow(this.base,2)/2,1/3), this.base*Math.pow(Math.pow(this.base,2)/2,2/3),
         // Math.pow(this.base,3)/2, Math.pow(Math.pow(this.base,2)/2,1/3)*(Math.pow(this.base,3)/2), Math.pow(Math.pow(this.base,2)/2,2/3)*(Math.pow(this.base,3)/2),
-
         //19 WellTempered
         // 1
         // ,1.0378908155562134
@@ -4028,14 +3794,11 @@ export default {
         // ,1.800946639579631
         // ,1.800946639579631*1.0378908155562134
         // ,1.800946639579631*1.0772173450159417
-
         //Pythagorean Comma
         //Math.pow(2,7), Math.pow(1.5, 12)
-
         // 1, 1.0666666666666667, 1.125, 1.2000000000000002, 1.25, 1.2800000000000002, 1.3333333333333333, 1.5, 1.5625,
         // 1.25*1, 1.25*1.0666666666666667, 1.25*1.125, 1.25*1.2000000000000002, 1.25*1.25, 1.25*1.2800000000000002, 1.25*1.3333333333333333, 1.25*1.5, 1.25*1.5625,
         // 1.5*1, 1.5*1.0666666666666667, 1.5*1.125, 1.5*1.2000000000000002, 1.5*1.25, 1.5*1.2800000000000002, 1.5*1.3333333333333333, 1.5*1.5, 1.5*1.5625,
-
         // 1
         // ,(1.125 + 1.1098579146132868)/2
         // ,(1.265625 + 1.2485901539399475)/2
@@ -4044,7 +3807,6 @@ export default {
         // //,(1.5 + 1.4798105528177155)/2
         // ,(1.6875 + 1.6647868719199301)/2
         // ,(1.8984375 + 1.8728852309099215)/2
-
         //Bom para 19EDO
         //---------------------------------------------------
         // 1
@@ -4056,7 +3818,6 @@ export default {
         // ,Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,1.2* 1
         // ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4066,7 +3827,6 @@ export default {
         // ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,1.2* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,1.5* 1
         // ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4076,7 +3836,6 @@ export default {
         // ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,1.5* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,1.8* 1
         // ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4086,7 +3845,6 @@ export default {
         // ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,1.8* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,2.25* 1
         // ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4097,7 +3855,6 @@ export default {
         // ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,2.25* Math.pow(Math.pow(this.base,1/this.eqt),8)
         //--------------------------------------------------------------
-
         //Bom com 21EDO
         // 1
         // ,Math.pow(Math.pow(this.base,1/this.eqt),1)
@@ -4108,7 +3865,6 @@ export default {
         // ,Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(1.25)* 1
         // ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4118,7 +3874,6 @@ export default {
         // ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(1.25)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(1.5)* 1
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4128,7 +3883,6 @@ export default {
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(1.75)* 1
         // ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4138,7 +3892,6 @@ export default {
         // ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(1.75)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // 1
         // ,Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4148,7 +3901,6 @@ export default {
         // ,Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(1.2)* 1
         // ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4158,7 +3910,6 @@ export default {
         // ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(1.2)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(1.5)* 1
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4168,7 +3919,6 @@ export default {
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(1.5)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(1.8)* 1
         // ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4178,7 +3928,6 @@ export default {
         // ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(1.8)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         // ,(2)* 1
         // ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),1)
         // ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),2)
@@ -4188,10 +3937,8 @@ export default {
         // ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),6)
         // ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),7)
         // ,(2)* Math.pow(Math.pow(this.base,1/this.eqt),8)
-
         //Prime Harmonic
         //1/1, 17/16, 37/32, 19/16, 5/4, 11/8, 23/16, 3/2, 13/8, 7/4, 29/16, 31/16
-
         //17 Unequal Tempered
         // 1
         // ,1.0343916737038537
@@ -4210,7 +3957,6 @@ export default {
         // ,1.7177173456860806
         // ,1.8692180390322457
         // ,1.933503575912
-
         // 1
         // ,(1.0534979423868314 + 1.06787109375)/2
         // ,1.125
@@ -4223,7 +3969,6 @@ export default {
         // ,1.6875
         // ,1.7777777777777777
         // ,(1.8728852309099222 + 1.8984375)/2
-
         // 1
         // ,1.1157192200000001
         // ,1.2000038130101958
@@ -4231,7 +3976,6 @@ export default {
         // ,1.4938
         // ,1.666661370836
         // ,1.7925656958746305
-
         //  1
         //  ,Math.pow(this.base, 2)/2
         //  //,2/Math.pow(this.base, 3)*8
@@ -4239,7 +3983,6 @@ export default {
         //  ,this.base
         //  //,Math.pow(this.base, 3)/4
         //  ,2/Math.pow(this.base, 2)*4
-
         // ,Math.pow(Math.pow(this.base, 2)/2,1/3) * 1
         // ,Math.pow(Math.pow(this.base, 2)/2,1/3) * (Math.pow(this.base, 2)/2)
         // //,Math.pow(Math.pow(this.base, 2)/2,1/3) * (2/Math.pow(this.base, 3)*8)
@@ -4247,7 +3990,6 @@ export default {
         // ,Math.pow(Math.pow(this.base, 2)/2,1/3) * (this.base)
         // //,Math.pow(Math.pow(this.base, 2)/2,1/3) * (Math.pow(this.base, 3)/4)
         // ,Math.pow(Math.pow(this.base, 2)/2,1/3) * (2/Math.pow(this.base, 2)*4)
-
         // ,Math.pow(Math.pow(this.base, 2)/2,2/3) * 1
         // ,Math.pow(Math.pow(this.base, 2)/2,2/3) * (Math.pow(this.base, 2)/2)
         // //,Math.pow(Math.pow(this.base, 2)/2,2/3) * (2/Math.pow(this.base, 3)*8)
@@ -4255,7 +3997,6 @@ export default {
         // ,Math.pow(Math.pow(this.base, 2)/2,2/3) * (this.base)
         // //,Math.pow(Math.pow(this.base, 2)/2,2/3) * (Math.pow(this.base, 3)/4)
         // ,Math.pow(Math.pow(this.base, 2)/2,2/3) * (2/Math.pow(this.base, 2)*4)
-
         // ,Math.pow(Math.pow(this.base, 2)/2,3/4) * 1
         // ,Math.pow(Math.pow(this.base, 2)/2,3/4) * (Math.pow(this.base, 2)/2)
         // ,Math.pow(Math.pow(this.base, 2)/2,2/3) * (2/Math.pow(this.base, 3)*8)
@@ -4263,7 +4004,6 @@ export default {
         // ,Math.pow(Math.pow(this.base, 2)/2,3/4) * (this.base)
         // ,Math.pow(Math.pow(this.base, 2)/2,2/3) * (Math.pow(this.base, 3)/4)
         // ,Math.pow(Math.pow(this.base, 2)/2,3/4) * (2/Math.pow(this.base, 2)*4)
-
         // ,Math.pow(1.1157192200000001, 1/3)*1
         // ,Math.pow(1.1157192200000001, 1/3)*1.1157192200000001
         // ,Math.pow(1.1157192200000001, 1/3)*1.2000038130101958
@@ -4271,7 +4011,6 @@ export default {
         // ,Math.pow(1.1157192200000001, 1/3)*1.4938
         // ,Math.pow(1.1157192200000001, 1/3)*1.666661370836
         // ,Math.pow(1.1157192200000001, 1/3)*1.7925656958746305
-
         // ,Math.pow(1.1157192200000001, 2/3)*1
         // ,Math.pow(1.1157192200000001, 2/3)*1.1157192200000001
         // ,Math.pow(1.1157192200000001, 2/3)*1.2000038130101958
@@ -4279,7 +4018,6 @@ export default {
         // ,Math.pow(1.1157192200000001, 2/3)*1.4938
         // ,Math.pow(1.1157192200000001, 2/3)*1.666661370836
         // ,Math.pow(1.1157192200000001, 2/3)*1.7925656958746305
-
         // 1
         // ,Math.pow(this.base,1/11)
         // ,Math.pow(this.base,2/11)
@@ -4306,7 +4044,6 @@ export default {
         // ,this.base*Math.pow(4/3,5/8)
         // ,this.base*Math.pow(4/3,6/8)
         // ,this.base*Math.pow(4/3,7/8)
-
         //Interessante (Temperamento diferente baseado nas divisão dos intervalos)
         // 1
         // ,Math.pow(4/3,1/8)
@@ -4327,181 +4064,165 @@ export default {
         // ,(5/3) * Math.pow(1.2,2/5)
         // ,(5/3) * Math.pow(1.2,3/5)
         // ,(5/3) * Math.pow(1.2,4/5)
-
-//CAdeia de quintas intercaladas com terça maior
-//1,  25/24, 1.152, 1.2, 1.25, 125/96, 1.3824, 1.44
-//1, 25/24, 1.0850694, 1.13028067, /*1.177375699*/ 1.188634022, 1.25, 125/96, 1.3563368055, 1.412850839
-//1, 25/24, 1.0758438, 1.120647960, 1.177375699, 1.25, 125/96, 4/3, 1.412850839
-
-//19 subset finetuned
-// 1
-// ,1.0400328069626328
-// ,1.0675252146862264
-// //,1.081668239558573
-// ,1.1102612455335032
-// ,1.1547081196540383
-// ,1.200934326906333
-// ,1.2490110989901737
-// ,1.2820276751547421
-// ,1.3333508415949649
-// ,1.38672861845
-// ,1.4422432575419675
-// ,1.4999803034643038
-// ,1.601266795480842
-// ,1.66537
-// ,1.7320394357313598
-// ,1.8013778361136608
-// ,1.9230162612282458
-
-//CPS Hexany (4,2) = 1, 3, 5, 7
-//https://en.wikipedia.org/wiki/Hexany
-//1*3, 1*5, 1*7, 3*5, 3*7, 7*5
-// 1, 5/4, 7/4, //1*3, 3*5, 3*7 Hamonic
-// 1, 7/5, 7/4, //1*5, 1*7, 5*7 SubHarmonic
-// 1, 3/2, 7/4, // 1*5, 3*5, 5*7 Harmonic
-// 1, 7/6, 7/4, // 1*3, 1*7, 3*7 SubHarmonic
-// 1, 7/6, 5/3, // 1*3, 1*5, 1*7 Harmonic
-// 1, 7/6, 7/5, // 3*5, 3*7, 5*7 SubHarmonic
-// 1, 5/4, 3/2, // 1*7, 3*7, 5*7 Harmonic
-// 1, 5/4, 5/3, // 1*3, 1*5, 3*5 SubHarmonic
-
-//1, 7/6, 6/5, 5/4, 4/3, 7/5, 3/2, 5/3, 7/4,
-// 1, 12/7, 5/3, 8/5, 3/2, 10/7, 4/3, 6/5, 8/7
-
-// 1
-// ,3
-// ,1.5811387712794926
-// ,4.743416313838478
-// ,2.499999814043224
-// ,1.3176155447250877
-// ,3.952846634175263
-// ,2.0833330234053844
-// ,1.0980128722643934
-// ,3.29403861679318
-// ,1.7361107237011897
-// ,5.208332171103568
-// ,2.74503197647805
-// ,1.446758828803807
-// ,4.34027648641142
-// ,2.287526476912609
-// ,1.205632267658303
-// ,3.6168968029749085
-// ,1.9062719223001576
-
-//MOS
-// 1
-// ,1.0999434961596022
-// ,1.222222222222222
-// ,1.3443753841950685
-// ,1.4938271604938274
-// ,1.6431254695717503
-// ,1.8257887517146776
-// ,2.008264462809917
-
-//1, Math.sqrt(this.base)/(this.base/(2/this.base)), Math.sqrt(this.base), 2/this.base, this.base, Math.sqrt(4/this.base), Math.sqrt(4/this.base) * (this.base/(2/this.base))
-//1, 2/this.base, this.base
-
-// 1, 4/3, 3/2, 2,
-// 1.25*1, 1.25*4/3, 1.25*3/2, 1.25*2,
-// 1.171875732422*1, 1.171875732422*4/3, 1.171875732422*3/2, 1.171875732422*2,
-// 1.125*1, 1.125*4/3, 1.125*3/2, 1.1225*2,
-// 1,
-// Math.pow(1.118033988749895,1),
-// Math.pow(1.118033988749895,2),
-// Math.pow(1.118033988749895,2)* 16/15,
-// Math.pow(1.118033988749895,3)* 16/15,
-// Math.pow(1.118033988749895,4)* 16/15,
-// 16/9,
-// 1, 1.6770509831248422/1.5, 1.25, 4/3, 3/2, 1.6770509831248422, 15/8, 2
-// ,1
-// ,1.1180339887498947
-// ,1.2499999999999998
-// ,1.337480609952844
-// ,1.4953487812212205
-// ,1.6718507624410548
-// ,1.8691859765265255,
-
-// 1
-// ,1.1215115859159155
-// ,1.257788237343632
-// ,1.3354053616550763
-// ,1.4976725849904013
-// ,1.6796571559753737
-// ,1.8837549607929576
-
-// ,1.7833074799371251
-// ,1.1907191850938197
-// ,1.0617092146412235
-// ,1.4106240808096404
-// ,1.59009278399985
-
-//22EDO scales
-//Superpyth[5], pentatonic - 45454
-// 1,
-// Math.pow(2, 4/22),
-// Math.pow(2, 9/22),
-// Math.pow(2, 13/22),
-// Math.pow(2, 18/22),
-// Math.pow(2, 22/22),
-//Superpyth[7], diatonic - 4144414
-// 1,
-// Math.pow(2, 4/22),
-// Math.pow(2, 5/22),
-// Math.pow(2, 9/22),
-// Math.pow(2, 13/22),
-// Math.pow(2, 17/22),
-// Math.pow(2, 18/22),
-//Math.pow(2, 22/22),
-//Porcupine[7] - 3334333
-// 1,
-// Math.pow(2, 3/22),
-// Math.pow(2, 6/22),
-// Math.pow(2, 9/22),
-// Math.pow(2, 13/22),
-// Math.pow(2, 16/22),
-// Math.pow(2, 19/22),
-//Porcupine[8] - 33333331
-// 1,
-// Math.pow(2, 3/22),
-// Math.pow(2, 6/22),
-// Math.pow(2, 9/22),
-// Math.pow(2, 12/22),
-// Math.pow(2, 15/22),
-// Math.pow(2, 18/22),
-// Math.pow(2, 21/22),
-
-//1, 16/15, 9/8, 6/5, 5/4, 4/3, 3/2 / (16/15), 3/2, 5/3 / (16/15), 5/3, 2
-
-//Selected 15EDO
-//1, 25/24, 12/11, 8/7, 6/5, 5/4, 4/3, 7/5, 10/7, 3/2,  8/5, 5/3, 7/4, 11/6, 48/25, 2
-// 1, 25/24, 12/11, 8/7, 6/5, 5/4, 1.3125, 11/8, 36/25, 1.5277777,  8/5, 5/3, 7/4, 11/6, 48/25 //(Interessante!!!, possui varias inversões de acordes)
-// 1, 8/7, 4/3, 3/2, (8/7)*3/2,
-
-// 1,
-// 1.220703125,
-// 5/4,
-// 1.28,
-// 2/1.28,
-// 1.6,
-// 2/1.220703125,
-// 2
-
-//Reverse equal temperament
-// 2,
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 1/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 2/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 3/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 4/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 5/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 6/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 7/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 8/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 9/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 10/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 11/this.eqt)))))),
-// 2/(32/(32-(64-(64/(Math.pow(this.base, 12/this.eqt)))))),
-
-/*Codigo para gerar sequencia N
+        //CAdeia de quintas intercaladas com terça maior
+        //1,  25/24, 1.152, 1.2, 1.25, 125/96, 1.3824, 1.44
+        //1, 25/24, 1.0850694, 1.13028067, /*1.177375699*/ 1.188634022, 1.25, 125/96, 1.3563368055, 1.412850839
+        //1, 25/24, 1.0758438, 1.120647960, 1.177375699, 1.25, 125/96, 4/3, 1.412850839
+        //19 subset finetuned
+        // 1
+        // ,1.0400328069626328
+        // ,1.0675252146862264
+        // //,1.081668239558573
+        // ,1.1102612455335032
+        // ,1.1547081196540383
+        // ,1.200934326906333
+        // ,1.2490110989901737
+        // ,1.2820276751547421
+        // ,1.3333508415949649
+        // ,1.38672861845
+        // ,1.4422432575419675
+        // ,1.4999803034643038
+        // ,1.601266795480842
+        // ,1.66537
+        // ,1.7320394357313598
+        // ,1.8013778361136608
+        // ,1.9230162612282458
+        //CPS Hexany (4,2) = 1, 3, 5, 7
+        //https://en.wikipedia.org/wiki/Hexany
+        //1*3, 1*5, 1*7, 3*5, 3*7, 7*5
+        // 1, 5/4, 7/4, //1*3, 3*5, 3*7 Hamonic
+        // 1, 7/5, 7/4, //1*5, 1*7, 5*7 SubHarmonic
+        // 1, 3/2, 7/4, // 1*5, 3*5, 5*7 Harmonic
+        // 1, 7/6, 7/4, // 1*3, 1*7, 3*7 SubHarmonic
+        // 1, 7/6, 5/3, // 1*3, 1*5, 1*7 Harmonic
+        // 1, 7/6, 7/5, // 3*5, 3*7, 5*7 SubHarmonic
+        // 1, 5/4, 3/2, // 1*7, 3*7, 5*7 Harmonic
+        // 1, 5/4, 5/3, // 1*3, 1*5, 3*5 SubHarmonic
+        //1, 7/6, 6/5, 5/4, 4/3, 7/5, 3/2, 5/3, 7/4,
+        // 1, 12/7, 5/3, 8/5, 3/2, 10/7, 4/3, 6/5, 8/7
+        // 1
+        // ,3
+        // ,1.5811387712794926
+        // ,4.743416313838478
+        // ,2.499999814043224
+        // ,1.3176155447250877
+        // ,3.952846634175263
+        // ,2.0833330234053844
+        // ,1.0980128722643934
+        // ,3.29403861679318
+        // ,1.7361107237011897
+        // ,5.208332171103568
+        // ,2.74503197647805
+        // ,1.446758828803807
+        // ,4.34027648641142
+        // ,2.287526476912609
+        // ,1.205632267658303
+        // ,3.6168968029749085
+        // ,1.9062719223001576
+        //MOS
+        // 1
+        // ,1.0999434961596022
+        // ,1.222222222222222
+        // ,1.3443753841950685
+        // ,1.4938271604938274
+        // ,1.6431254695717503
+        // ,1.8257887517146776
+        // ,2.008264462809917
+        //1, Math.sqrt(this.base)/(this.base/(2/this.base)), Math.sqrt(this.base), 2/this.base, this.base, Math.sqrt(4/this.base), Math.sqrt(4/this.base) * (this.base/(2/this.base))
+        //1, 2/this.base, this.base
+        // 1, 4/3, 3/2, 2,
+        // 1.25*1, 1.25*4/3, 1.25*3/2, 1.25*2,
+        // 1.171875732422*1, 1.171875732422*4/3, 1.171875732422*3/2, 1.171875732422*2,
+        // 1.125*1, 1.125*4/3, 1.125*3/2, 1.1225*2,
+        // 1,
+        // Math.pow(1.118033988749895,1),
+        // Math.pow(1.118033988749895,2),
+        // Math.pow(1.118033988749895,2)* 16/15,
+        // Math.pow(1.118033988749895,3)* 16/15,
+        // Math.pow(1.118033988749895,4)* 16/15,
+        // 16/9,
+        // 1, 1.6770509831248422/1.5, 1.25, 4/3, 3/2, 1.6770509831248422, 15/8, 2
+        // ,1
+        // ,1.1180339887498947
+        // ,1.2499999999999998
+        // ,1.337480609952844
+        // ,1.4953487812212205
+        // ,1.6718507624410548
+        // ,1.8691859765265255,
+        // 1
+        // ,1.1215115859159155
+        // ,1.257788237343632
+        // ,1.3354053616550763
+        // ,1.4976725849904013
+        // ,1.6796571559753737
+        // ,1.8837549607929576
+        // ,1.7833074799371251
+        // ,1.1907191850938197
+        // ,1.0617092146412235
+        // ,1.4106240808096404
+        // ,1.59009278399985
+        //22EDO scales
+        //Superpyth[5], pentatonic - 45454
+        // 1,
+        // Math.pow(2, 4/22),
+        // Math.pow(2, 9/22),
+        // Math.pow(2, 13/22),
+        // Math.pow(2, 18/22),
+        // Math.pow(2, 22/22),
+        //Superpyth[7], diatonic - 4144414
+        // 1,
+        // Math.pow(2, 4/22),
+        // Math.pow(2, 5/22),
+        // Math.pow(2, 9/22),
+        // Math.pow(2, 13/22),
+        // Math.pow(2, 17/22),
+        // Math.pow(2, 18/22),
+        //Math.pow(2, 22/22),
+        //Porcupine[7] - 3334333
+        // 1,
+        // Math.pow(2, 3/22),
+        // Math.pow(2, 6/22),
+        // Math.pow(2, 9/22),
+        // Math.pow(2, 13/22),
+        // Math.pow(2, 16/22),
+        // Math.pow(2, 19/22),
+        //Porcupine[8] - 33333331
+        // 1,
+        // Math.pow(2, 3/22),
+        // Math.pow(2, 6/22),
+        // Math.pow(2, 9/22),
+        // Math.pow(2, 12/22),
+        // Math.pow(2, 15/22),
+        // Math.pow(2, 18/22),
+        // Math.pow(2, 21/22),
+        //1, 16/15, 9/8, 6/5, 5/4, 4/3, 3/2 / (16/15), 3/2, 5/3 / (16/15), 5/3, 2
+        //Selected 15EDO
+        //1, 25/24, 12/11, 8/7, 6/5, 5/4, 4/3, 7/5, 10/7, 3/2,  8/5, 5/3, 7/4, 11/6, 48/25, 2
+        // 1, 25/24, 12/11, 8/7, 6/5, 5/4, 1.3125, 11/8, 36/25, 1.5277777,  8/5, 5/3, 7/4, 11/6, 48/25 //(Interessante!!!, possui varias inversões de acordes)
+        // 1, 8/7, 4/3, 3/2, (8/7)*3/2,
+        // 1,
+        // 1.220703125,
+        // 5/4,
+        // 1.28,
+        // 2/1.28,
+        // 1.6,
+        // 2/1.220703125,
+        // 2
+        //Reverse equal temperament
+        // 2,
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 1/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 2/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 3/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 4/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 5/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 6/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 7/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 8/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 9/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 10/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 11/this.eqt)))))),
+        // 2/(32/(32-(64-(64/(Math.pow(this.base, 12/this.eqt)))))),
+        /*Codigo para gerar sequencia N
 var r = "";
 var n = 50;
 var nn = parseInt(n/2);
@@ -4511,825 +4232,1345 @@ for(var i = 0; i <= nn; i++)
 }
 console.log(r)
 */
- // 1,
-  //2,
-          //3, 3/2,
-           //4, 4/2, 4/3,
-           //5, 5/2, 5/3, 5/4,
-           //6, 6/2, 6/3, 6/4, 6/5,
-         // 7, 7/2, 7/3, 7/4, 7/5, 7/6,
-           //8, 8/2, 8/3, 8/4, 8/5, 8/6, 8/7, 8/8,
-           //9, 9/2, 9/3, 9/4, 9/5, 9/6, 9/7, 9/8,
-           //10, 10/2, 10/3, 10/4, 10/5, 10/6, 10/7, 10/8, 10/9,
-           //11, 11/2, 11/3, 11/4, 11/5, 11/6, 11/7, 11/8, 11/9, 11/10,
-           //12, 12/3, 12/3, 12/4, 12/5, 12/6, 12/7, 12/8, 12/9, 12/10, 12/11
-           //13, 13/2, 13/3, 13/4, 13/5, 13/6, 13/7, 13/8, 13/9, 13/10, 13/11, 13/12,
-           //14, 14/2, 14/3, 14/4, 14/5, 14/6, 14/7, 14/8, 14/9, 14/10, 14/11, 14/12, 14/13,
-           //20, 20/2, 20/3, 20/4, 20/5, 20/6, 20/7, 20/8, 20/9, 20/10, 20/11, 20/12, 20/13, 20/14, 20/15, 20/16, 20/17, 20/18, 20/19,
-           //28, 28/2, 28/3, 28/4, 28/5, 28/6, 28/7, 28/8, 28/9, 28/10, 28/11, 28/12, 28/13, 28/14, 28/15, 28/16, 28/17, 28/18, 28/19, 28/20, 28/21, 28/22, 28/23, 28/24, 28/25, 28/26, 28/27
-          // 50/50, 50/49, 50/48, 50/47, 50/46, 50/45, 50/44, 50/43, 50/42, 50/41, 50/40, 50/39, 50/38, 50/37, 50/36, 50/35, 50/34, 50/33, 50/32, 50/31, 50/30, 50/29, 50/28, 50/27, 50/26, 50/25
+        // 1,
+        //2,
+        //3, 3/2,
+        //4, 4/2, 4/3,
+        //5, 5/2, 5/3, 5/4,
+        //6, 6/2, 6/3, 6/4, 6/5,
+        // 7, 7/2, 7/3, 7/4, 7/5, 7/6,
+        //8, 8/2, 8/3, 8/4, 8/5, 8/6, 8/7, 8/8,
+        //9, 9/2, 9/3, 9/4, 9/5, 9/6, 9/7, 9/8,
+        //10, 10/2, 10/3, 10/4, 10/5, 10/6, 10/7, 10/8, 10/9,
+        //11, 11/2, 11/3, 11/4, 11/5, 11/6, 11/7, 11/8, 11/9, 11/10,
+        //12, 12/3, 12/3, 12/4, 12/5, 12/6, 12/7, 12/8, 12/9, 12/10, 12/11
+        //13, 13/2, 13/3, 13/4, 13/5, 13/6, 13/7, 13/8, 13/9, 13/10, 13/11, 13/12,
+        //14, 14/2, 14/3, 14/4, 14/5, 14/6, 14/7, 14/8, 14/9, 14/10, 14/11, 14/12, 14/13,
+        //20, 20/2, 20/3, 20/4, 20/5, 20/6, 20/7, 20/8, 20/9, 20/10, 20/11, 20/12, 20/13, 20/14, 20/15, 20/16, 20/17, 20/18, 20/19,
+        //28, 28/2, 28/3, 28/4, 28/5, 28/6, 28/7, 28/8, 28/9, 28/10, 28/11, 28/12, 28/13, 28/14, 28/15, 28/16, 28/17, 28/18, 28/19, 28/20, 28/21, 28/22, 28/23, 28/24, 28/25, 28/26, 28/27
+        // 50/50, 50/49, 50/48, 50/47, 50/46, 50/45, 50/44, 50/43, 50/42, 50/41, 50/40, 50/39, 50/38, 50/37, 50/36, 50/35, 50/34, 50/33, 50/32, 50/31, 50/30, 50/29, 50/28, 50/27, 50/26, 50/25
+        //http://www.anaphoria.com/centaur.html
+        //Centaur 19
+        //1, 21/20, 35/32, 9/8, 7/6, 6/5, 5/4, 21/16, 4/3, 7/5, 35/24, 3/2, 14/9, 8/5, 5/3, 7/4, 9/5, 15/8, 63/32
+        //Centaur 12
+        //1, 21/20, 9/8, 7/6, 5/4, 4/3, 7/5, 3/2, 14/9, 5/3, 7/4, 15/8
+        // 1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8,
+        // 1, 9/8, 5/4, 7/5, 3/2, 5/3, 15/8,
+        // 21/20, 5/4, 7/5, 3/2, 5/3, 15/8, 21/10,
+        // 21/20, 5/4, 7/5, 14/9, 5/3, 15/8, 21/10,
+        // 21/20, 7/6, 5/4, 7/5, 14/9, 5/3, 15/8, 21/10
+        //Phi divisions of guitar string
+        // 65/65
+        // ,65/40.17223382
+        // ,65/24.82782107
+        // ,65/15.34444667
+        // ,65/9.483395374
+        // ,65/5.861064252
+        // ,65/3.622339131
+        //  ,65/2.23873007
+        //  ,65/1.38361212
+        // ,65/(40.17223382+15.34444667)
+        // ,65/(40.17223382+9.483395374)
+        // ,65/(40.17223382+5.861064252)
+        // ,65/(40.17223382+3.622339131)
+        //  ,65/(40.17223382+2.23873007)
+        //  ,65/(40.17223382+1.38361212)
+        // ,65/(24.82782107 + 9.483395374)
+        // ,65/(24.82782107 + 5.861064252)
+        // ,65/(24.82782107 + 3.622339131)
+        //  ,65/(24.82782107 + 2.23873007)
+        //  ,65/(24.82782107 + 1.38361212)
+        // ,65/(15.34444667 + 5.861064252)
+        // ,65/(15.34444667 + 3.622339131)
+        //  ,65/(15.34444667 + 2.23873007)
+        //  ,65/(15.34444667 + 1.38361212)
+        // ,65/(9.483395374 + 3.622339131)
+        //  ,65/(9.483395374 + 2.23873007)
+        //  ,65/(9.483395374 + 1.38361212)
+        //  ,65/(5.861064252 + 2.23873007)
+        //  ,65/(5.861064252 + 1.38361212)
+        // //,65/(40.17223382+15.34444667+5.861064252)
+        // //,65/(40.17223382+15.34444667+5.861064252+2.23873007)
+        //Escala hexatônica legal para 30ed3
+        // 1
+        // ,1.0759896247253458
+        // ,1.2009369551760023
+        // ,1.4960443215903987
+        // ,1.6097281681605375
+        // ,1.7966549123791213
+        // 1
+        // ,1.0594630943592953
+        // ,1.1892071150027212
+        // ,1.498307076876682
+        // ,1.5874010519682
+        // ,1.7817974362806794
+        //Integer triangles
+        //https://en.wikipedia.org/wiki/Integer_triangle
+        // 3,4,5,
+        // 13,14,15,
+        // 5,12,13,
+        // 6,25,29,
+        // 7,15,20,
+        // 9,10,17,
+        // 68,85,87,
+        // 127,131,158,
+        // 113,243,290,
+        // 145,207,328,
+        // 327,386,409,
+        // 135,352,377,
+        // 132,366,366,
+        // 1,
+        // 1 * 1.5,
+        // 1 * 1.5 * (5/3),
+        // 1 * 1.5 * (5/3) * 1.5,
+        // 1 * 1.5 * (5/3) * 1.5 * (5/3),
+        // 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5,
+        // 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5 * (5/3),
+        // 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5 * (5/3) * 1.5,
+        // 1
+        // ,1.0991312225591843
+        // ,1.208089444404447
+        // ,1.3278488279891056
+        // ,1.5061955531706088
+        // ,1.6555065597696181
+        // ,1.8196189489943297
+        //Legal: Repeat Math.sqrt(2)
+        // 1,
+        // 1.0298572716643797,
+        // 1.06066017177982,
+        // 1.2137487898581,
+        // 1.25,
+        // 1.373199999
+        //Magic[16] 19edo Repeat 1.2457309396155174
+        // 1,
+        // 1.0345743207503675,
+        // 1.070333333,
+        // 1.1161231697263,
+        // 1.2041,
+        // 1,
+        // 1.0650410894399627,
+        // 1.0991312225591843,
+        // 1.1706199147119116,
+        // //1.2080894444044472,
+        // 1.2467583092848906,
+        // 1.2866648980094315,
+        // 1.3703509847201234,
+        // 1.4142135623730947,
+        //Legal Repeat 1.4142135623730947
+        // 1,
+        // 1.0650410894399627,
+        //  1.2467583092848906,
+        //ou
+        // 1,
+        // 1.0650410894399627,
+        //  1.2467583092848906,
+        // 1.3278488279891056,
+        //Legal, subset 22edo
+        // 1
+        // ,1.0991312225591843
+        // ,1.208089444404447
+        // ,1.3278488279891056
+        // ,1.3703509847201212
+        // ,1.4594801056814455
+        // ,1.5061955531706088
+        // ,1.6555065597696181
+        // ,1.8196189489943297
+        //Golden Ratio Diatônica \o/ (L/s = PHI)
+        // 1
+        // ,1.117564
+        // ,1.248949294096
+        // ,1.3377620783991666
+        // ,1.4950347393840864
+        // ,1.6707970034850368
+        // ,1.867222582402752
+        // ,Math.pow(this.repeatScaleValue, 1) * 1
+        // ,Math.pow(this.repeatScaleValue, 1) * 1.117564
+        // ,Math.pow(this.repeatScaleValue, 1) * 1.248949294096
+        // ,Math.pow(this.repeatScaleValue, 1) * 1.3377620783991666
+        // ,Math.pow(this.repeatScaleValue, 1) * 1.4950347393840864
+        // ,Math.pow(this.repeatScaleValue, 1) * 1.6707970034850368
+        // ,Math.pow(this.repeatScaleValue, 1) * 1.867222582402752
+        //Golden Pentatônica \o/ (L/s = PHI)
+        // 1
+        // ,1.117564
+        // ,1.3377620783991666
+        // ,1.4950347393840864
+        // ,1.7896073784028579
+        //Golden Pentatônica Reversa
+        // ,1
+        // ,1.177778248966296
+        // ,1.3031164676231177
+        // ,1.5347822314363007
+        // ,1.698112528190552
+        //Golden Diatônica Reversa (Pelog? 16EDO aproxima bem)
+        // 1
+        // ,1.087803
+        // ,1.1833153668090002
+        // ,1.3559385958344639
+        // ,1.4749940723645174
+        // ,1.6045029769003392
+        // ,1.7453831517811198
+        //Legal Repeat: 1,4142135623730951
+        // 1,
+        // 1.060660171779821,
+        // 1.24721912892464712,
+        //Repeat: 1,4142135623730951
+        // 1,
+        // 1.064844316803016,
+        // 1.133893419027682,
+        // 1.24721912892464712/1.064844316803016,
+        // 1.24721912892464712,
+        // 1
+        // ,(1.3377620783991666 / 1.248949294096)
+        // ,1.1472766320999999
+        //,1.117564
+        // ,1.117564 * (1.3377620783991666 / 1.248949294096)
+        //,1.248949294096
+        // ,1.3377620783991666
+        // ,1.3957807689071022
+        // 1
+        // ,1.5
+        // ,1.1174033085417048
+        // ,1.6761049628125573
+        // ,1.2485901539399484
+        // ,1.8728852309099226
+        // ,1.3951787690250947
+        // ,1.039318248343856
+        // ,1.5589773725157843
+        // ,1.1613376493271939
+        // ,1.742006473990791
+        // ,1.2976825316922527
+        // ,1.946523797538379
+        // ,1.450034754349699
+        // ,1.0801824213405413
+        // ,1.620273632010812
+        // ,1.2069994114345108
+        // ,1.8104991171517657
+        // ,1.3487051357448123
+        //Golden Mavila (Anti diatonic)
+        // 1,
+        //   Math.pow(1.087803,0.5),
+        // Math.pow(1.087803,1),
+        //   Math.pow(1.087803,1.5),
+        // Math.pow(1.087803,2),
+        //   Math.pow(1.087803,2) * Math.pow(1.145881,1/3),
+        //   Math.pow(1.087803,2) * Math.pow(1.145881,2/3),
+        // Math.pow(1.087803,2) * Math.pow(1.145881,1),
+        //   Math.pow(1.087803,2.5) * Math.pow(1.145881,1),
+        // Math.pow(1.087803,3) * Math.pow(1.145881,1),
+        //   Math.pow(1.087803,3.5) * Math.pow(1.145881,1),
+        // Math.pow(1.087803,4) * Math.pow(1.145881,1),
+        //   Math.pow(1.087803,4.5) * Math.pow(1.145881,1),
+        // Math.pow(1.087803,5) * Math.pow(1.145881,1),
+        //   Math.pow(1.087803,5) * Math.pow(1.145881,1) * Math.pow(1.145881,1/3),
+        //   Math.pow(1.087803,5) * Math.pow(1.145881,1) * Math.pow(1.145881,2/3),
+        //Acorde 3:4:5:6:7 (7/3 ^ 9 ~= 2)
+        // 1
+        // ,1.080059738892306
+        // ,1.1665290395761165
+        // ,1.259921049894873
+        // ,1.3607900001743767
+        // ,1.4697344922755984
+        // ,1.587401051968199
+        // ,1.714487965706145
+        // ,1.85174942457458
+        // ,1.3332645197880582 * 1
+        // ,1.3332645197880582 * 1.080059738892306
+        // ,1.3332645197880582 * 1.1665290395761165
+        // ,1.3332645197880582 * 1.259921049894873
+        // ,1.3332645197880582 * 1.3607900001743767
+        // ,1.3332645197880582 * 1.4697344922755984
+        // ,1.3332645197880582 * 1.587401051968199
+        // ,1.3332645197880582 * 1.714487965706145
+        // ,1.3332645197880582 * 1.85174942457458
+        // ,1.6665290395761165 * 1
+        // ,1.6665290395761165 * 1.080059738892306
+        // ,1.6665290395761165 * 1.1665290395761165
+        // ,1.6665290395761165 * 1.259921049894873
+        // ,1.6665290395761165 * 1.3607900001743767
+        // ,1.6665290395761165 * 1.4697344922755984
+        // ,1.6665290395761165 * 1.587401051968199
+        // ,1.6665290395761165 * 1.714487965706145
+        // ,1.6665290395761165 * 1.85174942457458
+        // ,2.333058079152233 * 1
+        // ,2.333058079152233 * 1.080059738892306
+        // ,2.333058079152233 * 1.1665290395761165
+        // ,2.333058079152233 * 1.259921049894873
+        // ,2.333058079152233 * 1.3607900001743767
+        // ,2.333058079152233 * 1.4697344922755984
+        // ,2.333058079152233 * 1.587401051968199
+        // ,2.333058079152233 * 1.714487965706145
+        // ,2.333058079152233 * 1.85174942457458
+        //Combinação 24 possibilidades intervalos tetrade
+        // 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        // 5/4, 5/4, 5/4, 5/4, 5/4, 5/4, 0, 0 ,0,
+        // 5/4 * 6/5, 5/4 * 6/5, 5/4 * 7/6, 5/4 * 7/6, 5/4 * 8/7, 5/4 * 8/7, 0, 0 ,0,
+        // 5/4 * 6/5 * 7/6, 5/4 * 6/5 * 8/7, 5/4 * 7/6 * 6/5, 5/4 * 7/6 * 8/7, 5/4 * 8/7 * 6/5, 5/4 * 8/7 * 7/6, 0, 0 ,0,
+        // 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        // 6/5, 6/5, 6/5, 6/5, 6/5, 6/5, 0, 0, 0,
+        // 6/5 * 5/4, 6/5 * 5/4, 6/5 * 7/6, 6/5 * 7/6, 6/5 * 8/7, 6/5 * 8/7, 0, 0, 0,
+        // 6/5 * 5/4 * 7/6, 6/5 * 5/4 * 8/7, 6/5 * 7/6 * 5/4, 6/5 * 7/6 * 8/7, 6/5 * 8/7 * 5/4, 6/5 * 8/7 * 7/6, 0, 0, 0,
+        // 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        // 7/6, 7/6, 7/6, 7/6, 7/6, 7/6, 0, 0, 0,
+        // 7/6 * 5/4, 7/6 * 5/4, 7/6 * 6/5, 7/6 * 6/5, 7/6 * 8/7, 7/6 * 8/7, 0, 0, 0,
+        // 7/6 * 5/4 * 6/5, 7/6 * 5/4 * 8/7, 7/6 * 6/5 * 5/4, 7/6 * 6/5 * 8/7, 7/6 * 8/7 * 5/4, 7/6 * 8/7 * 6/5, 0, 0, 0,
+        // 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        // 8/7, 8/7, 8/7, 8/7, 8/7, 8/7, 0, 0, 0,
+        // 8/7 * 5/4, 8/7 * 5/4, 8/7 * 6/5, 8/7 * 6/5, 8/7 * 7/6, 8/7 * 7/6, 0, 0, 0,
+        // 8/7 * 5/4 * 6/5, 8/7 * 5/4 * 7/6, 8/7 * 6/5 * 5/4, 8/7 * 6/5 * 7/6, 8/7 * 7/6 * 5/4, 8/7 * 7/6 * 6/5, 0, 0, 0,
+        //  Escala de valores únicos
+        //1,1.1428571428571428,1.1666666666666667,1.2,1.25,1.3333333333333333,1.3714285714285714,1.4,1.4285714285714284,1.4583333333333333,1.5,1.6,1.6666666666666667,1.7142857142857142,1.75
+        //BolherPierce
+        // 1
+        // ,1.0881822434633168
+        // ,1.1841405949888573
+        // ,1.2885607692309615
+        // ,1.402188948700565
+        // ,1.5258371159564506
+        // ,1.6603888560010875
+        // ,1.8068056703447535
+        // ,1.966133847857996
+        // ,2.1395119415112775
+        // ,2.3281789044302985
+        // ,2.5334829434069297
+        // ,2.7568911531326
+        // ,3.000000000000003
+        // ,this.repeatScaleValue * 1
+        // ,this.repeatScaleValue * 1.0881822434633168
+        // ,this.repeatScaleValue * 1.1841405949888573
+        // ,this.repeatScaleValue * 1.2885607692309615
+        // ,this.repeatScaleValue * 1.402188948700565
+        // ,this.repeatScaleValue * 1.5258371159564506
+        // ,this.repeatScaleValue * 1.6603888560010875
+        // ,this.repeatScaleValue * 1.8068056703447535
+        // ,this.repeatScaleValue * 1.966133847857996
+        // ,this.repeatScaleValue * 2.1395119415112775
+        // ,this.repeatScaleValue * 2.3281789044302985
+        // ,this.repeatScaleValue * 2.5334829434069297
+        // ,this.repeatScaleValue * 2.7568911531326
+        // ,this.repeatScaleValue * 3.000000000000003
+        //BolherPierce MOS
+        // 1
+        // ,1.1413122466159706
+        // ,1.2312378538327646
+        // ,1.3282488269144097
+        // ,1.4329034318653573
+        // ,1.5458039212586663
+        // ,1.6676
+        // ,1.903252302456792
+        // ,2.0532122450515184
+        // ,2.2149877437624688
+        // ,2.3895097629786695
+        // ,2.5777826190909523
+        // ,2.7808897599999995
+        // ,3
+        // ,this.repeatScaleValue * 1
+        // ,this.repeatScaleValue * 1.1413122466159706
+        // ,this.repeatScaleValue * 1.2312378538327646
+        // ,this.repeatScaleValue * 1.3282488269144097
+        // ,this.repeatScaleValue * 1.4329034318653573
+        // ,this.repeatScaleValue * 1.5458039212586663
+        // ,this.repeatScaleValue * 1.6676
+        // ,this.repeatScaleValue * 1.903252302456792
+        // ,this.repeatScaleValue * 2.0532122450515184
+        // ,this.repeatScaleValue * 2.2149877437624688
+        // ,this.repeatScaleValue * 2.3895097629786695
+        // ,this.repeatScaleValue * 2.5777826190909523
+        // ,this.repeatScaleValue * 2.7808897599999995
+        // ,this.repeatScaleValue * 3
+        //Golden scales
+        //Golden Pentatonic
+        //1, 1.117564, 1.117564*1.197034, 1.117564*1.197034*1.117564, 1.117564*1.197034*1.117564*1.197034
+        //1, 1.117564, 1.117564*1.197034, 1.117564*1.197034*1.117564, 1.117564*1.197034*1.117564*1.197034
+        //1,
+        //Math.pow(1.117564, 1/3),
+        //Math.pow(1.117564, 2/3),
+        //1.117564,
+        //1.117564*Math.pow(1.117564 , 1/3),
+        //1.117564*Math.pow(1.117564 , 2/3),
+        //1.117564*Math.pow(1.117564 , 3/3),
+        //1.117564*Math.pow(1.197034 , 4/4),
+        //1.117564*Math.pow(1.197034 , 4/4) * Math.pow(1.117564, 1/3),
+        //1.117564*Math.pow(1.197034 , 4/4) * Math.pow(1.117564, 2/3),
+        //Repeat: 1.4950347693089112
+        //Escala de MOS11 (19edo)
+        // 1
+        // ,1.0371550444461919
+        // ,1.1571102372827198
+        // ,1.2001027195781029
+        // ,1.244692589464023
+        // ,1.388651142614656
+        // ,1.4402465375387585
+        // ,1.6068224531337645
+        // ,1.6665240127970886
+        // ,1.2001027195781029
+        // ,1.244692589464023
+        // ,1.388651142614656
+        // ,1.4402465375387585
+        // ,1.6068224531337645
+        // ,1.6665240127970886
+        // ,1.7284437865632105
+        // ,1.9283519958849897
+        // ,1.9999999999999993
+        // ,1.6068224531337645
+        // ,1.6665240127970886
+        // ,1.7284437865632105
+        // ,1.9283519958849897
+        // ,1.9999999999999993
+        // ,2 * 1.0371550444461919
+        // ,2 * 1.1571102372827198
+        // ,2 * 1.2001027195781029
+        // ,2 * 1.244692589464023
+        //1,
+        //1.6696270355495002637284476040757,
+        //1.6696270355495002637284476040757 * 1.6028419541275202531793096999126,
+        //Matriz 7x7
+        // 1
+        // ,1.066666667
+        // ,1.09375
+        // ,1.125
+        // ,1.142857143
+        // ,1.166666667
+        // ,1.2
+        // ,1.25
+        // ,1.28
+        // ,1.306122449
+        // ,1.3125
+        // ,1.333333333
+        // ,1.4
+        // ,1.428571429
+        // ,1.5
+        // ,1.523809524
+        // ,1.53125
+        // ,1.5625
+        // ,1.6
+        // ,1.666666667
+        // ,1.714285714
+        // ,1.75
+        // ,1.777777778
+        // ,1.828571429
+        // ,1.875
+        //Golden 19
+        // 1
+        // ,1.0265864277123251
+        // ,1.07111
+        // ,1.117564
+        // ,1.1472760343340247
+        // ,1.197033509
+        // ,1.248949294
+        // ,1.2821543942091507
+        // ,1.337761557
+        // ,1.3733283931813633
+        // //,Math.sqrt(1.395780769 * 1.432889781)
+        // ,1.395780769
+        // ,1.495034156
+        // ,1.534781773579949
+        // ,1.601346035
+        // ,1.670796352
+        // ,1.7152168587116252
+        // ,1.78960668
+        // //,Math.sqrt(1.8371859291265378 * 1.867221854)
+        // ,1.867221854
+        // ,1.9168646126081688
+        // 1
+        // ,1.117564
+        // ,1.248949294
+        // ,1.337761557
+        // ,1.495034156
+        // ,1.670796352
+        // ,1.867221854
+        // ,1.2821547034209912
+        // ,1.4328899389739767
+        // ,1.6013462117595134
+        // ,1.7152179408777324
+        // ,1.9168658228790822
+        // ,1.0711101182400191
+        // ,1.197034108180789
+        // ,1.1660330343874241
+        // ,1.3031165420421473
+        // ,1.4563161351907903
+        // ,1.5598747755642075
+        // ,1.743259893678638
+        // ,1.948204499819073
+        // ,2.177243213635803
+        //4, 4/(4/3), 4/(5/3), 4/(7/3)
+        //1, 1.25, 1.5, 2, 2.5, 3, 4, 0, 0,
+        //1, 1.25, 5/3, 25/12, 25/9, 125/36
+        //1, 4/3, 5/3, 2, 7/3, 8/3, //3
+        //Sequencia de padovan
+        ///*1, 1, 1, 2,*/ 2, 3, 4, 5, 7, 9, 12, 16, 21, 28, 37, 49, 65, 86, 114, 151, 200, 265
+        // 1
+        // ,1.0433717363454582
+        // ,1.1175644807212748
+        // ,1.1660351927281667
+        // ,1.2489503685698122
+        //1
+        //,1.117564
+        //,1.3377620783991666
+        //,1.4950347393840864
+        //,1.3377620783991666*1.3377620783991666
+        // ,Math.pow(this.testValue, 1) * 1
+        // ,Math.pow(this.testValue, 1) * 1.117564
+        // ,Math.pow(this.testValue, 1) * 1.3377620783991666
+        // ,Math.pow(this.testValue, 1) * 1.4950347393840864
+        // ,Math.pow(this.testValue, 1) * 1.3377620783991666*1.3377620783991666
+        // ,Math.pow(this.testValue, 2) * 1
+        // ,Math.pow(this.testValue, 2) * 1.117564
+        // ,Math.pow(this.testValue, 2) * 1.3377620783991666
+        // ,Math.pow(this.testValue, 2) * 1.4950347393840864
+        // ,Math.pow(this.testValue, 2) * 1.3377620783991666*1.3377620783991666
+        // ,1.117564 * 1.117564
+        // ,1.117564 * 1.117564 * this.testValue
+        // //,(2/ (1.117564 * 1.117564))
+        // ,(2/ (1.117564 * 1.117564)) * this.testValue
+        // ,(2/ (1.117564 * 1.117564)) * this.testValue * this.testValue
+        // ,Math.pow(this.testValue, 3) * 1
+        // ,Math.pow(this.testValue, 3) * 1.117564
+        // ,Math.pow(this.testValue, 3) * 1.3377620783991666
+        // ,Math.pow(this.testValue, 3) * 1.4950347393840864
+        // ,Math.pow(this.testValue, 3) * 1.3377620783991666*1.3377620783991666
+        // ,Math.pow(this.testValue, 4) * 1
+        // ,Math.pow(this.testValue, 4) * 1.117564
+        // ,Math.pow(this.testValue, 4) * 1.3377620783991666
+        // ,Math.pow(this.testValue, 4) * 1.4950347393840864
+        // ,Math.pow(this.testValue, 4) * 1.3377620783991666*1.3377620783991666
+        // ,Math.pow(this.testValue, 5) * 1
+        // ,Math.pow(this.testValue, 5) * 1.117564
+        // ,Math.pow(this.testValue, 5) * 1.3377620783991666
+        // ,Math.pow(this.testValue, 5) * 1.4950347393840864
+        // ,Math.pow(this.testValue, 5) * 1.3377620783991666*1.3377620783991666
+        //Permutações 4:5:6:7:8
+        // 1,    1,   1,   1, 0, 0, 0, 0, 0,
+        // 1.25, 1.2, 7/6, 8/7, 0, 0, 0, 0, 0,
+        // 1.5,  1.4, 4/3, 10/7, 0, 0, 0, 0, 0,
+        //1, 4/3
+        // 1.75, 1.6, 5/3, 12/7, 0, 0, 0, 0, 0,
+        // 1,
+        // 1.6/1.5,
+        // 5/3 / 1.5,
+        // 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75,
+        // 1.75 * 1.0285714285714285,
+        // 1.75 * 1.0285714285714285 * 1.0416666666666667,
+        //1, 1.0666666666666667, 1.09375, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.28, 1.3061224489795917, 1.3125, 1.3333333333333333, 1.4, 1.4285714285714284, 1.5, 1.5238095238095237, 1.53125, 1.5625, 1.6, 1.6666666666666665, 1.7142857142857142, 1.75, 1.7777777777777777, 1.8285714285714287, 1.875
+        // 1
+        // ,1.4963512473325191
+        // ,1.1195335276967928
+        // ,1.6752153905996714
+        // ,1.2533553196372258
+        // //,1.875459795890011
+        // //,1.403173302451005
+        // //,1.0498200606731256
+        // ,1.7485798885315609
+        // ,1.3082448486323792
+        // ,1.9575938110674032
+        // ,1.4646239704805644
+        // ,1.0957959525508496
+        // //,1.6396956404213896
+        // //,1.22678030839512
+        // //,1.8356942446700104
+        // ,1.528765813288523
+        // ,1.1437853157967972
+        // ,1.7115045839731566
+        // ,1.2805060095217786
+        // ,1.9160867645647002
+        // //,1.43356941007686
+        // //,1.0725616874531265
+        // //,1.6049290188615573
+        // ,1.3365845776954532
+        //Grid 1:3:5:7
+        // 1.75, 1.75*1.2, 1.5*1.75, 1.5*1.75*1.2, 2.25*1.75, 2.25*1.75*1.2, 3.375*1.75, 3.375*1.75*1.2, 5.0625*1.75,
+        // 1, 1.25, 1.5, 1.875, 2.25, 2.8125, 3.375, 4.21875, 5.0625,
+        // (1.25 / (7/6))/1.2, 1.25 / (7/6), (1.25 / (7/6))*1.25, 1.875/(7/6), (1.875/(7/6))*1.25, 2.8125/(7/6), (2.8125/(7/6))*1.25, 4.21875/(7/6), (4.21875/(7/6))*1.25,
+        //1, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.2857142857142858, 1.3333333333333333, 1.4, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75, 1.8, 1.875, 2, 2.142857142857143, 2.25, 2.3333333333333335, 2.4000000000000004, 2.5, 2.571428571428571, 2.625, 2.6666666666666665
+        //5th Harmonic Scale + inversões
+        //1, 1.2, 1.4, 1.6, 1.8, 2, 0 , 0 , 0,
+        //2, 5/3, 10/7, 5/4, 10/9, 1
+        //25 note scale based on harmonic 54
+        // 1
+        // ,1.037
+        // ,1.0741
+        // ,1.1111
+        // ,1.1481
+        // ,1.1852
+        // ,1.2222
+        // ,1.2593
+        // ,1.2963
+        // ,1.3333
+        // ,1.3889
+        // ,1.4074
+        // ,1.4815
+        // ,1.5
+        // ,1.5556
+        // ,1.5741
+        // ,1.6111
+        // ,1.6667
+        // ,1.7222
+        // ,1.7593
+        // ,1.7778
+        // ,1.8333
+        // ,1.8519
+        // ,1.8889
+        // ,1.9444
+        // ,2
+        //Escala 25 notas Latice 1,3,5,7
+        // 1
+        // ,1.066666667
+        // ,1.09375
+        // ,1.125
+        // ,1.142857143
+        // ,1.166666667
+        // ,1.2
+        // ,1.25
+        // ,1.28
+        // ,1.306122449
+        // ,1.3125
+        // ,1.333333333
+        // ,1.4
+        // ,1.428571429
+        // ,1.5
+        // ,1.523809524
+        // ,1.53125
+        // ,1.5625
+        // ,1.6
+        // ,1.666666667
+        // ,1.714285714
+        // ,1.75
+        // ,1.777777778
+        // ,1.828571429
+        // ,1.875
+        // ,2
+        //25 notas subset Golden meantone (aprox 50edo)
+        // 1
+        // ,1.4950347393840864
+        // ,1.1175644359826216
+        // ,1.670797655294202
+        // ,1.248950268573155
+        // ,1.743262806432469
+        // ,1.3031192277463686
+        // ,1.948208515040184
+        // ,1.4563197047744798
+        // ,1.0886242751437119
+        // ,1.5194826061454036
+        // ,1.135839641038623
+        // ,1.6981197217222919
+        // ,1.269373987804032
+        // ,1.8977582090375393
+        // ,1.324428756157179
+        // ,1.9800670002942378
+        // ,1.4801344758739627
+        // ,1.1064262301958157
+        // ,1.6541456507085184
+        // ,1.1544136951892139
+        // ,1.7258885779286266
+        // ,1.290131690154748
+        // ,1.9287916951616544
+        // ,1.4418052946510969
+        // 1.0000
+        // ,1.4955
+        // ,1.1183
+        // ,1.6724
+        // ,1.2506
+        // ,1.7489
+        // ,1.3078
+        // ,1.9558
+        // ,1.4624
+        // ,1.0936
+        // ,1.5293
+        // ,1.1436
+        // ,1.7102
+        // ,1.2788
+        // ,1.9125
+        // ,1.3373
+        // ,2.0000
+        // ,1.4955
+        // ,1.1183
+        // ,1.6724
+        // ,1.1694
+        // ,1.7489
+        // ,1.3078
+        // ,1.9558
+        // ,1.4624
+        // 1
+        // ,1.4955178823482058
+        // ,1.118286868211631
+        // ,1.6724180090056655
+        // ,1.2505655196145777
+        //,1.8702430976316768
+        //,1.3984909984232372
+        // ,1.7489046221194653
+        // ,1.3077590684505458
+        // ,1.9557770726708226
+        // ,1.4624497930329208
+        // ,1.0935599087585828
+        // ,1.635438398967533
+        // ,1.2229136855674325
+        // ,1.5293336886354147
+        // ,1.1435729397159027
+        // ,1.7102337811146393
+        // ,1.278842601326465
+        // ,1.912531978992426
+        // ,1.4301128875729883
+        // ,1.0693796985710164
+        // ,1.3373293784087439
+        // 1
+        // ,1.0838228978372493
+        // ,1.1746720738763325
+        // ,1.2731364911171381
+        // ,1.3798544811449238
+        // ,1.4955178823482056
+        // ,1.6208765250140584
+        // ,1.7567430923771075
+        // ,1.9039983891357273
+        // ,1.0317985257952693
+        // ,1.1182868682116305
+        // ,1.2120249141184716
+        // ,1.313620354670825
+        // ,1.4237318194573287
+        // ,1.5430731463073413
+        // ,1.6724180090056644
+        // ,1.8126049329157221
+        // ,1.9645427310268107
+        // ,1.0646081978332909
+        // ,1.153846742036969
+        // ,1.2505655196145766
+        // ,1.3553915454040157
+        // ,1.469004392443888
+        // ,1.5921405975541825
+        // ,1.725598436205504
+        //Double BH (26ed3) MOS[11] (Generator: 2.2318527209480608)
+        // 1
+        // ,1.1351479063236496
+        // ,1.2352477953659549
+        // ,1.4021889487005679
+        // ,1.5258371159564523
+        // ,1.6603888560010873
+        // ,1.8847869335727543
+        // ,2.050991673825543
+        // ,2.2318527209480608
+        // ,2.533482943406932
+        // ,2.7568911531326
+        // 1, 1.0909090909090908, 1.1111111111111112, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.222222222222222, 1.25, 1.2727272727272727, 1.3333333333333333, 1.375, 1.4000000000000001, 1.4285714285714286, 1.4545454545454544, 1.5, 1.5555555555555556, 1.5999999999999999, 1.6363636363636362, 1.6666666666666667, 1.7142857142857142, 1.75, 1.7777777777777777, 1.7999999999999998, 1.8333333333333333
+        //1, 1.0666666666666667, 1.09375, 1.125, 1.1428571428571428, 1.1666666666666665, 1.2000000000000002, 1.25, 1.2800000000000002, 1.3061224489795917, 1.3125, 1.3333333333333333, 1.4000000000000001, 1.4285714285714284, 1.5, 1.5238095238095237, 1.53125, 1.5625, 1.6, 1.6666666666666665, 1.7142857142857142, 1.75, 1.7777777777777777, 1.8285714285714285, 1.875
+        //1, 10/9, 1.25, 4/3, //1.5, 5/3, 15/8, 2, 9/4, 5/2, 15/8*3/2, 3, 9/4*3/2
+        //Adagio Gamma
+        //http://www.seraph.it/blog_files/140006ae42b0d87bb0903cdd857fa62c-24.html
+        //0, 70, 140, 175, 246, 316, 386, 456, 491, 526, 562, 632
+        //Partials
+        //1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/6, 7/5, 7/4, //8/7, 8/5, 9/8, 9/7, 9/5, 10/9, 10/7, 11/10, 11/9, 11/8, 11/7, 11/6,12/11, 12/7, 13/12, 13/11,13/10,13/9,13/8,13/7
+        // ,1/0.8888888888888888, 1.1111111111111112, 1/0.8333333333333334, 1/0.7999999999999999, 1/0.7777777777777778, 1/0.9333333333333332, 1.1666666666666667
+        // ,1.2500000000000002, 1/0.9375, 1/0.9, 1/0.8750000000000001, 1.05, 1.3125
+        // ,1/0.75, 1/0.72, 1/0.7000000000000001, 1/0.8399999999999999, 1.05
+        // ,1/0.96, 1/0.9333333333333333, 1.1199999999999999, 1.4
+        // ,1/0.9722222222222223, 1.1666666666666667, 1.4583333333333335
+        // ,1.2, 1.5
+        // ,1.25
+        // 1
+        // ,1.1111111111111112
+        // ,1.25
+        // ,1.3333333333333333
+        // ,1.5 //repeat
+        // 1
+        // ,1.107309732306156
+        // ,1.2513882056240933
+        // ,1.3303120581981225
+        //,1.5034066538560558 //repeat
+        // 1
+        // ,1.0991312225591843
+        // ,1.2467583092848906//,1.208089444404447
+        // ,1.3278488279891054
+        //,1.5061955531706124 //repeat
+        //WTG 2 in base 3
+        //2.0024860478289512
+        //Campo harmonico Magic[10] 22edo
+        // 1
+        // ,1.170619914711911
+        // ,1.2080894444044468
+        // ,1.2467583092848906
+        // ,1.4594801056814448
+        // ,1.506195553170611
+        // ,1.554406281770919
+        // ,1.8196189489943317
+        // ,1.8778618213234115
+        // //1.9379689478025242
+        // ,1.2467583092848906
+        // ,1.4594801056814448
+        // ,1.506195553170611
+        // ,1.554406281770919
+        // ,1.8196189489943317
+        // ,1.8778618213234115
+        // ,1.9379689478025242
+        // ,2*1
+        // ,2*1.170619914711911
+        // //,2*1.2080894444044468
+        // ,1.506195553170611
+        // ,1.554406281770919
+        // ,1.8196189489943317
+        // ,1.8778618213234115
+        // ,1.9379689478025242
+        // ,2*1
+        // ,2*1.170619914711911
+        // ,2*1.2080894444044468
+        // ,2*1.2467583092848906
+        // //,2*1.4594801056814448
+        // ,1.8778618213234115
+        // ,1.9379689478025242
+        // ,2*1
+        // ,2*1.170619914711911
+        // ,2*1.2080894444044468
+        // ,2*1.2467583092848906
+        // ,2*1.4594801056814448
+        // ,2*1.506195553170611
+        // ,2*1.554406281770919
+        // //,2*1.8196189489943317
+        //8/8,10/9,10/8,4/3,12/8,5/3,14/8,15/8
+        // 1, 1.0991312225591843, 1.2467583092848906, 1.3278488279891056, 1.5061955531706115, 1.655506559769621, 1.7631825099920417, 1.877861821323412, 2,
+        // 1.2467583092848906, 1.3278488279891056, 1.5061955531706115, 1.655506559769621, 1.7631825099920417, 1.877861821323412, 2, 2*1.0991312225591843, 2*1.2467583092848906,
+        // 1.5061955531706115, 1.655506559769621, 1.7631825099920417, 1.877861821323412, 2, 2*1.0991312225591843, 2*1.2467583092848906, 2*1.3278488279891056, 2*1.5061955531706115,
+        // 1.877861821323412, 2, 2* 1.0991312225591843, 2*1.2467583092848906, 2*1.3278488279891056, 2*1.5061955531706115, 2*1.655506559769621, 2*1.7631825099920417, 2*1.877861821323412
+        // 1, 1.1343125221954624, 1.2467583092848906, 1.3278488279891056, 1.5061955531706115, 1.655506559769621, 1.7631825099920417, 1.877861821323412, 2,
+        // 1.2467583092848906, 1.3278488279891056, 1.5061955531706115, 1.655506559769621, 1.7631825099920417, 1.877861821323412, 2, 2*1.1343125221954624, 2*1.2467583092848906,
+        // 1.5061955531706115, 1.655506559769621, 1.7631825099920417, 1.877861821323412, 2, 2*1.1343125221954624, 2*1.2467583092848906, 2*1.3278488279891056, 2*1.5061955531706115,
+        // 1.877861821323412, 2, 2* 1.1343125221954624, 2*1.2467583092848906, 2*1.3278488279891056, 2*1.5061955531706115, 2*1.655506559769621, 2*1.7631825099920417, 2*1.877861821323412
+        // 1,1.1194237317351077,1.2531094911717544,1.3366501239165378,1.4962778697388448,1.674968956655715,1.8750000000000004
+        // ,1.7578125000000009*1,1.7578125000000009*1.1194237317351077,1.7578125000000009*1.2531094911717544,1.7578125000000009*1.3366501239165378,1.7578125000000009*1.4962778697388448,1.7578125000000009*1.674968956655715,1.7578125000000009*1.8750000000000004
+        //22edo aproximation of 16edo
+        // 1,
+        // 1.0320082797342096 ,
+        // 1.0991312225591843 ,
+        // 1.1343125221954624 ,
+        // 1.1706199147119116 ,
+        // 1.2467583092848906 ,
+        // 1.2866648980094315 ,
+        // 1.3703509847201234 ,
+        // 1.4142135623730947 ,
+        // 1.459480105681446 ,
+        // 1.5544062817709188 ,
+        // 1.604160152858455 ,
+        // 1.655506559769621 ,
+        // 1.7631825099920417 ,
+        // 1.8196189489943329 ,
+        // 1.9379689478025242 ,
+        //31edo aproximation od 16edo
+        // 1,
+        // 1.045734148222487,
+        // 1.0935599087586103,
+        // 1.143572939715946,
+        // 1.19587327404414,
+        // 1.2505655196145855,
+        // 1.3077590684505704,
+        // 1.3675683155263902,
+        // 1.430112887573051 ,
+        // 1.462449793032953,
+        // 1.5293336886354674,
+        // 1.5992764622331646,
+        // 1.6724180090056708,
+        // 1.7489046221194926,
+        // 1.828889285334498,
+        // 1.9125319789925042
+        // 1
+        // //,1.0320082797342096
+        // //,1.0650410894399627
+        // ,1.0991312225591843
+        // ,1.1343125221954624
+        // //,1.1706199147119116
+        // //,1.2080894444044472
+        // ,1.2467583092848906
+        // //,1.2866648980094315
+        // ,1.3278488279891056
+        // //,1.3703509847201234
+        // //,1.4142135623730947
+        // ,1.459480105681446
+        // ,1.5061955531706115
+        // //,1.5544062817709188
+        // //,1.604160152858455
+        // ,1.655506559769621
+        // //,1.708496476836546
+        // ,1.7631825099920417
+        // //,1.8196189489943329
+        // ,1.877861821323412
+        // //,1.9379689478025242
+        //19edo Escala9
+        // 1
+        // //1.0758225047262997
+        // //1.1573940616755691
+        // ,1.2451505783871561
+        // ,1.3395610140018712
+        // //1.4411298853171948
+        // //1.5503999628578695
+        // ,1.6679551713693153
+        // ,1.7944237102337213
+        // //1.9304814104839019
+        // //2.076855346354351
+        // ,2.2343277206691448
+        // ,2.4037400448296835
+        // //2.5859976357395777
+        // //2.782074453697642
+        // ,2.993018307112049
+        // ,3.2199564518489536
+        // //3.4641016151377504
+        // //3.7267584762239148
+        //19edo intervalos diatönicos
+        // 1,
+        // //1.0758225047262997
+        // 1.1573940616755691,
+        // //,1.2451505783871561
+        // 1.3395610140018712,
+        // 1.4411298853171948,
+        // //1.5503999628578695
+        // 1.6679551713693153,
+        // //,1.7944237102337213
+        // 1.9304814104839019,
+        // //2.076855346354351
+        // 2.2343277206691448,
+        // 2.4037400448296835,
+        // //2.5859976357395777
+        // 2.782074453697642,
+        // //,2.993018307112049
+        // 3.2199564518489536,
+        // //,3.4641016151377504
+        // 3.7267584762239148,
 
+        //Latice 25 notas, 5 notas de cada dimensão 3,5,7
+        // 4 / 9 / 1.75,
+        // 2 / 3 / 1.75,
+        // 1 / 1.75,
+        // 3 / 2 / 1.75,
+        // 9 / 4 / 1.75,
+        // 0,
+        // 0,
+        // 0,
+        // 0,
+        // //4/9/1.25, 2/3/1.25, 1/1.25, 3/2/1.25, 9/4/1.25, 0, 0, 0, 0,
+        // 4 / 9,
+        // 2 / 3,
+        // 1,
+        // 3 / 2,
+        // 9 / 4,
+        // 0,
+        // 0,
+        // 0,
+        // 0,
+        // //4/9*1.25, 2/3*1.25, 1*1.25, 3/2*1.25, 9/4*1.25, 0, 0, 0, 0,
+        // (4 / 9) * 1.75,
+        // (2 / 3) * 1.75,
+        // 1 * 1.75,
+        // (3 / 2) * 1.75,
+        // (9 / 4) * 1.75,
+        // 0,
+        // 0,
+        // 0,
+        // 0,
 
-//http://www.anaphoria.com/centaur.html
-//Centaur 19
-//1, 21/20, 35/32, 9/8, 7/6, 6/5, 5/4, 21/16, 4/3, 7/5, 35/24, 3/2, 14/9, 8/5, 5/3, 7/4, 9/5, 15/8, 63/32
+        //Full lambdoma 25 notes 13x13 7limit
+        // 1,
+        // 1.0666666666666667,
+        // 1.09375,
+        // 1.125,
+        // 1.1428571428571428,
+        // 1.1666666666666665,
+        // 1.2000000000000002,
+        // 1.25,
+        // 1.2800000000000002,
+        // 1.3061224489795917,
+        // 1.3125,
+        // 1.3333333333333333,
+        // 1.4000000000000001,
+        // 1.4285714285714284,
+        // 1.5,
+        // 1.5238095238095237,
+        // 1.53125,
+        // 1.5625,
+        // 1.6,
+        // 1.6666666666666665,
+        // 1.7142857142857142,
+        // 1.75,
+        // 1.7777777777777777,
+        // 1.8285714285714285,
+        // 1.875,
 
-//Phi divisions of guitar string
-// 65/65
-// ,65/40.17223382
-// ,65/24.82782107
-// ,65/15.34444667
-// ,65/9.483395374
-// ,65/5.861064252
-// ,65/3.622339131
-//  ,65/2.23873007
-//  ,65/1.38361212
+//  1
+// ,1.045734148222487
+// ,1.0693796985710669
+// ,1.1182868682116345
+// ,1.169430765597686
+// ,1.19587327404414
+// ,1.2505655196145855
+// ,1.3077590684505704
+// ,1.3373293784088152
 
-// ,65/(40.17223382+15.34444667)
-// ,65/(40.17223382+9.483395374)
-// ,65/(40.17223382+5.861064252)
-// ,65/(40.17223382+3.622339131)
-//  ,65/(40.17223382+2.23873007)
-//  ,65/(40.17223382+1.38361212)
+// ,Math.pow(1.3373293784088152 ,1) * 1
+// ,Math.pow(1.3373293784088152 ,1) * 1.045734148222487
+// ,Math.pow(1.3373293784088152 ,1) * 1.0693796985710669
+// ,Math.pow(1.3373293784088152 ,1) * 1.1182868682116345
+// ,Math.pow(1.3373293784088152 ,1) * 1.169430765597686
+// ,Math.pow(1.3373293784088152 ,1) * 1.19587327404414
+// ,Math.pow(1.3373293784088152 ,1) * 1.2505655196145855
+// ,Math.pow(1.3373293784088152 ,1) * 1.3077590684505704
+// ,Math.pow(1.3373293784088152 ,1) * 1.3373293784088152
 
-// ,65/(24.82782107 + 9.483395374)
-// ,65/(24.82782107 + 5.861064252)
-// ,65/(24.82782107 + 3.622339131)
-//  ,65/(24.82782107 + 2.23873007)
-//  ,65/(24.82782107 + 1.38361212)
+// ,Math.pow(1.3373293784088152 ,2) * 1
+// ,Math.pow(1.3373293784088152 ,2) * 1.045734148222487
+// ,Math.pow(1.3373293784088152 ,2) * 1.0693796985710669
+// ,Math.pow(1.3373293784088152 ,2) * 1.1182868682116345
+// ,Math.pow(1.3373293784088152 ,2) * 1.169430765597686
+// ,Math.pow(1.3373293784088152 ,2) * 1.19587327404414
+// ,Math.pow(1.3373293784088152 ,2) * 1.2505655196145855
+// ,Math.pow(1.3373293784088152 ,2) * 1.3077590684505704
+// ,Math.pow(1.3373293784088152 ,2) * 1.3373293784088152
 
-// ,65/(15.34444667 + 5.861064252)
-// ,65/(15.34444667 + 3.622339131)
-//  ,65/(15.34444667 + 2.23873007)
-//  ,65/(15.34444667 + 1.38361212)
+// ,Math.pow(1.3373293784088152 ,3) * 1
+// ,Math.pow(1.3373293784088152 ,3) * 1.045734148222487
+// ,Math.pow(1.3373293784088152 ,3) * 1.0693796985710669
+// ,Math.pow(1.3373293784088152 ,3) * 1.1182868682116345
+// ,Math.pow(1.3373293784088152 ,3) * 1.169430765597686
+// ,Math.pow(1.3373293784088152 ,3) * 1.19587327404414
+// ,Math.pow(1.3373293784088152 ,3) * 1.2505655196145855
+// ,Math.pow(1.3373293784088152 ,3) * 1.3077590684505704
+// ,Math.pow(1.3373293784088152 ,3) * 1.3373293784088152
 
-// ,65/(9.483395374 + 3.622339131)
-//  ,65/(9.483395374 + 2.23873007)
-//  ,65/(9.483395374 + 1.38361212)
-
-//  ,65/(5.861064252 + 2.23873007)
-//  ,65/(5.861064252 + 1.38361212)
-// //,65/(40.17223382+15.34444667+5.861064252)
-// //,65/(40.17223382+15.34444667+5.861064252+2.23873007)
-
- //Escala hexatônica legal para 30ed3
-// 1
-// ,1.0759896247253458
-// ,1.2009369551760023
-// ,1.4960443215903987
-// ,1.6097281681605375
-// ,1.7966549123791213
-
-// 1
-// ,1.0594630943592953
-// ,1.1892071150027212
-// ,1.498307076876682
-// ,1.5874010519682
-// ,1.7817974362806794
-
-//Integer triangles
-//https://en.wikipedia.org/wiki/Integer_triangle
-// 3,4,5,
-// 13,14,15,
-// 5,12,13,
-// 6,25,29,
-// 7,15,20,
-// 9,10,17,
-// 68,85,87,
-// 127,131,158,
-// 113,243,290,
-// 145,207,328,
-// 327,386,409,
-// 135,352,377,
-// 132,366,366,
-
-// 1,
-// 1 * 1.5,
-// 1 * 1.5 * (5/3),
-// 1 * 1.5 * (5/3) * 1.5,
-// 1 * 1.5 * (5/3) * 1.5 * (5/3),
-// 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5,
-// 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5 * (5/3),
-// 1 * 1.5 * (5/3) * 1.5 * (5/3) * 1.5 * (5/3) * 1.5,
-
-// 1
+// 1//
+// ,1.0650410894399627//
+// ,1.1343125221954624//
+// ,1.2467583092848906//
+// ,1.3278488279891056//
+// ,1.4142135623730947//
+// ,1.5061955531706115//
+// ,1.604160152858455//
+// ,1.7631825099920417//
+// ,1.877861821323412//
+// ,1.9999999999999991//
+// ,1.0320082797342096
 // ,1.0991312225591843
-// ,1.208089444404447
-// ,1.3278488279891056
-// ,1.5061955531706088
-// ,1.6555065597696181
-// ,1.8196189489943297
+// ,1.1706199147119116
+// ,1.2080894444044472
+// ,1.2866648980094315
+// ,1.3703509847201234
+// ,1.459480105681446
+// ,1.5544062817709188
+// ,1.655506559769621
+// ,1.708496476836546
+// ,1.8196189489943329
+// ,1.9379689478025242
+// ,2.0640165594684183
 
-//Legal: Repeat Math.sqrt(2)
-// 1,
-// 1.0298572716643797,
-// 1.06066017177982,
-// 1.2137487898581,
-// 1.25,
-// 1.373199999
+//JI Pentatonic
+//12,16,15,20,18
 
-//Magic[16] 19edo Repeat 1.2457309396155174
-// 1,
-// 1.0345743207503675,
-// 1.070333333,
-// 1.1161231697263,
-// 1.2041,
+//JI[6]
+//24,32,36,30,40,45
 
-// 1,
-// 1.0650410894399627,
-// 1.0991312225591843,
-// 1.1706199147119116,
-// //1.2080894444044472,
-// 1.2467583092848906,
-// 1.2866648980094315,
-// 1.3703509847201234,
-// 1.4142135623730947,
+//JI[6]m
+//30,40,45,36,48,54
 
+//JI almost Diatonic
+//,48,64,72,54,72,81,60,80,90,//Math.sqrt(81*80)
 
-//Legal Repeat 1.4142135623730947
-// 1,
-// 1.0650410894399627,
-//  1.2467583092848906,
-//ou
-// 1,
-// 1.0650410894399627,
-//  1.2467583092848906,
-// 1.3278488279891056,
+//JI[8] 7-Limit
+//24,30,36,28,35,42,32,40
 
-//Legal, subset 22edo
-// 1
-// ,1.0991312225591843
-// ,1.208089444404447
-// ,1.3278488279891056
-// ,1.3703509847201212
-// ,1.4594801056814455
-// ,1.5061955531706088
-// ,1.6555065597696181
-// ,1.8196189489943297
+//Novendeca
+//https://www.youtube.com/watch?v=ZIn6uis5duw
+//38,40,43,46,48,51,54,57,61,64,68,72
 
-//Golden Ratio Diatônica \o/ (L/s = PHI)
-// 1
-// ,1.117564
-// ,1.248949294096
-// ,1.3377620783991666
-// ,1.4950347393840864
-// ,1.6707970034850368
-// ,1.867222582402752
+//Undecimal [12] with superfourth
+//https://www.youtube.com/watch?v=PIhFupdwv3M&ab_channel=ZheannaErose
+//22,23,25,26,28,30,31,33,35,37,39,42
 
-// ,Math.pow(this.repeatScaleValue, 1) * 1
-// ,Math.pow(this.repeatScaleValue, 1) * 1.117564
-// ,Math.pow(this.repeatScaleValue, 1) * 1.248949294096
-// ,Math.pow(this.repeatScaleValue, 1) * 1.3377620783991666
-// ,Math.pow(this.repeatScaleValue, 1) * 1.4950347393840864
-// ,Math.pow(this.repeatScaleValue, 1) * 1.6707970034850368
-// ,Math.pow(this.repeatScaleValue, 1) * 1.867222582402752
-
-
-//Golden Pentatônica \o/ (L/s = PHI)
-// 1
-// ,1.117564
-// ,1.3377620783991666
-// ,1.4950347393840864
-// ,1.7896073784028579
-
-//Golden Pentatônica Reversa
-// ,1
-// ,1.177778248966296
-// ,1.3031164676231177
-// ,1.5347822314363007
-// ,1.698112528190552
-
-//Golden Diatônica Reversa (Pelog? 16EDO aproxima bem)
-// 1
-// ,1.087803
-// ,1.1833153668090002
-// ,1.3559385958344639
-// ,1.4749940723645174
-// ,1.6045029769003392
-// ,1.7453831517811198
-
-//Legal Repeat: 1,4142135623730951
-// 1,
-// 1.060660171779821,
-// 1.24721912892464712,
-
-//Repeat: 1,4142135623730951
-// 1,
-// 1.064844316803016,
-// 1.133893419027682,
-// 1.24721912892464712/1.064844316803016,
-// 1.24721912892464712,
+//8-tone, hypernaiadic /41 with a bunch of commas
+//https://www.youtube.com/watch?v=a63V_fAPNaA&t=558s&ab_channel=ZheannaErose
+//41,47,53,60,61,71,80,91
 
 // 1
-// ,(1.3377620783991666 / 1.248949294096)
-// ,1.1472766320999999
-//,1.117564
-// ,1.117564 * (1.3377620783991666 / 1.248949294096)
- //,1.248949294096
-// ,1.3377620783991666
-// ,1.3957807689071022
-
-
-// 1
-// ,1.5
-// ,1.1174033085417048
-// ,1.6761049628125573
-// ,1.2485901539399484
-// ,1.8728852309099226
-// ,1.3951787690250947
-// ,1.039318248343856
-// ,1.5589773725157843
-// ,1.1613376493271939
-// ,1.742006473990791
-// ,1.2976825316922527
-// ,1.946523797538379
-// ,1.450034754349699
-// ,1.0801824213405413
-// ,1.620273632010812
-// ,1.2069994114345108
-// ,1.8104991171517657
-// ,1.3487051357448123
-
-//Golden Mavila (Anti diatonic)
-// 1,
-//   Math.pow(1.087803,0.5),
-// Math.pow(1.087803,1),
-//   Math.pow(1.087803,1.5),
-// Math.pow(1.087803,2),
-//   Math.pow(1.087803,2) * Math.pow(1.145881,1/3),
-//   Math.pow(1.087803,2) * Math.pow(1.145881,2/3),
-// Math.pow(1.087803,2) * Math.pow(1.145881,1),
-//   Math.pow(1.087803,2.5) * Math.pow(1.145881,1),
-// Math.pow(1.087803,3) * Math.pow(1.145881,1),
-//   Math.pow(1.087803,3.5) * Math.pow(1.145881,1),
-// Math.pow(1.087803,4) * Math.pow(1.145881,1),
-//   Math.pow(1.087803,4.5) * Math.pow(1.145881,1),
-// Math.pow(1.087803,5) * Math.pow(1.145881,1),
-//   Math.pow(1.087803,5) * Math.pow(1.145881,1) * Math.pow(1.145881,1/3),
-//   Math.pow(1.087803,5) * Math.pow(1.145881,1) * Math.pow(1.145881,2/3),
-
-//Acorde 3:4:5:6:7 (7/3 ^ 9 ~= 2)
-// 1
-// ,1.080059738892306
-// ,1.1665290395761165
-// ,1.259921049894873
-// ,1.3607900001743767
-// ,1.4697344922755984
-// ,1.587401051968199
-// ,1.714487965706145
-// ,1.85174942457458
-// ,1.3332645197880582 * 1
-// ,1.3332645197880582 * 1.080059738892306
-// ,1.3332645197880582 * 1.1665290395761165
-// ,1.3332645197880582 * 1.259921049894873
-// ,1.3332645197880582 * 1.3607900001743767
-// ,1.3332645197880582 * 1.4697344922755984
-// ,1.3332645197880582 * 1.587401051968199
-// ,1.3332645197880582 * 1.714487965706145
-// ,1.3332645197880582 * 1.85174942457458
-// ,1.6665290395761165 * 1
-// ,1.6665290395761165 * 1.080059738892306
-// ,1.6665290395761165 * 1.1665290395761165
-// ,1.6665290395761165 * 1.259921049894873
-// ,1.6665290395761165 * 1.3607900001743767
-// ,1.6665290395761165 * 1.4697344922755984
-// ,1.6665290395761165 * 1.587401051968199
-// ,1.6665290395761165 * 1.714487965706145
-// ,1.6665290395761165 * 1.85174942457458
-// ,2.333058079152233 * 1
-// ,2.333058079152233 * 1.080059738892306
-// ,2.333058079152233 * 1.1665290395761165
-// ,2.333058079152233 * 1.259921049894873
-// ,2.333058079152233 * 1.3607900001743767
-// ,2.333058079152233 * 1.4697344922755984
-// ,2.333058079152233 * 1.587401051968199
-// ,2.333058079152233 * 1.714487965706145
-// ,2.333058079152233 * 1.85174942457458
-
-//Combinação 24 possibilidades intervalos tetrade
-// 1, 1, 1, 1, 1, 1, 1, 1, 1,
-// 5/4, 5/4, 5/4, 5/4, 5/4, 5/4, 0, 0 ,0,
-// 5/4 * 6/5, 5/4 * 6/5, 5/4 * 7/6, 5/4 * 7/6, 5/4 * 8/7, 5/4 * 8/7, 0, 0 ,0,
-// 5/4 * 6/5 * 7/6, 5/4 * 6/5 * 8/7, 5/4 * 7/6 * 6/5, 5/4 * 7/6 * 8/7, 5/4 * 8/7 * 6/5, 5/4 * 8/7 * 7/6, 0, 0 ,0,
-// 1, 1, 1, 1, 1, 1, 1, 1, 1,
-// 6/5, 6/5, 6/5, 6/5, 6/5, 6/5, 0, 0, 0,
-// 6/5 * 5/4, 6/5 * 5/4, 6/5 * 7/6, 6/5 * 7/6, 6/5 * 8/7, 6/5 * 8/7, 0, 0, 0,
-// 6/5 * 5/4 * 7/6, 6/5 * 5/4 * 8/7, 6/5 * 7/6 * 5/4, 6/5 * 7/6 * 8/7, 6/5 * 8/7 * 5/4, 6/5 * 8/7 * 7/6, 0, 0, 0,
-// 1, 1, 1, 1, 1, 1, 1, 1, 1,
-// 7/6, 7/6, 7/6, 7/6, 7/6, 7/6, 0, 0, 0,
-// 7/6 * 5/4, 7/6 * 5/4, 7/6 * 6/5, 7/6 * 6/5, 7/6 * 8/7, 7/6 * 8/7, 0, 0, 0,
-// 7/6 * 5/4 * 6/5, 7/6 * 5/4 * 8/7, 7/6 * 6/5 * 5/4, 7/6 * 6/5 * 8/7, 7/6 * 8/7 * 5/4, 7/6 * 8/7 * 6/5, 0, 0, 0,
-// 1, 1, 1, 1, 1, 1, 1, 1, 1,
-// 8/7, 8/7, 8/7, 8/7, 8/7, 8/7, 0, 0, 0,
-// 8/7 * 5/4, 8/7 * 5/4, 8/7 * 6/5, 8/7 * 6/5, 8/7 * 7/6, 8/7 * 7/6, 0, 0, 0,
-// 8/7 * 5/4 * 6/5, 8/7 * 5/4 * 7/6, 8/7 * 6/5 * 5/4, 8/7 * 6/5 * 7/6, 8/7 * 7/6 * 5/4, 8/7 * 7/6 * 6/5, 0, 0, 0,
-//  Escala de valores únicos
-//1,1.1428571428571428,1.1666666666666667,1.2,1.25,1.3333333333333333,1.3714285714285714,1.4,1.4285714285714284,1.4583333333333333,1.5,1.6,1.6666666666666667,1.7142857142857142,1.75
-
-//BolherPierce
-// 1
-// ,1.0881822434633168
-// ,1.1841405949888573
-// ,1.2885607692309615
-// ,1.402188948700565
-// ,1.5258371159564506
-// ,1.6603888560010875
-// ,1.8068056703447535
-// ,1.966133847857996
-// ,2.1395119415112775
-// ,2.3281789044302985
-// ,2.5334829434069297
-// ,2.7568911531326
-// ,3.000000000000003
-// ,this.repeatScaleValue * 1
-// ,this.repeatScaleValue * 1.0881822434633168
-// ,this.repeatScaleValue * 1.1841405949888573
-// ,this.repeatScaleValue * 1.2885607692309615
-// ,this.repeatScaleValue * 1.402188948700565
-// ,this.repeatScaleValue * 1.5258371159564506
-// ,this.repeatScaleValue * 1.6603888560010875
-// ,this.repeatScaleValue * 1.8068056703447535
-// ,this.repeatScaleValue * 1.966133847857996
-// ,this.repeatScaleValue * 2.1395119415112775
-// ,this.repeatScaleValue * 2.3281789044302985
-// ,this.repeatScaleValue * 2.5334829434069297
-// ,this.repeatScaleValue * 2.7568911531326
-// ,this.repeatScaleValue * 3.000000000000003
-
-//BolherPierce MOS
-// 1
-// ,1.1413122466159706
-// ,1.2312378538327646
-// ,1.3282488269144097
-// ,1.4329034318653573
-// ,1.5458039212586663
-// ,1.6676
-// ,1.903252302456792
-// ,2.0532122450515184
-// ,2.2149877437624688
-// ,2.3895097629786695
-// ,2.5777826190909523
-// ,2.7808897599999995
-// ,3
-// ,this.repeatScaleValue * 1
-// ,this.repeatScaleValue * 1.1413122466159706
-// ,this.repeatScaleValue * 1.2312378538327646
-// ,this.repeatScaleValue * 1.3282488269144097
-// ,this.repeatScaleValue * 1.4329034318653573
-// ,this.repeatScaleValue * 1.5458039212586663
-// ,this.repeatScaleValue * 1.6676
-// ,this.repeatScaleValue * 1.903252302456792
-// ,this.repeatScaleValue * 2.0532122450515184
-// ,this.repeatScaleValue * 2.2149877437624688
-// ,this.repeatScaleValue * 2.3895097629786695
-// ,this.repeatScaleValue * 2.5777826190909523
-// ,this.repeatScaleValue * 2.7808897599999995
-// ,this.repeatScaleValue * 3
-
-//Golden scales
-//Golden Pentatonic
-//1, 1.117564, 1.117564*1.197034, 1.117564*1.197034*1.117564, 1.117564*1.197034*1.117564*1.197034
-//1, 1.117564, 1.117564*1.197034, 1.117564*1.197034*1.117564, 1.117564*1.197034*1.117564*1.197034
-
-//1,
-//Math.pow(1.117564, 1/3),
-//Math.pow(1.117564, 2/3),
-//1.117564,
-//1.117564*Math.pow(1.117564 , 1/3),
-//1.117564*Math.pow(1.117564 , 2/3),
-//1.117564*Math.pow(1.117564 , 3/3),
-//1.117564*Math.pow(1.197034 , 4/4),
-//1.117564*Math.pow(1.197034 , 4/4) * Math.pow(1.117564, 1/3),
-//1.117564*Math.pow(1.197034 , 4/4) * Math.pow(1.117564, 2/3),
-//Repeat: 1.4950347693089112
-
-//Escala de MOS11 (19edo)
-// 1
-// ,1.0371550444461919
-// ,1.1571102372827198
-// ,1.2001027195781029
-// ,1.244692589464023
-// ,1.388651142614656
-// ,1.4402465375387585
-// ,1.6068224531337645
-// ,1.6665240127970886
-
-// ,1.2001027195781029
-// ,1.244692589464023
-// ,1.388651142614656
-// ,1.4402465375387585
-// ,1.6068224531337645
-// ,1.6665240127970886
-// ,1.7284437865632105
-// ,1.9283519958849897
-// ,1.9999999999999993
-
-// ,1.6068224531337645
-// ,1.6665240127970886
-// ,1.7284437865632105
-// ,1.9283519958849897
-// ,1.9999999999999993
-// ,2 * 1.0371550444461919
-// ,2 * 1.1571102372827198
-// ,2 * 1.2001027195781029
-// ,2 * 1.244692589464023
-
-//1,
-//1.6696270355495002637284476040757,
-//1.6696270355495002637284476040757 * 1.6028419541275202531793096999126,
-
-//Matriz 7x7
-// 1
-// ,1.066666667
-// ,1.09375
-// ,1.125
-// ,1.142857143
-// ,1.166666667
-// ,1.2
-// ,1.25
-// ,1.28
-// ,1.306122449
-// ,1.3125
-// ,1.333333333
-// ,1.4
-// ,1.428571429
-// ,1.5
-// ,1.523809524
-// ,1.53125
-// ,1.5625
-// ,1.6
-// ,1.666666667
-// ,1.714285714
-// ,1.75
-// ,1.777777778
-// ,1.828571429
-// ,1.875
-
-//Golden 19
-// 1
-// ,1.0265864277123251
-// ,1.07111
-// ,1.117564
-// ,1.1472760343340247
-// ,1.197033509
-// ,1.248949294
-// ,1.2821543942091507
-// ,1.337761557
-// ,1.3733283931813633
-// //,Math.sqrt(1.395780769 * 1.432889781)
-// ,1.395780769
-// ,1.495034156
-// ,1.534781773579949
-// ,1.601346035
-// ,1.670796352
-// ,1.7152168587116252
-// ,1.78960668
-// //,Math.sqrt(1.8371859291265378 * 1.867221854)
-// ,1.867221854
-// ,1.9168646126081688
-
-
-// 1
-// ,1.117564
-// ,1.248949294
-// ,1.337761557
-// ,1.495034156
-// ,1.670796352
-// ,1.867221854
-
-// ,1.2821547034209912
-// ,1.4328899389739767
-// ,1.6013462117595134
-// ,1.7152179408777324
-// ,1.9168658228790822
-// ,1.0711101182400191
-// ,1.197034108180789
-
-// ,1.1660330343874241
-// ,1.3031165420421473
-// ,1.4563161351907903
-// ,1.5598747755642075
-// ,1.743259893678638
-// ,1.948204499819073
-// ,2.177243213635803
-
-
-//4, 4/(4/3), 4/(5/3), 4/(7/3)
-
-//1, 1.25, 1.5, 2, 2.5, 3, 4, 0, 0,
-//1, 1.25, 5/3, 25/12, 25/9, 125/36
-//1, 4/3, 5/3, 2, 7/3, 8/3, //3
-
-//Sequencia de padovan
-///*1, 1, 1, 2,*/ 2, 3, 4, 5, 7, 9, 12, 16, 21, 28, 37, 49, 65, 86, 114, 151, 200, 265
-
-// 1
-// ,1.0433717363454582
-// ,1.1175644807212748
-// ,1.1660351927281667
-// ,1.2489503685698122
-
-//1
-//,1.117564
-//,1.3377620783991666
-//,1.4950347393840864
-//,1.3377620783991666*1.3377620783991666
-
-// ,Math.pow(this.testValue, 1) * 1
-// ,Math.pow(this.testValue, 1) * 1.117564
-// ,Math.pow(this.testValue, 1) * 1.3377620783991666
-// ,Math.pow(this.testValue, 1) * 1.4950347393840864
-// ,Math.pow(this.testValue, 1) * 1.3377620783991666*1.3377620783991666
-
-// ,Math.pow(this.testValue, 2) * 1
-// ,Math.pow(this.testValue, 2) * 1.117564
-// ,Math.pow(this.testValue, 2) * 1.3377620783991666
-// ,Math.pow(this.testValue, 2) * 1.4950347393840864
-// ,Math.pow(this.testValue, 2) * 1.3377620783991666*1.3377620783991666
-
-// ,1.117564 * 1.117564
-// ,1.117564 * 1.117564 * this.testValue
-// //,(2/ (1.117564 * 1.117564))
-// ,(2/ (1.117564 * 1.117564)) * this.testValue
-// ,(2/ (1.117564 * 1.117564)) * this.testValue * this.testValue
-
-// ,Math.pow(this.testValue, 3) * 1
-// ,Math.pow(this.testValue, 3) * 1.117564
-// ,Math.pow(this.testValue, 3) * 1.3377620783991666
-// ,Math.pow(this.testValue, 3) * 1.4950347393840864
-// ,Math.pow(this.testValue, 3) * 1.3377620783991666*1.3377620783991666
-
-// ,Math.pow(this.testValue, 4) * 1
-// ,Math.pow(this.testValue, 4) * 1.117564
-// ,Math.pow(this.testValue, 4) * 1.3377620783991666
-// ,Math.pow(this.testValue, 4) * 1.4950347393840864
-// ,Math.pow(this.testValue, 4) * 1.3377620783991666*1.3377620783991666
-
-// ,Math.pow(this.testValue, 5) * 1
-// ,Math.pow(this.testValue, 5) * 1.117564
-// ,Math.pow(this.testValue, 5) * 1.3377620783991666
-// ,Math.pow(this.testValue, 5) * 1.4950347393840864
-// ,Math.pow(this.testValue, 5) * 1.3377620783991666*1.3377620783991666
-
-//Permutações 4:5:6:7:8
-// 1,    1,   1,   1, 0, 0, 0, 0, 0,
-// 1.25, 1.2, 7/6, 8/7, 0, 0, 0, 0, 0,
-// 1.5,  1.4, 4/3, 10/7, 0, 0, 0, 0, 0,
-
-//1, 4/3
-// 1.75, 1.6, 5/3, 12/7, 0, 0, 0, 0, 0,
-
-// 1,
-// 1.6/1.5,
-// 5/3 / 1.5,
-// 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75,
-// 1.75 * 1.0285714285714285,
-// 1.75 * 1.0285714285714285 * 1.0416666666666667,
-
-//1, 1.0666666666666667, 1.09375, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.28, 1.3061224489795917, 1.3125, 1.3333333333333333, 1.4, 1.4285714285714284, 1.5, 1.5238095238095237, 1.53125, 1.5625, 1.6, 1.6666666666666665, 1.7142857142857142, 1.75, 1.7777777777777777, 1.8285714285714287, 1.875
-// 1
-// ,1.4963512473325191
-// ,1.1195335276967928
-// ,1.6752153905996714
-// ,1.2533553196372258
-// //,1.875459795890011
-// //,1.403173302451005
-// //,1.0498200606731256
-
-// ,1.7485798885315609
-// ,1.3082448486323792
-// ,1.9575938110674032
-// ,1.4646239704805644
-// ,1.0957959525508496
-// //,1.6396956404213896
-// //,1.22678030839512
-// //,1.8356942446700104
-
-// ,1.528765813288523
-// ,1.1437853157967972
-// ,1.7115045839731566
-// ,1.2805060095217786
-// ,1.9160867645647002
-// //,1.43356941007686
-// //,1.0725616874531265
-// //,1.6049290188615573
-
-// ,1.3365845776954532
-
-//Grid 1:3:5:7
-// 1.75, 1.75*1.2, 1.5*1.75, 1.5*1.75*1.2, 2.25*1.75, 2.25*1.75*1.2, 3.375*1.75, 3.375*1.75*1.2, 5.0625*1.75,
-// 1, 1.25, 1.5, 1.875, 2.25, 2.8125, 3.375, 4.21875, 5.0625,
-// (1.25 / (7/6))/1.2, 1.25 / (7/6), (1.25 / (7/6))*1.25, 1.875/(7/6), (1.875/(7/6))*1.25, 2.8125/(7/6), (2.8125/(7/6))*1.25, 4.21875/(7/6), (4.21875/(7/6))*1.25,
-
-//1, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.2857142857142858, 1.3333333333333333, 1.4, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75, 1.8, 1.875, 2, 2.142857142857143, 2.25, 2.3333333333333335, 2.4000000000000004, 2.5, 2.571428571428571, 2.625, 2.6666666666666665
-
-//5th Harmonic Scale + inversões
-//1, 1.2, 1.4, 1.6, 1.8, 2, 0 , 0 , 0,
-//2, 5/3, 10/7, 5/4, 10/9, 1
-
-//25 note scale based on harmonic 54
-// 1
-// ,1.037
-// ,1.0741
-// ,1.1111
-// ,1.1481
-// ,1.1852
-// ,1.2222
-// ,1.2593
-// ,1.2963
-// ,1.3333
-// ,1.3889
-// ,1.4074
-// ,1.4815
-// ,1.5
-// ,1.5556
-// ,1.5741
-// ,1.6111
-// ,1.6667
-// ,1.7222
-// ,1.7593
-// ,1.7778
-// ,1.8333
-// ,1.8519
-// ,1.8889
-// ,1.9444
-// ,2
-
-//Escala 25 notas Latice 1,3,5,7
-// 1
-// ,1.066666667
-// ,1.09375
-// ,1.125
-// ,1.142857143
-// ,1.166666667
-// ,1.2
-// ,1.25
-// ,1.28
-// ,1.306122449
-// ,1.3125
-// ,1.333333333
-// ,1.4
-// ,1.428571429
-// ,1.5
-// ,1.523809524
-// ,1.53125
-// ,1.5625
-// ,1.6
-// ,1.666666667
-// ,1.714285714
-// ,1.75
-// ,1.777777778
-// ,1.828571429
-// ,1.875
-// ,2
-
-//25 notas subset Golden meantone (aprox 50edo)
-// 1
-// ,1.4950347393840864
-// ,1.1175644359826216
-// ,1.670797655294202
-// ,1.248950268573155
-
-// ,1.743262806432469
-// ,1.3031192277463686
-// ,1.948208515040184
-// ,1.4563197047744798
-// ,1.0886242751437119
-
-// ,1.5194826061454036
-// ,1.135839641038623
-// ,1.6981197217222919
-// ,1.269373987804032
-// ,1.8977582090375393
-
-// ,1.324428756157179
-// ,1.9800670002942378
-// ,1.4801344758739627
-// ,1.1064262301958157
-// ,1.6541456507085184
-
-// ,1.1544136951892139
-// ,1.7258885779286266
-// ,1.290131690154748
-// ,1.9287916951616544
-// ,1.4418052946510969
-
-// 1.0000
-// ,1.4955
-// ,1.1183
-// ,1.6724
-// ,1.2506
-
-// ,1.7489
-// ,1.3078
-// ,1.9558
-// ,1.4624
-// ,1.0936
-
-// ,1.5293
-// ,1.1436
-// ,1.7102
-// ,1.2788
-// ,1.9125
-
-// ,1.3373
-// ,2.0000
-// ,1.4955
-// ,1.1183
-// ,1.6724
-
-// ,1.1694
-// ,1.7489
-// ,1.3078
-// ,1.9558
-// ,1.4624
-
-// 1
+// ,1.0935599087586103
+// ,1.169430765597686
+// ,1.2505655196145855
+// ,1.3077590684505704
+// ,1.3373293784088152
+// ,1.462449793032953
 // ,1.4955178823482058
-// ,1.118286868211631
-// ,1.6724180090056655
-// ,1.2505655196145777
-//,1.8702430976316768
-//,1.3984909984232372
+// ,1.6724180090056708
+// ,1.7489046221194926
 
-// ,1.7489046221194653
-// ,1.3077590684505458
-// ,1.9557770726708226
-// ,1.4624497930329208
-// ,1.0935599087585828
-// ,1.635438398967533
-// ,1.2229136855674325
+// //Espectro harmonico 4-8
+// 1, 5/4, 3/2, 7/4,
+// 1, 6/5, 7/5, 8/5,
+// 1, 7/6, 4/3, 5/3,
+// 1, 8/7, 10/7, 12/7,
+// //--
+// 1, 8/7, 4/3, 8/5,
+// 1, 7/6, 7/5, 7/4,
+// 1, 6/5, 3/2, 12/7,
+// 1, 5/4, 10/7, 5/3
 
-// ,1.5293336886354147
-// ,1.1435729397159027
-// ,1.7102337811146393
-// ,1.278842601326465
-// ,1.912531978992426
-// ,1.4301128875729883
-// ,1.0693796985710164
-
-// ,1.3373293784087439
+// 36/35, 15/14,
+// 1.75*36/35, 1.75*15/14
+// 16/15, 10/9,
+// 1.8, 1.875
 
 // 1
-// ,1.0838228978372493
-// ,1.1746720738763325
-// ,1.2731364911171381
-// ,1.3798544811449238
-// ,1.4955178823482056
-// ,1.6208765250140584
-// ,1.7567430923771075
-// ,1.9039983891357273
-// ,1.0317985257952693
-// ,1.1182868682116305
-// ,1.2120249141184716
-// ,1.313620354670825
-// ,1.4237318194573287
-// ,1.5430731463073413
-// ,1.6724180090056644
-// ,1.8126049329157221
-// ,1.9645427310268107
-// ,1.0646081978332909
-// ,1.153846742036969
-// ,1.2505655196145766
-// ,1.3553915454040157
-// ,1.469004392443888
-// ,1.5921405975541825
-// ,1.725598436205504
-
-
-//Double BH (26ed3) MOS[11] (Generator: 2.2318527209480608)
-// 1
-// ,1.1351479063236496
-// ,1.2352477953659549
-// ,1.4021889487005679
-// ,1.5258371159564523
-// ,1.6603888560010873
-// ,1.8847869335727543
-// ,2.050991673825543
-// ,2.2318527209480608
-// ,2.533482943406932
-// ,2.7568911531326
-
-// 1, 1.0909090909090908, 1.1111111111111112, 1.125, 1.1428571428571428, 1.1666666666666667, 1.2, 1.222222222222222, 1.25, 1.2727272727272727, 1.3333333333333333, 1.375, 1.4000000000000001, 1.4285714285714286, 1.4545454545454544, 1.5, 1.5555555555555556, 1.5999999999999999, 1.6363636363636362, 1.6666666666666667, 1.7142857142857142, 1.75, 1.7777777777777777, 1.7999999999999998, 1.8333333333333333
-//1, 1.0666666666666667, 1.09375, 1.125, 1.1428571428571428, 1.1666666666666665, 1.2000000000000002, 1.25, 1.2800000000000002, 1.3061224489795917, 1.3125, 1.3333333333333333, 1.4000000000000001, 1.4285714285714284, 1.5, 1.5238095238095237, 1.53125, 1.5625, 1.6, 1.6666666666666665, 1.7142857142857142, 1.75, 1.7777777777777777, 1.8285714285714285, 1.875
-//1, 10/9, 1.25, 4/3, //1.5, 5/3, 15/8, 2, 9/4, 5/2, 15/8*3/2, 3, 9/4*3/2
-
-//Adagio Gamma
-//http://www.seraph.it/blog_files/140006ae42b0d87bb0903cdd857fa62c-24.html
-//0, 70, 140, 175, 246, 316, 386, 456, 491, 526, 562, 632
-
-//Partials
-1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/6, 7/5, 7/4, //8/7, 8/5, 9/8, 9/7, 9/5, 10/9, 10/7, 11/10, 11/9, 11/8, 11/7, 11/6,12/11, 12/7, 13/12, 13/11,13/10,13/9,13/8,13/7
-// ,1/0.8888888888888888, 1.1111111111111112, 1/0.8333333333333334, 1/0.7999999999999999, 1/0.7777777777777778, 1/0.9333333333333332, 1.1666666666666667
-// ,1.2500000000000002, 1/0.9375, 1/0.9, 1/0.8750000000000001, 1.05, 1.3125
-// ,1/0.75, 1/0.72, 1/0.7000000000000001, 1/0.8399999999999999, 1.05 
-// ,1/0.96, 1/0.9333333333333333, 1.1199999999999999, 1.4
-// ,1/0.9722222222222223, 1.1666666666666667, 1.4583333333333335
-// ,1.2, 1.5
+// ,1.1428571428571428
+// ,1.1666666666666667
+// ,1.2
 // ,1.25
+// ,1.3333333333333333
+// ,1.4
+// ,1.4285714285714286
+// ,1.5
+// ,1.6
+// ,1.6666666666666667
+// ,1.7142857142857142
+// ,1.75
+// ,1.5 * 1
+// ,1.5 * 1.1428571428571428
+// ,1.5 * 1.1666666666666667
+// ,1.5 * 1.2
+// ,1.5 * 1.25
+// ,1.5 * 1.3333333333333333
+// ,1.5 * 1.4
+// ,1.5 * 1.4285714285714286
+// ,1.5 * 1.5
+// ,1.5 * 1.6
+// ,1.5 * 1.6666666666666667
+// ,1.5 * 1.7142857142857142
+// ,1.5 * 1.75
+// ,4/3 * 1
+// ,4/3 * 1.1428571428571428
+// ,4/3 * 1.1666666666666667
+// ,4/3 * 1.2
+// ,4/3 * 1.25
+// ,4/3 * 1.3333333333333333
+// ,4/3 * 1.4
+// ,4/3 * 1.4285714285714286
+// ,4/3 * 1.5
+// ,4/3 * 1.6
+// ,4/3 * 1.6666666666666667
+// ,4/3 * 1.7142857142857142
+// ,4/3 * 1.75
 
 
-]; //AQUI!
+// 1, 5/4, 3/2, 7/4,
+// 1, 6/5, Math.sqrt(2), 8/5,
+// 1, 7/6, 4/3, 5/3,
+// 1, Math.sqrt(2)/1.25, Math.sqrt(2), Math.sqrt(2)*1.2,
+// //--
+// 1, Math.sqrt(2)/1.25, 4/3, 8/5,
+// 1, 7/6, Math.sqrt(2), 7/4,
+// 1, 6/5, 3/2, Math.sqrt(2)*1.2,
+// 1, 5/4, Math.sqrt(2), 5/3
+
+//Espectro harmonico 5-10
+// 1, 6/5, 7/5, 8/5, 9/5,
+// 1, 7/6, 4/3, 3/2, 5/3,
+// 1, 8/7, 9/7, 10/7, 12/7,
+// 1, 9/8, 5/4, 3/2, 7/4,
+// 1, 10/9, 4/3, 14/9, 16/9,
+//--
+// 1, 10/9, 5/4, 10/7, 5/3,
+// 1, 9/8, 9/7, 3/2, 9/5,
+// 1, 8/7, 4/3, 8/5, 16/9,
+// 1, 7/6, 7/5, 14/9, 7/4,
+// 1, 6/5, 4/3, 3/2, 12/7,
+
+//1*1.0158730158730158,
+// 1*1.0370370370370372,
+// 1*1.0666666666666667,
+
+// 1.8*1.0158730158730158,
+// 1.8*1.0370370370370372,
+// 1.8*1.0666666666666667,
+
+// 1.0416666666666667,
+// 1.0714285714285712,
+// 1.09375,
+
+// 1
+// ,Math.sqrt(1.1111111111111112 * 1.125)
+// ,1.1428571428571428
+// ,1.1666666666666667
+// ,1.2
+// ,1.25
+// ,1.2857142857142858
+// ,1.3333333333333333
+// ,1.4
+// ,1.4285714285714286
+// ,1.5
+// ,1.5555555555555556
+// ,1.6
+// ,1.6666666666666667
+// ,1.7142857142857142
+// ,1.75
+// ,Math.sqrt(1.7777777777777777 * 1.8)
+
+// ,1.037037037037037
+// ,1.0666666666666667
+// ,1.7888543819998317 * 1.037037037037037
+// ,1.7888543819998317 * 1.0666666666666667
+
+// 1
+// ,1.0222025039999036
+// ,1.043498389499902
+// ,1.073312629199899
+
+//Muito perto da escala 25
+// 42.3606797749978969640917366873/42.3606797749978969640917366873,
+// (42.3606797749978969640917366873+1)/42.3606797749978969640917366873,
+// (42.3606797749978969640917366873+2)/42.3606797749978969640917366873,
+// (42.3606797749978969640917366873+3)/42.3606797749978969640917366873
+
+// 1,
+// 1.1180339887498948482045868/1.09375,
+// 1.1180339887498948482045868/1.07142857142857142857142857142,
+// 1.1180339887498948482045868/(25/24),
+
+//1, 1.02857142857142857142857142, 25/24, 1.0714285714285714285714285714
+//1, 8/7, 4/3, 1.5, 12/7, 2, 9/4
+
+
+// 1
+// ,1.1194504700023498
+// ,1.336634160762028
+// ,1.4962957394862486
+// ,1.7865908797160108
+
+// ,1.0286111335442878 * 1
+// ,1.0286111335442878 * 1.1194504700023498
+// ,1.0286111335442878 * 1.336634160762028
+// ,1.0286111335442878 * 1.4962957394862486
+// ,1.0286111335442878 * 1.7865908797160108
+
+// ,1.0580408640512646 * 1
+// ,1.0580408640512646 * 1.1194504700023498
+// ,1.0580408640512646 * 1.336634160762028
+// ,1.0580408640512646 * 1.4962957394862486
+// ,1.0580408640512646 * 1.7865908797160108
+
+// ,1.088312612507949*1
+// ,1.088312612507949*1.1194504700023498
+// ,1.088312612507949*1.336634160762028
+// ,1.088312612507949*1.4962957394862486
+// ,1.088312612507949*1.7865908797160108
+
+// // ,1.5704334317809623*1
+// // ,1.5704334317809623*1.1194504700023498
+// // ,1.5704334317809623*1.336634160762028
+// // ,1.5704334317809623*1.4962957394862486
+// // ,1.5704334317809623*1.7865908797160108
+
+
+// 1
+// ,1.0226114356012683
+// ,1.045734148222487
+// ,1.0693796985710669
+// //,1.0935599087586103
+// ,1.1182868682116345
+// ,1.143572939715946
+// ,1.169430765597686
+// ,1.19587327404414
+// //,1.2229136855674672
+// ,1.2505655196145855
+// ,1.2788426013265175
+// ,1.3077590684505704
+// ,1.3373293784088152
+// //,1.3675683155263902
+// ,1.3984909984232503
+// ,1.430112887573051
+// //,1.462449793032953
+// ,1.4955178823482058
+// ,1.5293336886354674
+// ,1.5639141188488985
+// ,1.5992764622331646
+// //,1.635438398967574
+// ,1.6724180090056708
+// ,1.710233781114704
+// ,1.7489046221194926
+// ,1.7884498663553081
+// //,1.828889285334498
+// ,1.8702430976316888
+// ,1.9125319789925042
+// ,1.9557770726708594
+
+//Permutacao 6-12 22edo
+// 1
+// ,1.1706199147119116
+// ,1.3278488279891056
+// ,1.5061955531706115
+// ,1.655506559769621
+// ,1.8196189489943329
+// ,1
+// ,1.1343125221954624
+// ,1.2866648980094317
+// ,1.414213562373095
+// ,1.554406281770919
+// ,1.708496476836547
+// ,1
+// ,1.1343125221954626
+// ,1.2467583092848906
+// ,1.3703509847201236
+// ,1.5061955531706122
+// ,1.7631825099920426
+// ,1
+// ,1.0991312225591843
+// ,1.208089444404447
+// ,1.3278488279891063
+// ,1.5544062817709194
+// ,1.7631825099920422
+// ,1
+// ,1.0991312225591843
+// ,1.2080894444044477
+// ,1.4142135623730951
+// ,1.6041601528584557
+// ,1.8196189489943337
+// ,1
+// ,1.0991312225591847
+// ,1.286664898009432
+// ,1.4594801056814464
+// ,1.655506559769622
+// ,1.8196189489943337
+
+//Permutacao 5-10 22edo
+// 1
+// ,1.2080894444044472
+// ,1.4142135623730947
+// ,1.604160152858455
+// ,1.8196189489943329
+// ,1
+// ,1.1706199147119116
+// ,1.3278488279891056
+// ,1.5061955531706113
+// ,1.6555065597696217
+// ,1
+// ,1.1343125221954624
+// ,1.2866648980094315
+// ,1.4142135623730954
+// ,1.708496476836547
+// ,1
+// ,1.1343125221954626
+// ,1.2467583092848913
+// ,1.5061955531706122
+// ,1.7631825099920426
+// ,1
+// ,1.0991312225591847
+// ,1.3278488279891063
+// ,1.5544062817709194
+// ,1.7631825099920424
+
+//  1,2,
+//  1, 3/2, 2,
+//  1, 4/3, 5/3, 2,
+//  1, 5/4, 3/2, 7/4, 2,
+//  1, 6/5, 7/5, 8/5, 9/5, 2,
+//  1, 7/6, 4/3, 3/2, 5/3, /*11/6,*/ 2,
+//  1, 8/7, 9/7, 10/7, /*11/7,*/ 12/7, /*13/7*/
+
+//1, 1.0350983 ,1.07331168068691, repeat 1.118033
+1, 1.2
+
+//Muito boa H25
+//1, 1.08, 1.2, 1.28, 1.44, 1.6, 1.8, 1.92
+//H15 7lmit
+//1,1.0666666666666667,1.2,1.3333333333333333,1.4,1.6,1.6666666666666667,1.8,1.8666666666666667
+//1,1.037037037037037,1.1111111111111112,1.1851851851851851,1.2962962962962963,1.3333333333333333,1.4814814814814814,1.5555555555555556,1.6666666666666667,1.7777777777777777,1.8148148148148149,1.8518518518518519
+      ]; //AQUI!
 
       //CentsToRatios
       //ratiosArr = ratiosArr.map(v => this.centsToRatio(v))
@@ -5368,7 +5609,7 @@ console.log(r)
       // }
       // ratiosArr = intervalRatiosArr.map(e => this.centsToRatio(e));
 
-        //Generator
+      //Generator1
       if (false) {
         var init = 1;
         var cc = init;
@@ -5405,9 +5646,13 @@ console.log(r)
         //arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
         //arrIntervals = this.averageItemsByValue(arrIntervals, Math.pow(2,1/12));
 
+        var interval1 = 1.375;
         // var arrIntervals = [1.125, 1.1851851851851851,1.125, 1.1851851851851851, 1.125]; //Pentatônica ChingLing
+        //var arrIntervals = [ 10/9, 9/8, 16/15, 9/8 ];
+        var arrIntervals = [interval1, 1.4953 / interval1];
         //var arrIntervals = [ 1.25, 1.2 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala pitagórica com mais itens entre as quintas =/)
-        var arrIntervals = [ 1.2467583092848906, 1.2080894444044472 ]; 
+        //var arrIntervals = [ 1.25, 1.4997884186649116546043685512303/1.25 ];  //Geradora Wilckerson's Scale (Na verdade é só uma escala pitagórica com mais itens entre as quintas =/)
+        //var arrIntervals = [ 1.2467583092848906, 1.2080894444044472 ];
         //var arrIntervals = [1.0546875, 1.0666666666666667, 1.1111111111111112, 1.0125, 1.1111111111111112, 1.0666666666666667]
         //var arrIntervals = [ 1.25115 ];  //Gerador de uma quinta que harmoniza muito bem com a 3M. Para 5a perfeita: (6^1/8)
         //var arrIntervals = [  1.2, 1.0416666666666666, 1.2 ];
@@ -5421,26 +5666,26 @@ console.log(r)
         //var arrIntervals = [  1.0400419115259512, 1.0345637159435739];
         //var arrIntervals = [  1.4983070768766814987992807320298 ];
         //var arrIntervals = [1.040041911525952, 1.0674995157120024, 1.040041911525952, 1.040041911525952, 1.040041911525952, 1.0674995157120026, 1.040041911525952, 1.040041911525952];
-//         var arrIntervals = [
-// 1.036038002584053
-// ,1.0415862958033848
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.0415862958033848
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.0415862958033848
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.0415862958033848
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.036038002584053
-// ,1.0415862958033848
-//         ];
+        //         var arrIntervals = [
+        // 1.036038002584053
+        // ,1.0415862958033848
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.0415862958033848
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.0415862958033848
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.0415862958033848
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.036038002584053
+        // ,1.0415862958033848
+        //         ];
         //arrIntervals = this.smooth(arrIntervals);
         //arrIntervals = this.smooth(arrIntervals);
         //arrIntervals = this.smooth(arrIntervals);
@@ -5453,6 +5698,7 @@ console.log(r)
         //1.498324210775315825107190007886 //Media
         // ];
         //var arrIntervals = [5/4,6/5,7/6,8/7,9/8]
+        //var arrIntervals = [9/8, 10/9, 6/5, 10/9, 9/8];
 
         //var arrIntervals = [  /*2, 3/2, 4/3, 5/4, 6/5,*/ 7/6, 8/7, 9/8, 10/9, 11/10, 12/11 ];
 
@@ -5492,8 +5738,8 @@ console.log(r)
           //if(cc > 2 || cc < 0){ cc = 0;}
 
           //Interval
-           var interval = arrIntervals[(i % arrIntervals.length)]
-           cc *= interval;//(i % 2 == 0 ? (1.25) :(1.2))
+          var interval = arrIntervals[i % arrIntervals.length];
+          cc *= interval; //(i % 2 == 0 ? (1.25) :(1.2))
           ratiosArr.push(cc);
 
           //cc = Math.pow( PHI, i);
@@ -5514,42 +5760,39 @@ console.log(r)
 
         var qtd = this.eqt;
         for (let i = 0; i < qtd; i++) {
-
           //Overtone
           var v = (parseFloat(this.eqt) + i) / parseFloat(this.eqt);
           ratiosArr.push(v);
           //var v = (parseFloat(this.eqt)) / (parseFloat(this.eqt)-i);
 
-//Under
-          var v = 1/((parseFloat(this.eqt) + i) / parseFloat(this.eqt));
+          //Under
+          var v = 1 / ((parseFloat(this.eqt) + i) / parseFloat(this.eqt));
           ratiosArr.push(v);
 
           //ratiosArr.push(value / start);
           //value += 2;
         }
 
+        // for (let k = 0; k < 9; k++) {
+        //   ratiosArr.push(ratiosArr[k] * 4/3);
+        // }
 
-          // for (let k = 0; k < 9; k++) {
-          //   ratiosArr.push(ratiosArr[k] * 4/3);
-          // }
+        //  for (let k = 0; k < 9; k++) {
+        //   ratiosArr.push(ratiosArr[k] * 5/3);
+        // }
 
-          //  for (let k = 0; k < 9; k++) {
-          //   ratiosArr.push(ratiosArr[k] * 5/3);
-          // }
-
-          // for (let k = 0; k < 9; k++) {
-          //   ratiosArr.push(ratiosArr[k] * 2);
-          // }
-
+        // for (let k = 0; k < 9; k++) {
+        //   ratiosArr.push(ratiosArr[k] * 2);
+        // }
       }
 
       //Generator3
-      if (false) {
+      if (this.mode == "gtr") {
         ratiosArr = [];
         var start = 1;
         var value = start;
 
-        var shift = 2;
+        var shift = 3;
         var qtd = 9;
         //var lineRatios = [1, Math.pow(1.5, 14/20), Math.pow(1.5, 28/20), Math.pow(1.5, 42/20)]; //Gamma 1ed1.0627073611568032
         //var lineRatios = [1, Math.pow(2, 14/34), Math.pow(2, 28/34), Math.pow(2, 42/34)]; //34ed8
@@ -5572,11 +5815,27 @@ console.log(r)
         //var lineRatios = [1, Math.pow(PHI, 11/18), Math.pow(PHI, 22/18), Math.pow(PHI, 33/18)]; //9edPHI (apox 26ed4)
         //var lineRatios = [1, Math.pow(2, 11/27), Math.pow(2, 22/27), Math.pow(2,33/27)]; // 27ed4
         //var lineRatios = [1, Math.pow(2, 9/27), Math.pow(2, 18/27), Math.pow(2,27/27)]; // 27ed4
-        //var lineRatios = [ 1, Math.pow(2, 13/31), Math.pow(2, 23/31), Math.pow(2, 36/31), Math.pow(2, 46/31)]; //31ed4
-        //var lineRatios = [ 1, Math.pow(2, 8/31), Math.pow(2, 13/31), Math.pow(2, 21/31), Math.pow(2, 26/31)]; //31ed4
-        //var lineRatios = [ 1,Math.pow(2, 7/34), Math.pow(2, 14/34), Math.pow(2, 21/34), Math.pow(2, 40/34)]; //34ed4
-
-
+        // var lineRatios = [
+        //   1,
+        //   Math.pow(2, 13 / 31),
+        //   Math.pow(2, 23 / 31),
+        //   Math.pow(2, 36 / 31),
+        //   Math.pow(2, 46 / 31),
+        // ]; //31ed4
+        // var lineRatios = [
+        //   1,
+        //   Math.pow(2, 8 / 31),
+        //   Math.pow(2, 13 / 31),
+        //   Math.pow(2, 21 / 31),
+        //   Math.pow(2, 26 / 31),
+        // ]; //31ed4
+        // var lineRatios = [
+        //   1,
+        //   Math.pow(2, 7 / 34),
+        //   Math.pow(2, 14 / 34),
+        //   Math.pow(2, 21 / 34),
+        //   Math.pow(2, 40 / 34),
+        // ]; //34ed4
 
         //var lineRatios = [1, 9/8, 4/3, 3/2, 2];
         //var lineRatios = [1, 1.125, 3/2, 2];
@@ -5623,19 +5882,26 @@ console.log(r)
         //var lineRatios = [1, 1.2, 1.4, 1.6, 1.8];
         //var lineRatios = [1, 4/3, 5/3, 2];
         //var lineRatios = [1, 7/6, 4/3];
-        //var lineRatios = [ Math.pow(2, 8/31), Math.pow(2, 15/31), Math.pow(2, 23/31), Math.pow(2, 30/31)]; //31ed4
+        //var lineRatios = [ 1,Math.pow(2, 8/31), Math.pow(2, 15/31), Math.pow(2, 23/31), Math.pow(2, 30/31)]; //31ed4
+        var lineRatios = [
+          1,
+          Math.pow(2, 18 / 31),
+          Math.pow(2, 5 / 31),
+          Math.pow(2, 23 / 31),
+          Math.pow(2, 30 / 31),
+        ]; //31ed4
 
-         //Golden Diatonic
-//         var lineRatios = [
-// 1
-// //,1.117564002635853
-// ,1.248949299987469
-// //,1.337761815878635
-// ,1.4950344495267345
-// //,1.6707966834915866
-// //,1.337761815878635*1.337761815878635
-// ,1.867222229193566
-// ,2]
+        //Golden Diatonic
+        //         var lineRatios = [
+        // 1
+        // //,1.117564002635853
+        // ,1.248949299987469
+        // //,1.337761815878635
+        // ,1.4950344495267345
+        // //,1.6707966834915866
+        // //,1.337761815878635*1.337761815878635
+        // ,1.867222229193566
+        // ,2]
 
         //Especify value
         //var lineRatios = [1, Math.pow(this.repeatScaleValue,1), Math.pow(this.repeatScaleValue,2), Math.pow(this.repeatScaleValue,3)];
@@ -5646,7 +5912,13 @@ console.log(r)
 
         //N from Scale
         var n = this.testValueInt;
-        var lineRatios = [1,Math.pow(this.base, n/this.eqt), Math.pow(this.base, (n*2)/this.eqt), Math.pow(this.base, (n*3)/this.eqt),Math.pow(this.base, (n*4)/this.eqt)];
+        var lineRatios = [
+          1,
+          Math.pow(this.base, n / this.eqt),
+          Math.pow(this.base, (n * 2) / this.eqt),
+          Math.pow(this.base, (n * 3) / this.eqt),
+          Math.pow(this.base, (n * 4) / this.eqt),
+        ];
         //var lineRatios = [1,Math.pow(this.base, (n*2)/this.eqt)/2,Math.pow(this.base, n/this.eqt),  Math.pow(this.base, (n*4)/this.eqt)/4, Math.pow(this.base, (n*3)/this.eqt)];
 
         //var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)];
@@ -5657,13 +5929,12 @@ console.log(r)
 
         //var lineRatios = [1, 1.25, 1.5, 1.75];
 
-
         for (let l = 0; l < lineRatios.length; l++) {
           const vLine = lineRatios[l];
 
           for (let i = 0; i < qtd; i++) {
             //Equal temperament
-            var v = Math.pow(this.base, (i-shift)/this.eqt);
+            var v = Math.pow(this.base, (i - shift) / this.eqt);
 
             //Overtones
             //var v = (parseFloat(this.eqt)+i)/parseFloat(this.eqt);
@@ -5687,12 +5958,14 @@ console.log(r)
         //var lineRatios = [1, 1.25, 1.5, 1.75];
         //var lineRatios = [1, 1.2, 1.4, 1.6, 1.8];
         //Golden Pentatonic
-        var lineRatios = [1
-,1.117564002635853
-,1.337761815878635
-,1.4950344495267345
-,1.7896066760229032
-,2]
+        // var lineRatios = [
+        //   1,
+        //   1.117564002635853,
+        //   1.337761815878635,
+        //   1.4950344495267345,
+        //   1.7896066760229032,
+        //   2,
+        // ];
         //var lineRatios = [1, 4/3, 1.5, 2];
         //var lineRatios = [1, 1.324717957244746, 1.4950347693089112,2]
         //var lineRatios = [1, 4/3, 5/3, 7/3];
@@ -5707,7 +5980,7 @@ console.log(r)
         //var lineRatios = [1, 1.2505655196145855, 1.2505655196145855*1.2505655196145855, 1.2505655196145855*1.2505655196145855*1.2505655196145855];
         //var lineRatios = [1, Math.pow(1.2080894444044472,1), Math.pow(1.2080894444044472,2), Math.pow(1.2080894444044472,3)]
         //var lineRatios = [1, Math.pow(1.337762182113573606,1), Math.pow(1.337762182113573606,2), Math.pow(1.337762182113573606,3)]
-           //Especify value
+        //Especify value
         //var lineRatios = [1, Math.pow(this.repeatScaleValue,1), Math.pow(this.repeatScaleValue,2), Math.pow(this.repeatScaleValue,3)];
 
         //var colRatios = [1, 3/2, 4/3, 5/3, 5/4, 6/5, 7/6, 7/5, 7/4];
@@ -5715,64 +5988,64 @@ console.log(r)
 
         //Porcupine 15 Mode 22edo (Afinação do violão em 23/04/2020)
         //var lineRatios = [1, Math.pow(1.2080894444044472,1), Math.pow(1.2080894444044472,2), Math.pow(1.2080894444044472,3)];
-//         var colRatios = [
-// 1
-// ,1.034563715943573
-// ,1.070322082346974
-// ,1.1638841804365203
-// ,1.2041123426403462
-// ,1.2457309396155174
-// ,1.2887880299545085
-// ,1.333333333333333
-// ,1.4498865336988227
-// ,1.5000000000000004
-// ,1.5518455739153598
-// ,1.6054831235204612
-// ,1.6609745861540228
-// ,1.718384039939344
-// ,1.8685964094232765
-// ,1.9331820449317632
-//         ];
+        //         var colRatios = [
+        // 1
+        // ,1.034563715943573
+        // ,1.070322082346974
+        // ,1.1638841804365203
+        // ,1.2041123426403462
+        // ,1.2457309396155174
+        // ,1.2887880299545085
+        // ,1.333333333333333
+        // ,1.4498865336988227
+        // ,1.5000000000000004
+        // ,1.5518455739153598
+        // ,1.6054831235204612
+        // ,1.6609745861540228
+        // ,1.718384039939344
+        // ,1.8685964094232765
+        // ,1.9331820449317632
+        //         ];
         // var colRatios = [1, 1.143572939715946, 1.3077590684505704, 1.4955178823482058,1.710233781114704,2,0,0,0];
         //var colRatios = [1, 25/24, 12/11, 8/7, 6/5, 5/4];
         //var colRatios = [1, 1.05, 1.125, 1.185185 ,1.25, 4/3, 1.4,];
-         var colRatios = [
-1
-,1.0590169943749475
-,1.1215169943749477
-,1.187705556523382
-,1.2578003686718164
-,1.3090169943749475
-,1.3862712429686845
-,1.468084805117119
-,1.5547267578026618
-,1.618033988749895
-,1.7135254915624214
-,1.81465261585929
-,1.9217479590819415
- ];
+        var colRatios = [
+          1,
+          1.0590169943749475,
+          1.1215169943749477,
+          1.187705556523382,
+          1.2578003686718164,
+          1.3090169943749475,
+          1.3862712429686845,
+          1.468084805117119,
+          1.5547267578026618,
+          1.618033988749895,
+          1.7135254915624214,
+          1.81465261585929,
+          1.9217479590819415,
+        ];
         //var colRatios = [36/36, 37/36, 38/36, 39/36, 40/36, 41/36, 42/36, 43/36, 44/36];
-//         var colRatios = [
-//           //Armodue
-//           1
-// ,1.0457345379256116
-// ,1.0935607238104925
-// ,1.1435742182075628
-// ,1.1958750566609282
-// ,1.2505678497940804
-// ,1.3077619925490385
-// ,1.367571882994946
-// ,1.430108890487043
-// ,1.4955142597767768
-// ,1.563910913408831
-// ,1.6354356563904051
-// ,1.7102315504424894
-// ,1.7489026668813836
-// ,1.8288879222280738
-// ,1.9125312662689065
-// ]
+        //         var colRatios = [
+        //           //Armodue
+        //           1
+        // ,1.0457345379256116
+        // ,1.0935607238104925
+        // ,1.1435742182075628
+        // ,1.1958750566609282
+        // ,1.2505678497940804
+        // ,1.3077619925490385
+        // ,1.367571882994946
+        // ,1.430108890487043
+        // ,1.4955142597767768
+        // ,1.563910913408831
+        // ,1.6354356563904051
+        // ,1.7102315504424894
+        // ,1.7489026668813836
+        // ,1.8288879222280738
+        // ,1.9125312662689065
+        // ]
 
-//var lineRatios = [1,colRatios[this.repeatScaleValue], Math.pow(colRatios[this.repeatScaleValue],2), Math.pow(colRatios[this.repeatScaleValue],3),Math.pow(colRatios[this.repeatScaleValue],4)];
+        //var lineRatios = [1,colRatios[this.repeatScaleValue], Math.pow(colRatios[this.repeatScaleValue],2), Math.pow(colRatios[this.repeatScaleValue],3),Math.pow(colRatios[this.repeatScaleValue],4)];
 
         for (let l = 0; l < 4; l++) {
           const vLine = lineRatios[l];
@@ -5793,16 +6066,14 @@ console.log(r)
           var v = i;
           ratiosArr.push(v);
         }
-
       }
 
-       //Generator6 (Golden)
+      //Generator6 (Golden)
       if (false) {
         ratiosArr = [1];
         //var qtd = this.eqt;
-var s = 0;
-var L = 1;
-
+        var s = 0;
+        var L = 1;
 
         //var mode = [L,s,L,s,L];
 
@@ -5828,22 +6099,19 @@ var L = 1;
 
         var baseC = this.ratioToCents(this.repeatScaleValue);
 
-
-        var ns = mode.filter(item => item == s).length;
-        var nL = mode.filter(item => item == L).length;
+        var ns = mode.filter((item) => item == s).length;
+        var nL = mode.filter((item) => item == L).length;
         var ratioBase = PHI;
-        var sCents = baseC / (ns + (nL*ratioBase));
+        var sCents = baseC / (ns + nL * ratioBase);
         var LCents = sCents * ratioBase;
 
         this.sDisplay = this.inCents ? sCents : this.centsToRatio(sCents);
         this.lDisplay = this.inCents ? LCents : this.centsToRatio(LCents);
         //console.log(`s: ${s} L:${L}`)
 
-
-
         var currentValue = 0;
         var modeLength = mode.length;
-        if(this.repeatScale){
+        if (this.repeatScale) {
           modeLength -= 1;
         }
         for (let i = 0; i < modeLength; i++) {
@@ -5855,18 +6123,17 @@ var L = 1;
         }
       }
 
-       //Generator7
-      if(false){
+      //Generator7
+      if (false) {
         ratiosArr = [1];
 
         var n = this.testValueInt;
-        var r = Math.pow(this.base, n/this.eqt);
+        var r = Math.pow(this.base, n / this.eqt);
 
         for (let index = 1; index < 39; index++) {
           var v = Math.pow(r, index);
           ratiosArr.push(v);
         }
-
       }
 
       //Well Tempered Generator - WTG
@@ -5876,46 +6143,45 @@ var L = 1;
       //WTG 1.143572939715946 (base9)
       //WTG 1.2458005985895744 (base9)gg
       //1.4950347693089112
-      if (this.wtg) {
+      if (this.wtg || this.mode == "wtg") {
         //this.wtg = true;
         ratiosArr = [1];
 
-//ratiosArr.push(2/this.base);
+        //ratiosArr.push(2/this.base);
 
         //Alternated (Horagrams)
-        if(this.wtgMode == "alternated"){
-        var vUp = 1;
-        var vDown = 1;
-        for (let index = 1; index < this.eqt; index++) {
-          if((index-1) % 2 == 0){
-            vUp = vUp * this.base;
-            ratiosArr.push(vUp);
-          }else{
-            vDown = vDown / this.base;
-            ratiosArr.push(vDown);
+        if (this.wtgMode == "alternated") {
+          var vUp = 1;
+          var vDown = 1;
+          for (let index = 1; index < this.eqt; index++) {
+            if ((index - 1) % 2 == 0) {
+              vUp = vUp * this.base;
+              ratiosArr.push(vUp);
+            } else {
+              vDown = vDown / this.base;
+              ratiosArr.push(vDown);
+            }
           }
-        }
         }
 
         //Over
-        if(this.wtgMode == "up"){
+        if (this.wtgMode == "up") {
           for (let index = 1; index < this.eqt; index++) {
-            ratiosArr.push(Math.pow(this.base,index))
+            ratiosArr.push(Math.pow(this.base, index));
             //ratiosArr.push(Math.pow(this.base, index + 1) / 1.2);
             //ratiosArr.push(Math.pow(this.base, index + 1));
           }
         }
 
         //Under
-        if(this.wtgMode == "down"){
-        for (let index = 1; index < this.eqt; index++) {
-          ratiosArr.unshift(Math.pow(this.base,-index))
+        if (this.wtgMode == "down") {
+          for (let index = 1; index < this.eqt; index++) {
+            ratiosArr.unshift(Math.pow(this.base, -index));
 
-          //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
-          //ratiosArr.push(Math.pow(this.base, -(index + 1)));
+            //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
+            //ratiosArr.push(Math.pow(this.base, -(index + 1)));
+          }
         }
-        }
-
 
         // if(this.repeatScale){
         //   ratiosArr.push(Math.sqrt(this.repeatScaleValue));
@@ -5945,20 +6211,17 @@ var L = 1;
         //   }
       }
 
-
-
-//WTG 3
- if (false) {
+      //WTG 3
+      if (false) {
         this.wtg = true;
         ratiosArr = [1];
 
-        var arrIntervals = [1.25, 1.2, 7/6];
+        var arrIntervals = [1.25, 1.2, 7 / 6];
 
         //Over
         var lastOver = 1;
         for (let index = 0; index < this.eqt; index++) {
-
-          var interval = arrIntervals[(index % arrIntervals.length)]
+          var interval = arrIntervals[index % arrIntervals.length];
 
           lastOver *= interval;
           ratiosArr.push(lastOver);
@@ -5971,14 +6234,13 @@ var L = 1;
         for (let index = 0; index < this.eqt; index++) {
           //ratiosArr.unshift(Math.pow(this.base,-index))
 
-           var interval = arrIntervals[(index % arrIntervals.length)]
-          lastUnder /= (interval || 1);
+          var interval = arrIntervals[index % arrIntervals.length];
+          lastUnder /= interval || 1;
           //ratiosArr.push(lastUnder);
 
           //ratiosArr.push(Math.pow(this.base, -(index + 1)) * 1.2);
           //ratiosArr.push(Math.pow(this.base, -(index + 1)));
         }
-
 
         // if(this.repeatScale){
         //   ratiosArr.push(Math.sqrt(this.repeatScaleValue));
@@ -6000,10 +6262,10 @@ var L = 1;
       }
 
       if (this.applySort) {
-        Array.prototype.unique = function() {
-          return this.filter(function(value, index, self) {
-            return self.indexOf(value) === index;
-          });
+        Array.prototype.unique = function () {
+            return this.filter(function (value, index, self) {
+              return self.indexOf(value) === index;
+            });
         };
         ratiosArr = ratiosArr.unique();
         ratiosArr = ratiosArr.sort((a, b) => a - b);
@@ -6024,12 +6286,12 @@ var L = 1;
       }
 
       //Normal
-      // if (!this.wtg &&  this.normalize) {
-      //   for (var i = 0; i < ratiosArr.length; i++) {
-      //     var v = ratiosArr[i] || 1;
-      //     ratiosArr[i] = this.normalizeValue(v);
-      //   }
-      // }
+      if (!(this.wtg || this.mode == "wtg") && this.normalize) {
+        for (var i = 0; i < ratiosArr.length; i++) {
+          var v = ratiosArr[i] || 1;
+          ratiosArr[i] = this.normalizeValue(v);
+        }
+      }
 
       // if (!this.wtg && this.applySort) {
       //   Array.prototype.unique = function() {
@@ -6040,9 +6302,6 @@ var L = 1;
       //   ratiosArr = ratiosArr.unique();
       //   ratiosArr = ratiosArr.sort((a, b) => a - b);
       // }
-
-
-
 
       //Jump
       //  var jumpArr = [];
@@ -6058,8 +6317,6 @@ var L = 1;
       //   v = this.normalizeValue(v);
       // }
 
-
-
       //===================================
       // ratiosArr = this.smooth(ratiosArr);
       // ratiosArr = this.smooth(ratiosArr);
@@ -6073,11 +6330,55 @@ var L = 1;
       //Partials da fração      //
       //  var rPartials = this.formantPartials(this.base);
       //  ratiosArr = [1, rPartials[0], this.base ]
-       //ratiosArr = [1, rPartials[0], this.base, rPartials[0]*2 ]
+      //ratiosArr = [1, rPartials[0], this.base, rPartials[0]*2 ]
+
+      //Ls Mapped Steps
+      if (false && idx > 1) {
+        //var mode = "2 2 1 2 2 2 1"; //Diatônica 12ed2
+        //var mode = "3 3 3 3 3 3 3 1"; //Porcupine[8] 22edo
+        //var mode = "3 3 3 3 3 3 4"; //Porcupine[7] 22edo
+        //var mode = "3 4 2 4 3 3 3"; //Porcupine[7] 22edo MODMOS
+        //var mode = "4 2 3 4 3 3 3"; //Porcupine[7] 22edo MODMOS
+        //var mode = "3 2 2 2 2 3 2 2 2 2"; //Pajara[10] 22edo MOS (Symmetric)
+        //var mode = "3 2 2 2 2 2 3 2 2 2"; //Pajara[10] 22edo MODMOS (Pentacordal)
+        //var mode = "1 2 1 2 1 2 1 2 1 2 1 2 1 2 1"; //Porcupine[15] 22edo
+        //var mode = "3 1 3 1 3 1 1 3 1 3 1 1"; //Superpyth[12] 22edo
+        //var mode = "1 1 3 1 3 1 4 1 3 1 3"; //Anti-Superpyth[12] 22edo
+        //var mode = "1 3 1 1 3 1 3 1 1 3 1"; //kleismic[11] 19edo
+        //var mode = "4 1 1 4 1 1 4 1 1 1"; //magic[10] 19edo
+        //var mode = "1 1 6 1 1 1 6 1 1";  //liese[9]  19edo
+        //var mode = "5 1 1 5 1 1 5 1 1 1"; //Magic[10] 22edo
+        //var mode = "5 1 1"; //Magic[10]
+        //var mode = "1 2 1 2";  //Legal: posui acorde 1 1.2 1.6 e 1 1.3333 1.6
+        //var mode = "1 2 1 1";  //Legal: posui acorde 1 1.2 1.6 e 1 1.3333 1.6
+        //var mode = "1 2"; //Porcupine[10] 15edo
+        //var mode = "6 2";
+        //var mode = "5 2 2 5 2 5 2 5 2";
+        //var mode = "2 1 1 2 1 2 1 2 1"; //BP Lambda
+        //var mode = "1 2 1 2 1 2 1 2 1"; //BP
+        //var mode = "2 2 2 2 3 2 2 2 2"; //Negri[9] 19edo
+        //var mode = "3 10 2 10"; //28EDT (Interessante)
+        //var mode = "5 2 5 2 2";//Mavila[5]
+        //var mode = "3 2 2 3 2 2 2"; //Mavila[7]
+        //var mode = "1 2 2 2 1 2 2 2 2";//Mavila[9]
+        //var mode = "3 1 3 2 2 2"; //22edo bom
+
+        var mode = "3 3 4 3 5 3 4 3 3";
+
+        //var mapArr = mode.split(" ");
+        var mapArr = mode.replace(/\D/g, "");
+        var cIdx = idx - 1;
+        var mapSum = 0;
+        for (let mapIdx = 0; mapIdx < cIdx; mapIdx++) {
+          const mapValue = mapArr[mapIdx % mapArr.length];
+          mapSum += parseInt(mapValue);
+        }
+        idx = mapSum + 1;
+      }
 
       //AQUI!
-      if(this.wtg){
-       return ratiosArr[idx-1] || 0;
+      if (this.mode == "wtg" || this.mode == "code") {
+        return ratiosArr[idx - 1] || 0;
       }
 
       //#endregion
@@ -6099,45 +6400,8 @@ var L = 1;
       // idx = mapIdx;
       //idx = idx + mapIdx;
 
-      //Ls Mapped Steps
-      if(false && idx > 1){
-        //var mode = "2 2 1 2 2 2 1"; //Diatônica 12ed2
-        //var mode = "3 3 3 3 3 3 3 1"; //Porcupine[8] 22edo
-        //var mode = "3 3 3 3 3 3 4"; //Porcupine[7] 22edo
-        //var mode = "3 4 2 4 3 3 3"; //Porcupine[7] 22edo MODMOS
-        //var mode = "4 2 3 4 3 3 3"; //Porcupine[7] 22edo MODMOS
-        //var mode = "3 2 2 2 2 3 2 2 2 2"; //Pajara[10] 22edo MOS (Symmetric)
-        //var mode = "3 2 2 2 2 2 3 2 2 2"; //Pajara[10] 22edo MODMOS (Pentacordal)
-        //var mode = "1 2 1 2 1 2 1 2 1 2 1 2 1 2 1"; //Porcupine[15] 22edo
-        var mode = "3 1 3 1 3 1 1 3 1 3 1 1"; //Superpyth[12] 22edo
-        //var mode = "1 1 3 1 3 1 4 1 3 1 3"; //Anti-Superpyth[12] 22edo
-        //var mode = "1 3 1 1 3 1 3 1 1 3 1"; //kleismic[11] 19edo
-        //var mode = "4 1 1 4 1 1 4 1 1 1"; //magic[10] 19edo
-        //var mode = "1 1 6 1 1 1 6 1 1";  //liese[9]  19edo
-        //var mode = "5 1 1 5 1 1 5 1 1 1"; //Magic[10] 22edo
-        //var mode = "5 1 1"; //Magic[10]
-        //var mode = "1 2 1 2";  //Legal: posui acorde 1 1.2 1.6 e 1 1.3333 1.6
-        //var mode = "1 2 1 1";  //Legal: posui acorde 1 1.2 1.6 e 1 1.3333 1.6
-        //var mode = "1 2"; //Porcupine[10] 15edo
-        //var mode = "6 2";
-        //var mode = "5 2 2 5 2 5 2 5 2";
-        //var mode = "2 1 1 2 1 2 1 2 1"; //BP Lambda
-        //var mode = "1 2 1 2 1 2 1 2 1"; //BP
-        //var mode = "2 2 2 2 3 2 2 2 2"; //Negri[9] 19edo
-        //var mode = "3 10 2 10"; //28EDT (Interessante)
-
-        var mapArr = mode.split(' ');
-        var cIdx = idx-1;
-        var mapSum = 0;
-        for (let mapIdx = 0; mapIdx < cIdx; mapIdx++) {
-          const mapValue = mapArr[mapIdx % mapArr.length];
-          mapSum += parseInt(mapValue);
-        }
-        idx = mapSum+1;
-      }
-
       //Equal temperament
-      if (true) {
+      if (this.mode == "eqt") {
         var eqt = this.eqt;
         var etqRatio = Math.pow(this.base, 1.0 / this.eqt); //1.059486755451824;
         var v = idx == 1 ? 1 : Math.pow(etqRatio, idx - 1);
@@ -6150,14 +6414,16 @@ var L = 1;
       }
 
       //Linear
-      if (false) {
+      if (this.mode == "harm") {
 
-        //Overtones
-        var v = (this.eqt - 1 + idx) / this.eqt;
-
-        //Undertones
-        //var v = this.eqt/(this.eqt - 1 + idx) ;
-        //var v = 1/v;
+        var v = 1;
+        if(this.harmMode == 'over'){
+          //Overtones
+          v = (this.eqt - 1 + idx) / this.eqt;
+        }else{
+          //Undertones
+          v = this.eqt/(this.eqt - 1 + idx);
+        }
         if (this.normalize) {
           v = this.normalizeValue(v);
         }
@@ -6239,7 +6505,22 @@ var L = 1;
         return "";
       }
 
-      var normRatio = this.normalizeValue(this.freqBased ?  this.freq(idx) : this.ratio(idx));
+      var normRatio = this.normalizeValue(
+        this.freqBased ? this.freq(idx) : this.ratio(idx)
+      );
+
+      var freq = this.ratio(idx) * this.mainFreq;
+      var range = Math.min(Math.log2(freq / 20) / 10, 1);
+
+      //TODO: Finalizar
+      // var vRange = 1;
+      // var sRange = 1;
+      // if(range < 0.5){
+      //   vRange = range * 2;
+      // }
+      // else{
+      //   sRange =
+      // }
 
       // if([1, 1.25, 4/3, 1.5,5/3].indexOf( normRatio) != -1){
       //   return "#ff8080";
@@ -6250,8 +6531,10 @@ var L = 1;
       // }
 
       if (normRatio) {
-        var v = (normRatio - 1) / (this.equivalence - 1 || 1);
-        var c = this.HSVtoRGB(v, 0.77, 1);
+        var h = (normRatio - 1) / (this.equivalence - 1 || 1); //Matriz
+        var s = 0.77; //Saturaçao
+        var v = 1; //range //Brilho
+        var c = this.HSVtoRGB(h, s, v);
         return "rgb(" + c.r + "," + c.g + "," + c.b + ")";
       }
 
@@ -6290,7 +6573,7 @@ var L = 1;
       return {
         r: Math.round(r * 255),
         g: Math.round(g * 255),
-        b: Math.round(b * 255)
+        b: Math.round(b * 255),
       };
     },
     smooth(array) {
@@ -6376,16 +6659,64 @@ var L = 1;
     formantPartials(v) {
       var n = 2 / (v - 1);
       return [(n + 1) / n, (n + 2) / (n + 1)];
-    }
+    },
   },
   watch: {
-    eqt: function(val) {
+    eqt: function (val) {
       if (val == 0) {
         this.eqt = 1;
       }
+    },
+  },
+};
+
+function harmonicSerieWithPrimes(harm, primes){
+const result = [1];
+
+for (let index = 1; index < harm; index++) {
+  const num = harm + index;
+
+  let multiple = false;
+  for (let p = 0; p < primes.length; p++) {
+    const prime = primes[p];
+    if (num % prime === 0) {
+      multiple = true;
+      break;
     }
   }
-};
+
+  if (multiple) {
+    const v = num / harm;
+    result.push(v);
+  }
+}
+return result;
+}
+
+function harmonicPermutation(harmSerie){
+  var permutations = [];
+
+for (let permIdx = 0; permIdx < harmSerie.length; permIdx++) {
+  for (let index = 0; index < harmSerie.length; index++) {
+    const modIdx = (index + permIdx) % harmSerie.length;
+    const element = harmSerie[modIdx];
+    const value = element/harmSerie[permIdx];
+    const normValue = normalizeValue(value);
+    //permutations.push({element, v: (index + permIdx)});
+    permutations.push(normValue);
+
+  }
+
+}
+
+return permutations;
+}
+
+// var harmSerie = harmonicSerieWithPrimes(5, [2,3,5,7]);
+// console.log(harmSerie);
+
+// var permutations = harmonicPermutation(harmSerie);
+// console.log(permutations);
 </script>
 
 <style scoped>

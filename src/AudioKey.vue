@@ -9,7 +9,10 @@
     :style="{ 'background-color': color }"
   >
     <div class="key-label">{{ keyName }}</div>
-    <div class="key-tone">{{ text || parseFloat(freq).toFixed(2) + "Hz" }}</div>
+    <div class="key-tone">
+      <div v-if="text">{{text}}</div>
+      <small>{{parseFloat(freq).toFixed(2) + "Hz" }}</small>
+      </div>
   </div>
 </template>
 
@@ -60,7 +63,7 @@ export default {
 
     // if (!window.audioCache[this.freq]) {
       //   if (!this.wave) {
-        this.audioFile = "./audio-samples/guitar-note_G.wav";  
+        this.audioFile = "./audio-samples/guitar-note_G.wav";
         //this.audioFile = './audio-samples/sine.wav';
         //this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
         //this.audioFile = './audio-samples/violaoMicrotonal2.wav';
@@ -203,7 +206,7 @@ this.initAudioCache();
     playSoundNote() {
       var rate = parseFloat(this.freq) / this.soundFreq;
 
-     
+
 
       //Busca um cache disponivel
       this.audioCacheIdx = window["audioCache"].findIndex(
