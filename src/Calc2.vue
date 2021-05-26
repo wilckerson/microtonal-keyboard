@@ -15,7 +15,7 @@
       <button v-on:click="setBasePhi">φ</button>
       <button v-on:click="setBasePi">π</button>
 
-      <label>Divisão máxima:</label>
+      <label>Max division to search:</label>
       <input type="number" step="1" v-model="maxDiv" />
     </div>
 
@@ -29,24 +29,24 @@
     </div>
 
     <div v-if="calcType == 'lin'">
-      <label>Divisão máxima:</label>
+      <label>Max harmonic to search:</label>
       <input type="number" step="1" v-model="maxDiv" />
     </div>
 
-    <label>Valores procurados:</label>
+    <label>Values to search:</label>
     <textarea
       rows="10"
       cols="30"
       v-model="textData"
-      placeholder="Um valor por linha em formato decimal (Ex: 1.333) ou fracionário(Ex: 4/3) "
+      placeholder="One value per line in decimal format (Ex: 1.333) or fraction (Ex: 4/3) "
     ></textarea>
 
     <div>
-      <input type="checkbox" v-model="priorityOrder" /> Ordem de prioridade
+      <input type="checkbox" v-model="priorityOrder" /> Search by priority (top lines have more priority)
     </div>
     <br />
 
-    <button v-on:click="calc">Calcular</button>
+    <button v-on:click="calc">Calculate</button>
 
     <div v-if="sortedResult.length > 0">
       <h3>Result</h3>
@@ -76,7 +76,7 @@
                 v-for="(ratio, idx) in item.ratios"
                 :key="idx"
                 style="padding-right: 10px"
-                >{{ ratio.ratio }} <i> ({{ ratio.diff.toFixed(3) }}¢)</i></span
+                >{{ ratio.ratio }} <i>({{ ratio.diff.toFixed(2) }}¢) [{{ratio.eqtIndex}}]</i></span
               >
             </td>
           </tr>
@@ -208,7 +208,7 @@ export default {
            minDiff = Math.min(minDiff, diffResult.diff);
           maxDiff = Math.max(maxDiff, diffResult.diff);
 
-          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff });
+          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff, eqtIndex: diffResult.idx });
           if (this.priorityOrder) {
             totalDiff += Math.abs(diffResult.diff) * (ratioData.length - j);
           } else {
