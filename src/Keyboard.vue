@@ -42,7 +42,8 @@
           <span>Period:</span>
           <input type="number" v-model="equivalence" step="0.0001" />
         </span>
-        <p>
+         </div>
+        <div v-if="mode =='wtg'" style="display: inline-block; margin: 8px 0;">
           <span>Quantity:</span>
           <input type="number" step="1" v-model="eqt" style="width: 70px;" />
 
@@ -53,17 +54,18 @@
             <option value="down">Down</option>
           </select>
 
-          <span>
+        </div>
+
+
+       <span v-if="mode == 'wtg' || mode == 'code'">
             <input type="checkbox" v-model="repeatScale" />
             Repeat
             <input type="number" v-model="repeatScaleValue" step="0.0001" />
           </span>
-          <span>
+           <span v-if="mode == 'wtg' || mode == 'code'">
             <input type="checkbox" v-model="applySort" />
             Sort
           </span>
-        </p>
-      </div>
 
        <div v-if="mode == 'harm'">
          Harmonic number:
@@ -167,7 +169,7 @@
               :keyName="key.k"
               :idx="key.idx"
               :freq="mainFreq * factor * ratio(key.idx)"
-              :text="parseFloat(ratioToCents(ratio(key.idx) || 1)).toFixed(3) + '¢'"
+              :text="parseFloat(ratioToCents(ratio(key.idx) || 1)).toFixed(0) + '¢'"
               :color="color(key.idx)"
               @onChangeActive="onChangeActive"
             />
@@ -188,7 +190,7 @@
     </table>
     <p>Active interval ratio:
       <br/>
-      {{ activeRatio ? (parseFloat(activeRatio).toFixed(12)+" ("+parseFloat(ratioToCents(activeRatio)).toFixed(6)+"c)") : "None" }}
+      {{ activeRatio ? (parseFloat(activeRatio).toFixed(12)+" ("+parseFloat(ratioToCents(activeRatio)).toFixed(0)+"c)") : "None" }}
       </p>
     <div>
       <input type="checkbox" v-model="showChart" />
@@ -220,7 +222,7 @@
             <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
             <div v-for="ii in Math.max(73, nEqt)" v-bind:key="ii">
               <span v-if="ratioListIdx">{{ ii }}:</span>
-              <span>{{ inCents ? parseFloat(ratioToCents(ratio(ii))).toFixed(6) : parseFloat(ratio(ii)).toFixed(12) }}</span>
+              <span>{{ inCents ? parseFloat(ratioToCents(ratio(ii))).toFixed(0) : parseFloat(ratio(ii)).toFixed(12) }}</span>
             </div>
           </div>
 
@@ -5331,19 +5333,33 @@ console.log(r)
 // ,1.6666666666666667
 // ,1.7142857142857142
 // ,1.75
-// ,1.5 * 1
-// ,1.5 * 1.1428571428571428
-// ,1.5 * 1.1666666666666667
-// ,1.5 * 1.2
-// ,1.5 * 1.25
-// ,1.5 * 1.3333333333333333
-// ,1.5 * 1.4
-// ,1.5 * 1.4285714285714286
-// ,1.5 * 1.5
-// ,1.5 * 1.6
-// ,1.5 * 1.6666666666666667
-// ,1.5 * 1.7142857142857142
-// ,1.5 * 1.75
+// 1
+// ,36/35
+// ,15/14
+// ,1.4583333333333333333
+// ,1.5625
+// ,1.28
+// ,1.3714285714285714285
+// ,10/9
+// ,16/15
+// ,25/24
+// ,9/5
+// ,15/8
+// ,1.28*1.5
+
+// ,1.4 * 1
+// ,1.4 * 1.1428571428571428
+// ,1.4 * 1.1666666666666667
+// ,1.4 * 1.2
+// ,1.4 * 1.25
+// ,1.4 * 1.3333333333333333
+// ,1.4 * 1.4
+// ,1.4 * 1.4285714285714286
+// ,1.4 * 1.5
+// ,1.4 * 1.6
+// ,1.4 * 1.6666666666666667
+// ,1.4 * 1.7142857142857142
+// ,1.4 * 1.75
 // ,4/3 * 1
 // ,4/3 * 1.1428571428571428
 // ,4/3 * 1.1666666666666667
@@ -5370,17 +5386,17 @@ console.log(r)
 // 1, 5/4, Math.sqrt(2), 5/3
 
 //Espectro harmonico 5-10
-// 1, 6/5, 7/5, 8/5, 9/5,
-// 1, 7/6, 4/3, 3/2, 5/3,
-// 1, 8/7, 9/7, 10/7, 12/7,
-// 1, 9/8, 5/4, 3/2, 7/4,
-// 1, 10/9, 4/3, 14/9, 16/9,
+1, 6/5, 7/5, 8/5, 9/5,
+1, 7/6, 4/3, 3/2, 5/3,
+1, 8/7, 9/7, 10/7, 12/7,
+1, 9/8, 5/4, 3/2, 7/4,
+1, 10/9, 4/3, 14/9, 16/9,
 //--
-// 1, 10/9, 5/4, 10/7, 5/3,
-// 1, 9/8, 9/7, 3/2, 9/5,
-// 1, 8/7, 4/3, 8/5, 16/9,
-// 1, 7/6, 7/5, 14/9, 7/4,
-// 1, 6/5, 4/3, 3/2, 12/7,
+1, 10/9, 5/4, 10/7, 5/3,
+1, 9/8, 9/7, 3/2, 9/5,
+1, 8/7, 4/3, 8/5, 16/9,
+1, 7/6, 7/5, 14/9, 7/4,
+1, 6/5, 4/3, 3/2, 12/7,
 
 //1*1.0158730158730158,
 // 1*1.0370370370370372,
@@ -5573,11 +5589,21 @@ console.log(r)
 //  1, 7/6, 4/3, 3/2, 5/3, /*11/6,*/ 2,
 //  1, 8/7, 9/7, 10/7, /*11/7,*/ 12/7, /*13/7*/
 
-//1, 1.0350983 ,1.07331168068691, repeat 1.118033
-1, 1.2
+//1, 1.0350983 ,1.07331168068691, //repeat 1.118033988749894848204586834365
+//1, 1.2
+// 1, 36/35, 16/15
+//1, 1.035096759816395135, 15/14
 
 //Muito boa H25
 //1, 1.08, 1.2, 1.28, 1.44, 1.6, 1.8, 1.92
+// 1, 1.2, 1.6,
+// 1.08, 1.44, 1.8,
+// 1.2, 1.44, 1.92,
+// 1.28, 1.6, 1.92,
+// 1.44, 1.8, 2.4,
+// 1.6, 2, 2.4,
+// 1.8, 2.4, 2.88,
+// 1.92, 2.4, 3.2
 //H15 7lmit
 //1,1.0666666666666667,1.2,1.3333333333333333,1.4,1.6,1.6666666666666667,1.8,1.8666666666666667
 //1,1.037037037037037,1.1111111111111112,1.1851851851851851,1.2962962962962963,1.3333333333333333,1.4814814814814814,1.5555555555555556,1.6666666666666667,1.7777777777777777,1.8148148148148149,1.8518518518518519
