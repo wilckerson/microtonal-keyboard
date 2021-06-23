@@ -17,10 +17,8 @@
 </template>
 
 <script>
-import Vue from "vue";
-
-import Pizzicato from "pizzicato";
 const AUDIO_CACHE_SIZE = 6;
+import Howl from "howler";
 
 export default {
   props: ["keyName", "freq", "text", "color", "idx"],
@@ -266,49 +264,49 @@ this.initAudioCache();
     start() {
       return;
 
-      //Global audio context
-      if (!window.audioCtx) {
-        window.audioCtx = new (window.AudioContext ||
-          window.webkitAudioContext)();
-      }
-      var audioCtx = window.audioCtx;
+      // //Global audio context
+      // if (!window.audioCtx) {
+      //   window.audioCtx = new (window.AudioContext ||
+      //     window.webkitAudioContext)();
+      // }
+      // var audioCtx = window.audioCtx;
 
-      //Global Oscillator cache
-      if (!window.gVcoSetup) {
-        window.gVcoCount = 5;
-        window.gVcoArr = [];
-        for (var c = 0; c < window.gVcoCount; c++) {
-          var vco = window.audioCtx.createOscillator();
-          vco.type = "sine";
-          vco.start(0);
+      // //Global Oscillator cache
+      // if (!window.gVcoSetup) {
+      //   window.gVcoCount = 5;
+      //   window.gVcoArr = [];
+      //   for (var c = 0; c < window.gVcoCount; c++) {
+      //     var vco = window.audioCtx.createOscillator();
+      //     vco.type = "sine";
+      //     vco.start(0);
 
-          var vca = audioCtx.createGain();
-          vca.gain.setValueAtTime(0, window.audioCtx.currentTime);
+      //     var vca = audioCtx.createGain();
+      //     vca.gain.setValueAtTime(0, window.audioCtx.currentTime);
 
-          var distortion = window.audioCtx.createWaveShaper();
-          function makeDistortionCurve(amount) {
-            var k = typeof amount === "number" ? amount : 50,
-              n_samples = 44100,
-              curve = new Float32Array(n_samples),
-              deg = Math.PI / 180,
-              i = 0,
-              x;
-            for (; i < n_samples; ++i) {
-              x = (i * 2) / n_samples - 1;
-              curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
-            }
-            return curve;
-          }
-          distortion.curve = makeDistortionCurve(0.7);
+      //     var distortion = window.audioCtx.createWaveShaper();
+      //     function makeDistortionCurve(amount) {
+      //       var k = typeof amount === "number" ? amount : 50,
+      //         n_samples = 44100,
+      //         curve = new Float32Array(n_samples),
+      //         deg = Math.PI / 180,
+      //         i = 0,
+      //         x;
+      //       for (; i < n_samples; ++i) {
+      //         x = (i * 2) / n_samples - 1;
+      //         curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+      //       }
+      //       return curve;
+      //     }
+      //     distortion.curve = makeDistortionCurve(0.7);
 
-          vco.connect(distortion);
-          distortion.connect(vca);
-          vca.connect(audioCtx.destination);
+      //     vco.connect(distortion);
+      //     distortion.connect(vca);
+      //     vca.connect(audioCtx.destination);
 
-          window.gVcoArr[c] = { vco: vco, vca: vca, busy: false };
-        }
-        window.gVcoSetup = true;
-      }
+      //     window.gVcoArr[c] = { vco: vco, vca: vca, busy: false };
+      //   }
+      //   window.gVcoSetup = true;
+      // }
 
       //Gloval VCO
       // if(!window["gVco"]){
@@ -419,7 +417,7 @@ this.initAudioCache();
     },
   },
   watch: {
-    active: function (val, oldVal) {
+    active: function () {
       this.$emit("onChangeActive", {
         freq: this.freq,
         keyName: this.keyName,

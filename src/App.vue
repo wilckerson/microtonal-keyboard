@@ -22,25 +22,20 @@
 </template>
 
 <script>
-import KeyGrid from './KeyGrid.vue';
 import Guitar from './Guitar.vue';
 import Phi from './Phi.vue';
-import Calc from './Calc.vue';
 import Calc2 from './Calc2.vue';
 import Calc3 from './Calc3.vue';
 import Keyboard from './Keyboard.vue';
 import Keyboard2 from './Keyboard2.vue';
 import KeyboardMos from './KeyboardMos.vue';
 import LambdomaKeyboard from './LambdomaKeyboard.vue';
-import AudioKey from './AudioKey.vue';
 import TouchBoard from './TouchBoard.vue';
-
-import {Howl, Howler} from 'howler';
 
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi, Guitar, KeyboardMos, TouchBoard
+    LambdomaKeyboard,Keyboard,Keyboard2,Calc2,Calc3, Phi, Guitar, KeyboardMos, TouchBoard
   },
   data() {
     return {
