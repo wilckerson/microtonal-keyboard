@@ -398,6 +398,8 @@ export default {
       //var scale = [1, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6, 1.6666666666666667];
       //var scale = [9/9, 10/9, 11/9, 12/9, 13/9, 14/9, 15/9, 16/9, 17/9 , 18/9];
       //var scale = [1, 1.25, 4/3, 5/3]
+      var scale = [1,3,5,7,9]; //64/45
+      //var scale = [1, 1.1428571428571428, 1.1666666666666667, 1.2, 1.25, 1.3333333333333333, 1.4, 1.4285714285714286, 1.5, 1.6, 1.6666666666666667, 1.7142857142857142, 1.75]//7-limit diamond
       //var scale = [1,3,5,7,11,13,17]; //64/45
       //var scale = [1, 9, 5, 3, 7];
       //17EDO
@@ -480,15 +482,15 @@ export default {
       //  ]
       //  var scale = [1, Math.pow(1.0416666,1), Math.pow(1.0416666,2), Math.pow(1.0416666,3),Math.pow(1.0416666,4), Math.pow(1.0416666,5), Math.pow(1.0416666,6), Math.pow(1.0416666,7)]
       //var scale = [1 ,1.2001027195781024 ,1.388651142614655 ,1.6068224531337627,1.792664192275709]
-      var scale = [
-        1,
-        1.0666666666666664,
-        1.1940519805174479,
-        1.3366501239165378,
-        1.4257601321776399,
-        1.5960297277214341,
-        1.7866335537660958,
-      ];
+      // var scale = [
+      //   1,
+      //   1.0666666666666664,
+      //   1.1940519805174479,
+      //   1.3366501239165378,
+      //   1.4257601321776399,
+      //   1.5960297277214341,
+      //   1.7866335537660958,
+      // ];
 
       var s = scale[(col - 1) % scale.length];
       //var s = scale[Math.min(col-1,scale.length-1)];
@@ -552,7 +554,8 @@ export default {
         1.8750000000000004,
       ];
 
-      var s2 = scale2[(row - 1) % scale2.length];
+      var s2 = scale[(row - 1) % scale.length];
+      //var s2 = scale2[(row - 1) % scale2.length];
       //s = scale2[(col - 1) % scale2.length];
       //Aqui
 
@@ -560,7 +563,7 @@ export default {
       //var r = s * s2;
 
       //Tonality Diamond
-      //var r = s / s2;
+      var r = s / s2;
 
       //Lattice
       //var r = Math.pow(this.latticeX, col-1-this.shiftX) * Math.pow(this.latticeY, row-1-this.shiftY);

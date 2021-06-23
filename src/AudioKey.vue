@@ -63,12 +63,12 @@ export default {
 
     // if (!window.audioCache[this.freq]) {
       //   if (!this.wave) {
-        this.audioFile = "./audio-samples/guitar-note_G.wav";
+        //this.audioFile = "./audio-samples/guitar-note_G.wav";
         //this.audioFile = './audio-samples/sine.wav';
         //this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
         //this.audioFile = './audio-samples/violaoMicrotonal2.wav';
         //this.audioFile = './audio-samples/tampaPanela2.wav'; //132hz
-        //this.audioFile = './audio-samples/piano-a_A_major.wav';
+        this.audioFile = './audio-samples/piano-a_A_major.wav';
         //this.audioFile = './audio-samples/clarinete_F.mp3';
         //this.audioFile = './audio-samples/HangDrum_C03.wav'; ///Hang!!!
         //this.audioFile = './audio-samples/163[kb]shamisen-pluck.wav.mp3'; //Muito bom

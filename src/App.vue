@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    
+
     <h3>🙌🎵 Microtonal Keyboard</h3>
 
 <!-- <Calc v-if="route == '#calc'"/> -->
@@ -12,9 +12,10 @@
 <lambdoma-keyboard v-else-if="route == '#lambdoma'"/>
 <keyboard2 v-else-if="route == '#keyboard2'"/>
 <keyboardMos v-else-if="route == '#keyboardmos'"/>
+<TouchBoard v-else-if="route == '#touchboard'"/>
   <keyboard v-else/>
 
-    <!-- <audio-key keyName="W" freq="220"/> 
+    <!-- <audio-key keyName="W" freq="220"/>
     <audio-key keyName="E" freq="440"/>  -->
 
   </div>
@@ -32,13 +33,14 @@ import Keyboard2 from './Keyboard2.vue';
 import KeyboardMos from './KeyboardMos.vue';
 import LambdomaKeyboard from './LambdomaKeyboard.vue';
 import AudioKey from './AudioKey.vue';
+import TouchBoard from './TouchBoard.vue';
 
 import {Howl, Howler} from 'howler';
 
 export default {
   name: 'app',
   components: {
-    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi, Guitar, KeyboardMos
+    LambdomaKeyboard,Keyboard,Keyboard2,AudioKey,Calc,Calc2,Calc3,KeyGrid, Phi, Guitar, KeyboardMos, TouchBoard
   },
   data() {
     return {
@@ -49,10 +51,10 @@ export default {
   mounted(){
 
      this.route = window.location.hash;
-     
+
     },
   methods:{
-    
+
   }
 }
 </script>
