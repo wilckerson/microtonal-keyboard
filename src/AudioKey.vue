@@ -18,7 +18,7 @@
 
 <script>
 const AUDIO_CACHE_SIZE = 6;
-import Howl from "howler";
+ import {Howl} from "howler";
 
 export default {
   props: ["keyName", "freq", "text", "color", "idx"],
@@ -63,10 +63,14 @@ export default {
       //   if (!this.wave) {
         //this.audioFile = "./audio-samples/guitar-note_G.wav";
         //this.audioFile = './audio-samples/sine.wav';
-        //this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
+        //this.audioFile = './audio-samples/flute.wav';
+        this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
         //this.audioFile = './audio-samples/violaoMicrotonal2.wav';
+        //this.audioFile = './audio-samples/undertones_1000Hz.wav';
+        //this.audioFile = './audio-samples/undertones_100Hz_normalized.wav';
+        //this.audioFile = './audio-samples/phi_partials.wav';
         //this.audioFile = './audio-samples/tampaPanela2.wav'; //132hz
-        this.audioFile = './audio-samples/piano-a_A_major.wav';
+        //this.audioFile = './audio-samples/piano-a_A_major.wav';
         //this.audioFile = './audio-samples/clarinete_F.mp3';
         //this.audioFile = './audio-samples/HangDrum_C03.wav'; ///Hang!!!
         //this.audioFile = './audio-samples/163[kb]shamisen-pluck.wav.mp3'; //Muito bom
@@ -196,7 +200,8 @@ this.initAudioCache();
     stopSoundNote() {
       if (this.audioCacheIdx != -1) {
         var sound = window["audioCache"][this.audioCacheIdx].sound;
-        sound.fade(1, 0, 500);
+        //sound.fade(1, 0, 500);
+        sound.fade(1, 0, 1618);
 
         window["audioCache"][this.audioCacheIdx].inUse = false;
       }

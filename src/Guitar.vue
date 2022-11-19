@@ -27,7 +27,7 @@ document.body.addEventListener('mouseup', function () {
 };
 </script>
 
-<style>
+<style scoped>
 html,
 body {
   background: #eee;
