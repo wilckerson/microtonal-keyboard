@@ -7389,21 +7389,21 @@ console.log(r)
         //31EdPI (string step 6)
 
         //N from Scale
-        // var n = this.testValueInt;
-        // var lineRatios = [
-        //   1,
-        //   Math.pow(this.base, n / this.eqt),
-        //   Math.pow(this.base, (n * 2) / this.eqt),
-        //   Math.pow(this.base, (n * 3) / this.eqt),
-        //   Math.pow(this.base, (n * 4) / this.eqt),
-        // ];
+        var n = this.testValueInt;
+        var lineRatios = [
+          1,
+          Math.pow(this.base, n / this.eqt),
+          Math.pow(this.base, (n * 2) / this.eqt),
+          Math.pow(this.base, (n * 3) / this.eqt),
+          Math.pow(this.base, (n * 4) / this.eqt),
+        ];
         //var lineRatios = [1,Math.pow(this.base, (n*2)/this.eqt)/2,Math.pow(this.base, n/this.eqt),  Math.pow(this.base, (n*4)/this.eqt)/4, Math.pow(this.base, (n*3)/this.eqt)];
 
         //var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)];
         //var lineRatios = [1, Math.pow(2, n/41), Math.pow(2, (n*2)/41), Math.pow(2, (n*3)/41)];
         //var lineRatios = [1, Math.pow(2, n/19), Math.pow(2, (n*2)/19), Math.pow(2, (n*3)/19)];
         //var lineRatios = [1, Math.pow(2, 6/19), Math.pow(2, 12/19), Math.pow(2, 18/19)];
-        var lineRatios = [1, Math.pow(2, 7/22), Math.pow(2, 13/22), Math.pow(2, 20/22)];
+        //var lineRatios = [1, Math.pow(2, 7/22), Math.pow(2, 13/22), Math.pow(2, 20/22)];
         //var lineRatios = [1, Math.pow(PHI*PHI, 6/21), Math.pow(PHI*PHI, 12/21), Math.pow(PHI*PHI, 18/21)];
 
         //var lineRatios = [1, 1.25, 1.5, 1.75];
