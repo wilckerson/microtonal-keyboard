@@ -1,14 +1,14 @@
 <template>
   <div>
     <p>
-    Mode:
-    <select v-model="mode">
-      <option value="eqt">Equal temperament</option>
-      <option value="harm">Harmonics</option>
-      <option value="wtg">Regular temperament</option>
-      <option value="gtr">Guitar strings</option>
-      <option value="code">Custom notes (code edit only)</option>
-    </select>
+      Mode:
+      <select v-model="mode">
+        <option value="eqt">Equal temperament</option>
+        <option value="harm">Harmonics</option>
+        <option value="wtg">Regular temperament</option>
+        <option value="gtr">Guitar strings</option>
+        <option value="code">Custom notes (code edit only)</option>
+      </select>
 
 
       <span>
@@ -20,7 +20,7 @@
         <input type="number" v-model="guitarStringLength" step="1" style="width: 70px;" />
       </span>
 
-     </p>
+    </p>
     <div>
       <div v-if="mode == 'eqt' || mode =='gtr' || mode =='code'">
         <button v-on:click="setPhi">φ</button>
@@ -31,7 +31,7 @@
         <input type="number" step="1" v-model="eqt" />
       </div>
 
-       <div v-if="mode =='wtg'">
+      <div v-if="mode =='wtg'">
         <button v-on:click="setPhi">φ</button>
         <button v-on:click="setPi">π</button>
         <span>Generator:</span>
@@ -42,86 +42,54 @@
           <span>Period:</span>
           <input type="number" v-model="equivalence" step="0.0001" />
         </span>
-         </div>
-        <div v-if="mode =='wtg'" style="display: inline-block; margin: 8px 0;">
-          <span>Quantity:</span>
-          <input type="number" step="1" v-model="eqt" style="width: 70px;" />
+      </div>
+      <div v-if="mode =='wtg'" style="display: inline-block; margin: 8px 0;">
+        <span>Quantity:</span>
+        <input type="number" step="1" v-model="eqt" style="width: 70px;" />
 
-          <span>Direction:</span>
-          <select v-model="wtgMode">
-            <option value="up">Up</option>
-            <option value="alternated">Up/Down</option>
-            <option value="down">Down</option>
-          </select>
+        <span>Direction:</span>
+        <select v-model="wtgMode">
+          <option value="up">Up</option>
+          <option value="alternated">Up/Down</option>
+          <option value="down">Down</option>
+        </select>
+      </div>
 
-        </div>
+      <span v-if="mode == 'wtg' || mode == 'code'">
+        <input type="checkbox" v-model="repeatScale" />
+        Repeat
+        <input  type="number" v-model="repeatScaleValue" step="0.0001" />
 
+        <input type="checkbox" v-model="repeatScaleHarm" />
+        HarmRepeat
+        <span v-if="repeatScaleHarm">Harm</span>
+        <input v-if="repeatScaleHarm" type="number" v-model="repeatScaleHarmValue" step="1" />
+        <span v-if="repeatScaleHarm">Count</span>
+        <input v-if="repeatScaleHarm" type="number" v-model="repeatScaleHarmCount" step="1" />
+      </span>
+      <span v-if="mode == 'wtg' || mode == 'code'">
+        <input type="checkbox" v-model="applySort" />
+        Sort
+      </span>
 
-       <span v-if="mode == 'wtg' || mode == 'code'">
-            <input type="checkbox" v-model="repeatScale" />
-            Repeat
-            <input  type="number" v-model="repeatScaleValue" step="0.0001" />
-
-            <input type="checkbox" v-model="repeatScaleHarm" />
-            HarmRepeat
-            <span v-if="repeatScaleHarm">Harm</span>
-            <input v-if="repeatScaleHarm" type="number" v-model="repeatScaleHarmValue" step="1" />
-            <span v-if="repeatScaleHarm">Count</span>
-            <input v-if="repeatScaleHarm" type="number" v-model="repeatScaleHarmCount" step="1" />
-
-
-          </span>
-           <span v-if="mode == 'wtg' || mode == 'code'">
-            <input type="checkbox" v-model="applySort" />
-            Sort
-          </span>
-
-       <div v-if="mode == 'harm'">
-         Harmonic number:
-         <input type="number" step="1" v-model="eqt" />
-         Type:
-          <select v-model="harmMode">
+      <div v-if="mode == 'harm'">
+        Harmonic number:
+        <input type="number" step="1" v-model="eqt" />
+        Type:
+        <select v-model="harmMode">
           <option value="over">Overtone</option>
           <option value="under">Undertone</option>
         </select>
-         Qtd:
-         <input type="number" step="1" v-model="harmQtd" />
-       </div>
+        Qtd:
+        <input type="number" step="1" v-model="harmQtd" />
+      </div>
 
-
-
-      <!-- <span>Ratio: {{ ratio(2) }}</span> -->
-      <!-- <span>
-        DiffRoot:
-        <input type="checkbox" v-model="diffRoot" />
-      </span> -->
-
-
-
-       <p  v-if="mode != 'wtg'">
-
+      <p v-if="mode != 'wtg'">
         <input type="checkbox" v-model="normalize" />
         <span>Equivalence Period:</span>
         <input type="number" v-model="equivalence" step="0.0001" />
 
-        <span v-if="mode == 'gtr'">
-          Steps by string:
-          <input
-            type="number"
-            v-model="testValueInt"
-            :step="1 / stepDivision"
-            style="width: 70px"
-          />
-          Steps division:
-          <input
-            type="number"
-            v-model="stepDivision"
-            :step="1"
-            style="width: 70px"
-          />
-        </span>
-
-        <span v-if="mode == 'gtr'">
+        <div v-if="mode == 'gtr'">
           Shift by:
           <input
             type="number"
@@ -129,10 +97,33 @@
             :step="1"
             style="width: 70px"
           />
-        </span>
+          Single steps:
+          <input type="checkbox" v-model="gtrSingleStep" />
+          <span v-if="gtrSingleStep">
+            Steps by string:
+            <input
+              type="number"
+              v-model="testValueInt"
+              :step="1 / stepDivision"
+              style="width: 70px"
+            />
+
+          </span>
+          <span v-if="!gtrSingleStep">
+            <input type="number" v-model="gtrStep1" :step="1 / stepDivision"/>
+            <input type="number" v-model="gtrStep2" :step="1 / stepDivision"/>
+            <input type="number" v-model="gtrStep3" :step="1 / stepDivision"/>
+            <input type="number" v-model="gtrStep4" :step="1 / stepDivision"/>
+          </span>
+           Steps division:
+            <input
+              type="number"
+              v-model="stepDivision"
+              :step="1"
+              style="width: 70px"
+            />
+        </div>
       </p>
-
-
       <span v-if="mode == 'code' || mode == 'harm'">
         Test:
         <input
@@ -143,7 +134,7 @@
           style="width: 70px"
         />
       </span>
-       <span v-if="mode == 'code'">
+      <span v-if="mode == 'code'">
         Test2:
         <input
           type="number"
@@ -153,7 +144,7 @@
           style="width: 70px"
         />
       </span>
-             <span v-if="mode == 'code'">
+      <span v-if="mode == 'code'">
         Test3:
         <input
           type="number"
@@ -167,18 +158,6 @@
 
     </div>
     <p v-if="sDisplay && lDisplay">s: {{ sDisplay }} L: {{ lDisplay }}</p>
-    <!-- <div>
-      1.25 ({{Math.pow(ratio(2),5)-1.25}})
-    </div>
-    <div>
-      1.5 ({{Math.pow(ratio(2),9)-1.5}})
-    </div>
-    <div>
-      2 ({{(Math.pow(ratio(2),15)-2).toFixed(18)}})
-    </div>-->
-    <div>
-      <!-- Erro ({{((Math.pow(ratio(2),15)-2) + Math.pow(ratio(2),9) + Math.pow(ratio(2),5))}}) -->
-    </div>
 
     <table class="keyboard">
       <tr v-for="(krow, ridx) in keys" v-bind:key="ridx + base">
@@ -281,7 +260,6 @@
         </td>
       </tr>
     </table>
-
   </div>
 </template>
 
@@ -368,6 +346,11 @@ export default {
       shiftCount: 3,
       sDisplay: undefined,
       lDisplay: undefined,
+      gtrSingleStep: true,
+      gtrStep1: 0,
+      gtrStep2: 0,
+      gtrStep3: 0,
+      gtrStep4: 0,
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -7389,14 +7372,25 @@ console.log(r)
         //31EdPI (string step 6)
 
         //N from Scale
-        var n = this.testValueInt;
-        var lineRatios = [
-          1,
-          Math.pow(this.base, n / this.eqt),
-          Math.pow(this.base, (n * 2) / this.eqt),
-          Math.pow(this.base, (n * 3) / this.eqt),
-          Math.pow(this.base, (n * 4) / this.eqt),
-        ];
+        var lineRatios = []
+        if(this.gtrSingleStep){
+          var n = this.testValueInt;
+          lineRatios = [
+            1,
+            Math.pow(this.base, n / this.eqt),
+            Math.pow(this.base, (n * 2) / this.eqt),
+            Math.pow(this.base, (n * 3) / this.eqt),
+            Math.pow(this.base, (n * 4) / this.eqt),
+          ];
+        }else{
+          lineRatios = [
+            1,
+            Math.pow(this.base, this.gtrStep1 / this.eqt),
+            Math.pow(this.base, this.gtrStep2 / this.eqt),
+            Math.pow(this.base, this.gtrStep3 / this.eqt),
+            Math.pow(this.base, this.gtrStep4 / this.eqt),
+          ];
+        }
         //var lineRatios = [1,Math.pow(this.base, (n*2)/this.eqt)/2,Math.pow(this.base, n/this.eqt),  Math.pow(this.base, (n*4)/this.eqt)/4, Math.pow(this.base, (n*3)/this.eqt)];
 
         //var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)];
