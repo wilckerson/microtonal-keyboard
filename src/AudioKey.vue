@@ -372,6 +372,10 @@ this.initAudioCache();
       }
     },
     keyDown: function (e) {
+
+      //Ignore if is typing in any field
+      if(document.activeElement !== document.body){return;}
+
       if (this.isIgnoredKey(e.key)) {
         return;
       }
