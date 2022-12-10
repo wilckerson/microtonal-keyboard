@@ -29,6 +29,8 @@
         <input type="number" step="0.0001" v-model="base" />
         <span>Eqt:</span>
         <input type="number" step="1" v-model="eqt" />
+        <span>Custom notes:</span>
+        <input type="checkbox" v-model="enableCustomNotes"/>
       </div>
 
       <div v-if="mode =='wtg'">
@@ -122,6 +124,12 @@
               :step="1"
               style="width: 70px"
             />
+            Fixed step:
+            <input
+              type="number"
+              v-model="fixedStepValue"
+              step="0.0001"
+            />
         </div>
       </p>
       <span v-if="mode == 'code' || mode == 'harm'">
@@ -209,7 +217,12 @@
     <p>Active interval ratio:
       <br/>
       {{ activeRatio ? (parseFloat(activeRatio).toFixed(12)+" ("+parseFloat(ratioToCents(activeRatio)).toFixed(0)+"c)") : "None" }}
-      </p>
+    </p>
+    <div v-if="enableCustomNotes" style="text-align: left">
+      <label>Custom Notes:</label>
+      <textarea v-model="customNotesInput" rows="5"/>
+      <!-- <pre>{{customNotes}}</pre> -->
+    </div>
     <div>
       <input type="checkbox" v-model="showChart" />
       Display chart and infos
@@ -240,7 +253,7 @@
             <!-- <div v-for="ii in (this.ratiosArr.length)" v-bind:key="ii">{{ratio(ii)}}</div> -->
             <div v-for="ii in Math.max(73, nEqt)" v-bind:key="ii">
               <span v-if="ratioListIdx">{{ ii }}:</span>
-              <span>{{ inCents ? parseFloat(ratioToCents(ratio(ii))).toFixed(0) : parseFloat(ratio(ii)).toFixed(12) }}</span>
+              <span>{{ inCents ? parseFloat(ratioToCents(ratio(ii,true))).toFixed(3) : parseFloat(ratio(ii,true)).toFixed(12) }}</span>
             </div>
           </div>
 
@@ -351,6 +364,9 @@ export default {
       gtrStep2: 0,
       gtrStep3: 0,
       gtrStep4: 0,
+      enableCustomNotes: false,
+      customNotesInput: "",
+      fixedStepValue: 0,
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -464,6 +480,41 @@ export default {
     nEqt: function () {
       return parseInt(this.eqt);
     },
+
+    customNotes: function(){
+      var result = [];
+      var lines = this.customNotesInput.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        var v = undefined;
+        if (line.indexOf("/") !== -1) {
+          //Fração
+          var parts = line.split("/");
+          v = parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+        else if(line.indexOf("\\") !== -1){
+          //Index of edo
+          var parts = line.split("\\");
+          v = Math.pow(2, (parseFloat(parts[0]) / parseFloat(parts[1])));
+        }
+        else if(line.indexOf("c") !== -1){
+          //Cents
+          var parts = line.split("c");
+          var cent = parseFloat(parts[0]);
+          v = Math.pow(2, (cent / 1200));
+        }
+        else {
+          v = parseFloat(line);
+        }
+
+        if (v !== undefined && !isNaN(v)) {
+          result.push(v);
+        }
+      }
+
+      return result;
+    }
   },
   methods: {
     mountKeyboardKeys() {
@@ -936,7 +987,7 @@ export default {
       //freqArr = freqArr.sort();
       return freqArr[idx - 1] || 0;
     },
-    ratio(idx) {
+    ratio(idx, useMaxCount) {
       //Aqui
       var PHI = (1 + Math.sqrt(5)) / 2; //1.618033988749895
       //CPS factors
@@ -7245,7 +7296,7 @@ console.log(r)
         var value = start;
 
         var shift = this.shiftCount;
-        var qtd = 9;
+        var qtd = useMaxCount ? 73 : 9;
         //var lineRatios = [1, Math.pow(1.5, 14/20), Math.pow(1.5, 28/20), Math.pow(1.5, 42/20)]; //Gamma 1ed1.0627073611568032
         //var lineRatios = [1, Math.pow(2, 14/34), Math.pow(2, 28/34), Math.pow(2, 42/34)]; //34ed8
         //var lineRatios = [1,Math.pow(2, 9/22), Math.pow(2, 18/22), Math.pow(2, 27/22), Math.pow(2, 36/22)]; //11ed2
@@ -7372,25 +7423,25 @@ console.log(r)
         //31EdPI (string step 6)
 
         //N from Scale
-        var lineRatios = []
-        if(this.gtrSingleStep){
-          var n = this.testValueInt;
-          lineRatios = [
-            1,
-            Math.pow(this.base, n / this.eqt),
-            Math.pow(this.base, (n * 2) / this.eqt),
-            Math.pow(this.base, (n * 3) / this.eqt),
-            Math.pow(this.base, (n * 4) / this.eqt),
-          ];
-        }else{
-          lineRatios = [
-            1,
-            Math.pow(this.base, this.gtrStep1 / this.eqt),
-            Math.pow(this.base, this.gtrStep2 / this.eqt),
-            Math.pow(this.base, this.gtrStep3 / this.eqt),
-            Math.pow(this.base, this.gtrStep4 / this.eqt),
-          ];
-        }
+        // var lineRatios = []
+        // if(this.gtrSingleStep){
+        //   var n = this.testValueInt;
+        //   lineRatios = [
+        //     1,
+        //     Math.pow(this.base, n / this.eqt),
+        //     Math.pow(this.base, (n * 2) / this.eqt),
+        //     Math.pow(this.base, (n * 3) / this.eqt),
+        //     Math.pow(this.base, (n * 4) / this.eqt),
+        //   ];
+        // }else{
+        //   lineRatios = [
+        //     1,
+        //     Math.pow(this.base, this.gtrStep1 / this.eqt),
+        //     Math.pow(this.base, this.gtrStep2 / this.eqt),
+        //     Math.pow(this.base, this.gtrStep3 / this.eqt),
+        //     Math.pow(this.base, this.gtrStep4 / this.eqt),
+        //   ];
+        // }
         //var lineRatios = [1,Math.pow(this.base, (n*2)/this.eqt)/2,Math.pow(this.base, n/this.eqt),  Math.pow(this.base, (n*4)/this.eqt)/4, Math.pow(this.base, (n*3)/this.eqt)];
 
         //var lineRatios = [1, Math.pow(n, 1), Math.pow(n, 2), Math.pow(n, 3)];
@@ -7401,20 +7452,63 @@ console.log(r)
         //var lineRatios = [1, Math.pow(PHI*PHI, 6/21), Math.pow(PHI*PHI, 12/21), Math.pow(PHI*PHI, 18/21)];
 
         //var lineRatios = [1, 1.25, 1.5, 1.75];
+        if(this.enableCustomNotes && this.customNotes.length == 0){ return [1]}
 
-        for (let l = 0; l < lineRatios.length; l++) {
-          const vLine = lineRatios[l];
+        for (let l = 0; l < 4; l++) {
+        //for (let l = 0; l < lineRatios.length; l++) {
+          //const vLine = lineRatios[l];
 
           for (let i = 0; i < qtd; i++) {
-            //Equal temperament
-            var v = Math.pow(this.base, (i - shift) / this.eqt);
 
-            //Overtones
-            //var v = (parseFloat(this.eqt)+i)/parseFloat(this.eqt);
-            //Undertones
-            //var v = (parseFloat(this.eqt))/Math.max(1,(parseFloat(this.eqt)-i));
+            if(this.enableCustomNotes && this.customNotes.length > 0){
 
-            ratiosArr.push(v * vLine);
+              function getCalculatedCustomNote(idx, customNotesData,shiftValue){
+                var shiftedIdx = idx - parseFloat(shiftValue) -1;
+                var modIdx = shiftedIdx % customNotesData.length;
+                if (modIdx < 0) {
+                  modIdx += customNotesData.length;
+                }
+                var nPeriod = Math.floor(shiftedIdx / customNotesData.length)
+                var r = customNotesData[modIdx] || 0;
+                var equivalenceValue = customNotesData[customNotesData.length - 1];
+                var v = r * Math.pow(equivalenceValue, nPeriod);
+                return v;
+              }
+              var v = getCalculatedCustomNote(i,this.customNotes, shift);
+
+              if(this.fixedStepValue === 0){
+                var vLineIdx = (l * Math.floor(this.testValueInt));
+                var vLine = getCalculatedCustomNote(vLineIdx,this.customNotes, 0);
+                ratiosArr.push(v * vLine);
+              }else{
+                var vLine = Math.pow(this.fixedStepValue, l);
+                ratiosArr.push(v * vLine);
+              }
+            }else{
+              var vLine = 1;
+
+              //Equal temperament
+              var v = Math.pow(this.base, (i - shift) / this.eqt);
+              var vLineIdx = (l * this.testValueInt);
+              if(!this.gtrSingleStep && l == 0){
+                vLineIdx = this.gtrStep1;
+              } else if(!this.gtrSingleStep && l == 1){
+                vLineIdx = this.gtrStep2;
+              }else if(!this.gtrSingleStep && l == 2){
+                vLineIdx = this.gtrStep3;
+              }else if(!this.gtrSingleStep && l == 3){
+                vLineIdx = this.gtrStep4;
+              }
+              vLine = Math.pow(this.base, (vLineIdx / this.eqt));
+
+              //Overtones
+              //var v = (parseFloat(this.eqt)+i)/parseFloat(this.eqt);
+              //var vLine = (parseFloat(this.eqt)+(l*this.testValueInt))/parseFloat(this.eqt);
+              //Undertones
+              //var v = (parseFloat(this.eqt))/Math.max(1,(parseFloat(this.eqt)-i));
+
+              ratiosArr.push(v * vLine);
+            }
           }
         }
       }
