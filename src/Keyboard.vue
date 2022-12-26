@@ -7453,6 +7453,7 @@ console.log(r)
 
         //var lineRatios = [1, 1.25, 1.5, 1.75];
         if(this.enableCustomNotes && this.customNotes.length == 0){ return [1]}
+        var parsedFixedStepValue = parseFloat(this.fixedStepValue);
 
         for (let l = 0; l < 4; l++) {
         //for (let l = 0; l < lineRatios.length; l++) {
@@ -7476,12 +7477,12 @@ console.log(r)
               }
               var v = getCalculatedCustomNote(i,this.customNotes, shift);
 
-              if(this.fixedStepValue === 0){
+              if(parsedFixedStepValue === 0){
                 var vLineIdx = (l * Math.floor(this.testValueInt));
                 var vLine = getCalculatedCustomNote(vLineIdx,this.customNotes, 0);
                 ratiosArr.push(v * vLine);
               }else{
-                var vLine = Math.pow(this.fixedStepValue, l);
+                var vLine = Math.pow(parsedFixedStepValue, l);
                 ratiosArr.push(v * vLine);
               }
             }else{
@@ -7489,17 +7490,23 @@ console.log(r)
 
               //Equal temperament
               var v = Math.pow(this.base, (i - shift) / this.eqt);
-              var vLineIdx = (l * this.testValueInt);
-              if(!this.gtrSingleStep && l == 0){
-                vLineIdx = this.gtrStep1;
-              } else if(!this.gtrSingleStep && l == 1){
-                vLineIdx = this.gtrStep2;
-              }else if(!this.gtrSingleStep && l == 2){
-                vLineIdx = this.gtrStep3;
-              }else if(!this.gtrSingleStep && l == 3){
-                vLineIdx = this.gtrStep4;
+
+              if(parsedFixedStepValue === 0){
+                var vLineIdx = (l * this.testValueInt);
+                if(!this.gtrSingleStep && l == 0){
+                  vLineIdx = this.gtrStep1;
+                } else if(!this.gtrSingleStep && l == 1){
+                  vLineIdx = this.gtrStep2;
+                }else if(!this.gtrSingleStep && l == 2){
+                  vLineIdx = this.gtrStep3;
+                }else if(!this.gtrSingleStep && l == 3){
+                  vLineIdx = this.gtrStep4;
+                }
+                vLine = Math.pow(this.base, (vLineIdx / this.eqt));
+              }else{
+                vLine = Math.pow(parsedFixedStepValue, l);
               }
-              vLine = Math.pow(this.base, (vLineIdx / this.eqt));
+              
 
               //Overtones
               //var v = (parseFloat(this.eqt)+i)/parseFloat(this.eqt);
