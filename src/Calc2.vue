@@ -5,6 +5,7 @@
     <select v-model="calcType">
       <option value="eqt">Equal Temperament</option>
       <option value="lin">Linear (Overtones)</option>
+      <option value="sub">Linear (Undertones)</option>
       <option value="gen">Generator</option>
     </select>
 
@@ -28,7 +29,7 @@
       <input type="number" step="0.0001" v-model="genStep" />
     </div>
 
-    <div v-if="calcType == 'lin'">
+    <div v-if="calcType == 'lin' || calcType == 'sub'">
       <label>Max harmonic to search:</label>
       <input type="number" step="1" v-model="maxDiv" />
     </div>
@@ -50,7 +51,14 @@
 
     <div v-if="sortedResult.length > 0">
       <h3>Result</h3>
-
+      <chartjs-line
+            :width="500"
+            :height="200"
+            :labels="chartLabels"
+            :data="chartData"
+            :bind="true"
+            datalabel="Chart"
+          ></chartjs-line>
       <table border="1">
         <thead>
           <tr>
@@ -77,10 +85,15 @@
                 v-for="(ratio, idx) in item.ratios"
                 :key="idx"
                 style="padding-right: 10px"
-                >{{ ratio.ratio }} <i>({{ ratio.diff.toFixed(2) }}¢) [{{ratio.eqtIndex}}]</i></span
-              >
+                >
+                {{ ratio.ratio }}
+                <i>({{ ratio.diff.toFixed(2) }}¢) [{{ratio.eqtIndex}}]</i>
+              </span>
+              
             </td>
-            <td>{{ item.indexList === undefined ? "": [item.value].concat(item.indexList).join(':') }}</td>
+            <td>
+              <div>{{ getIndexAnalysis(item.ratios)}}</div>
+              {{ item.indexList === undefined ? "": [item.value].concat(item.indexList).join(':') }}</td>
           </tr>
         </tbody>
       </table>
@@ -89,6 +102,12 @@
 </template>
 
 <script>
+import Vue from "vue";
+require("chart.js");
+require("hchs-vue-charts");
+
+Vue.use(window.VueCharts);
+
 export default {
   data() {
     return {
@@ -102,6 +121,14 @@ export default {
       sortedResult: [],
       priorityOrder: false,
     };
+  },
+  computed: {
+    chartData() {
+      return this.sortedResult.map(m=>m.value) || [];
+    },
+    chartLabels() {
+      return this.sortedResult.map(m=>m.value) || []
+    }
   },
   methods: {
     setBasePhi() {
@@ -126,6 +153,8 @@ export default {
         results = this.calcGen(ratioData);
       } else if (this.calcType == "lin") {
         results = this.calcLin(ratioData);
+      } else if (this.calcType == "sub") {
+        results = this.calcSub(ratioData);
       }
 
       var sortedResult = results
@@ -283,6 +312,53 @@ export default {
 
       return results;
     },
+    calcSub(ratioData) {
+      //var maxRatioData = Math.max(...ratioData);
+      var results = [];
+      //var currentMinDiff = 1;
+      for (let i = 2; i <= this.maxDiv; i++) {
+        var ratios = this.generateArrRatiosSubHarmonics(i);
+
+        var minDiff = 999;
+        var maxDiff = -999;
+        var totalDiff = 0;
+        var resultRatios = [];
+        for (let j = 0; j < ratioData.length; j++) {
+          const ratio = ratioData[j];
+
+          var diffResult = this.diffFromRatio(ratios, ratio);
+          minDiff = Math.min(minDiff, diffResult.diff);
+          maxDiff = Math.max(maxDiff, diffResult.diff);
+
+          resultRatios.push({ ratio: diffResult.ratio, diff: diffResult.diff, eqtIndex: i+diffResult.idx });
+          if (this.priorityOrder) {
+            totalDiff += Math.abs(diffResult.diff) * (ratioData.length - j);
+          } else {
+            totalDiff += Math.abs(diffResult.diff);
+          }
+        }
+        var avgDiff = totalDiff / ratioData.length;
+
+        //Only best results
+        // if (totalDiff < currentMinDiff) {
+        //   currentMinDiff = totalDiff;
+        //   results.push({ value: i, diff: totalDiff });
+        // }
+        var indexList = resultRatios.map(rr => parseFloat(rr.eqtIndex)).sort((a, b) => (a < b ? -1 : 1));
+        console.log("indexList",indexList)
+        results.push({
+          value: i,
+          diff: totalDiff,
+          ratios: resultRatios,
+          avgDiff,
+          minDiff,
+          maxDiff,
+          indexList
+        });
+      }
+
+      return results;
+    },
     parseTextData() {
       var result = [];
       var lines = this.textData.split("\n");
@@ -317,6 +393,14 @@ export default {
       var ratios = [];
       for (var i = 0; i < num; i++) {
         var r = (num + i) / num;
+        ratios.push(r);
+      }
+      return ratios;
+    },
+    generateArrRatiosSubHarmonics(num) {
+      var ratios = [];
+      for (var i = 0; i < num; i++) {
+        var r = (num * 2) / ((num * 2) - i);
         ratios.push(r);
       }
       return ratios;
@@ -356,6 +440,18 @@ export default {
       var cents = 1200 * Math.log2(parseFloat(ratio));
       return cents;
     },
+
+    getIndexAnalysis(ratios){
+      var indexes = ratios.map(r => r.eqtIndex);
+      if(indexes.every(idx => idx % 2 == 0)){
+        return "Even indexes"
+      }else if(indexes.every(idx => idx % 2 != 0)){
+        return "Odd indexes"
+      }
+      else if(indexes.every((idx, arrIndex) => arrIndex == 0 || idx - indexes[arrIndex-1] == 3)){
+        return "Skip3 indexes"
+      }
+    }
   },
 };
 </script>
