@@ -92,7 +92,7 @@
               
             </td>
             <td>
-              <div>{{ getIndexAnalysis(item.ratios)}}</div>
+              <div>{{ getIndexAnalysis(item.ratios, item.value)}}</div>
               {{ item.indexList === undefined ? "": [item.value].concat(item.indexList).join(':') }}</td>
           </tr>
         </tbody>
@@ -441,15 +441,15 @@ export default {
       return cents;
     },
 
-    getIndexAnalysis(ratios){
+    getIndexAnalysis(ratios, value){
       var indexes = ratios.map(r => r.eqtIndex);
       if(indexes.every(idx => idx % 2 == 0)){
-        return "Even indexes"
+        return `Even indexes (${(value/2).toFixed(2)})`
       }else if(indexes.every(idx => idx % 2 != 0)){
-        return "Odd indexes"
+        return `Odd indexes (${(value/2).toFixed(2)})`
       }
       else if(indexes.every((idx, arrIndex) => arrIndex == 0 || idx - indexes[arrIndex-1] == 3)){
-        return "Skip3 indexes"
+        return `Skip3 indexes (${(value/3).toFixed(2)})`
       }
     }
   },

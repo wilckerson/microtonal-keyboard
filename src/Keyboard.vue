@@ -321,7 +321,7 @@ export default {
   },
   data() {
     return {
-      mode: "code",//"eqt",
+      mode: "eqt",
       eqt: 12, //12,
       base: 2, //1.4950347693089112,//Math.pow(5,1/4),
       ratioDiff: [],
@@ -7809,7 +7809,7 @@ console.log(r)
               ratiosArr.push(vUp);
             } else {
               vDown = vDown / this.base;
-              ratiosArr.push(vDown);
+              ratiosArr.unshift(vDown);
             }
           }
         }
