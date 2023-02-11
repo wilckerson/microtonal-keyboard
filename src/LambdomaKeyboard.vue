@@ -31,7 +31,7 @@
 
     <span
       >Normalize: <input type="checkbox" v-model="normalize" />
-      <input type="number" v-model="equivalence" min="0.1" step="0.0001" />
+      <input type="number" v-model="equivalence" min="0.1" step="0.01" />
     </span>
     <span>
       Chart:
@@ -48,6 +48,32 @@
       Skip X: <input type="number" v-model="skipX" /> Skip Y:
       <input type="number" v-model="skipY" />
     </div>
+    <div>
+      <span>Disable notes:</span>
+      <input type="checkbox" v-model="disableNotes"/>
+      <span>Mode:</span>
+      <select v-model="mode">
+          <option value="full">Full</option>
+          <option value="OxO">Overtones x Overtones</option>
+          <option value="OxU">Overtones x Undertones</option>
+          <option value="UxU">Undertones x Undertones</option>
+          <option value="custom">Custom Notes</option>
+        </select>
+    </div>
+    <div v-if="mode == 'custom'" style="text-align: left">
+      <table>
+        <tr>
+          <td>
+            <label>Custom Notes X:</label>
+            <textarea v-model="customNotesInputX" rows="5"/>      
+          </td>
+          <td>
+            <label>Custom Notes Y:</label>
+            <textarea v-model="customNotesInputY" rows="5"/>      
+          </td>
+        </tr>
+      </table>     
+    </div>
 
     <table border="0">
       <tr>
@@ -62,20 +88,21 @@
 
         <td v-for="j in limit" v-bind:key="i + '-' + j">
           <audio-key
+            v-if="!disableNotes"
             :keyName="getKeyName(i, j)"
             :text="getRatioText(i, j)"
             :freq="mainFreq * ratio(i, j)"
             :style="color(i, j)"
           />
-          <!-- <div class="square" :style="color(i, j)">&nbsp;</div> -->
+          <div v-if="disableNotes" class="square" :style="color(i, j)">&nbsp;</div>
           <!-- <div :style="color(i,j)">{{ratio(i,j)}}</div> -->
           <!-- <div :style="color(i,j)">{{i}} - {{j}}</div> -->
         </td>
       </tr>
     </table>
 
-    <p>Notes per octave: {{ resultList.length }}</p>
-    <p>
+    <p v-if="!disableNotes">Notes per octave: {{ resultList.length }}</p>
+    <p v-if="!disableNotes">
       {{ resultList }}
     </p>
     <div v-if="showChart">
@@ -134,7 +161,11 @@ export default {
       ratioDiff: [],
       showChart: false,
       z: 1,
-      minRatio: 1.0125,
+      minRatio: 1.000000125,
+      mode: 'OxU',
+      customNotesInputX: "",
+      customNotesInputY: "",
+      disableNotes: false
     };
   },
   mounted: function () {
@@ -187,14 +218,16 @@ export default {
     resultList() {
       var limit = this.limit;
       var list = [];
+      //list.push(2);
       for (let i = 1; i <= limit; i++) {
         for (let j = 1; j <= limit; j++) {
           var r = this.ratio(i, j);
-          var normR = this.normalizeValue(r);
-          list.push(normR);
+          var normR = this.normalizeValue(r, true);
+          //if(normR < this.equivalence){
+            list.push(normR);
+          //}
         }
       }
-      list.push(2);
       list = list.sort((a, b) => a - b);
       var unique = [list[0]];
       for (let i = 1; i < list.length; i++) {
@@ -321,6 +354,14 @@ export default {
 
     ratio(row, col) {
       //console.log(row, col);
+      if(this.mode == 'custom'){
+        var ratiosX = this.getCustomNotes(this.customNotesInputX);
+        var ratiosY = this.getCustomNotes(this.customNotesInputY);
+
+        var rx = ratiosX[(col-1) % ratiosX.length] || 1;
+        var ry = ratiosY[(row-1) % ratiosY.length] || 1;
+        return rx * ry;
+      }
 
       //Scale
       //var scale = [1,1.125,4/3,1.5,16/9];
@@ -372,26 +413,43 @@ export default {
       //var oct2 = Math.pow(2, Math.ceil((i) / scale.length)-1);
 
       //Default Lambdoma (UxO)
-      // var r = (col+(this.skipX-1))/(row+(this.skipY-1));
-      // return r;
+      // if(this.mode == 'UxO'){
+      //   var r = (col+(this.skipX-1))/(row+(this.skipY-1));
+      //   return r;
+      // }
 
       //Default Lambdoma (OxU)
-      //var r = (row+this.skipY)/(col+this.skipX);
+      if(this.mode == 'OxU'){
+        var r = (row+this.skipY)/(col+this.skipX);
+        return r;
+      }
 
       //Default Lambdoma (UxU)
-      //var r = 1/(row+this.skipY)/(col+this.skipX);
-
+      if(this.mode == 'UxU'){
+        var r = 1/(row+this.skipY)/(col+this.skipX);
+        return r;
+      }
       //Default Lambdoma (OxO)
-      var r = (row+parseInt(this.skipY))*(col+parseInt(this.skipX));
+      if(this.mode == 'OxO'){
+        var r = (row+parseInt(this.skipY))*(col+parseInt(this.skipX));
+        return r;
+      }
+      // var primes = [2,3,5]
+      // var r =(primes.some(p => row % p == 0) && primes.some(p => col % p == 0))
+      // ? (row)*(col)
+      // : 1;
 
 
       //Full Lambdoma (Quatro quadrantes)
-      var size = (this.limit + 1) / 2;
-      var rr =
-        row - size - 1 < 0 ? 1 / Math.abs(row - size - 1) : row - size + 1;
-      var cc =
-        col - size - 1 < 0 ? 1 / Math.abs(col - size - 1) : col - size + 1;
-      //var r = rr * cc;
+      if(this.mode == 'full'){
+        var size = (this.limit + 1) / 2;
+        var rr =
+          row - size - 1 < 0 ? 1 / Math.abs(row - size - 1) : row - size + 1;
+        var cc =
+          col - size - 1 < 0 ? 1 / Math.abs(col - size - 1) : col - size + 1;
+        var r = rr * cc;
+        return r;
+      }
 
       //Scale
       //var scale = [8/8,9/8,10/8,11/8,12/8,13/8,14/8,15/8,16/8];
@@ -495,18 +553,22 @@ export default {
       //var scale = [1, 9/8, 11/8, 3/2, 11/6 ]; //Praveen
       //var scale = [1, 25/24, 1.2,5/4,  1.4,35/24, 1.6,5/3, 1.8, 15/8 ];
       //var scale = [1, 15/14, 1.2,9/7,  1.4,3/2, 1.6,12/7, 1.8, 27/14 ];
-      //var scale = [1, 10/9, 1.2,5/4,  1.4,10/7, 1.6,5/3, 1.8 ];
+      //var scale = [1, 10/9, 5/4, 10/7, 5/3 ];
+      //var scale = [1, 1.2, 4/3, 1.5, 12/7 ];
+      var scale = [1, 10/9, 1.2, 1.25,  4/3, 10/7, 1.5, 5/3, 12/7 ];
       //var scale = [1, 1.2, 1.4, 1.6, 1.8 ];
       //var scale = [1, 7/6, 4/3, 3/2, 5/3 ];
-      var scale = [1, 1.118286868212,1.337329378409,1.495517882348,1.788449866355 ];
+      //var scale = [1, 1.118286868212,1.337329378409,1.495517882348,1.788449866355 ];
       //var scale = [1, 1.192959821662, 1.405330142814, 1.594083578813, 1.785543938867 ];
       //var scale = [1, Math.pow(2, 7/43), Math.pow(2, 14/43), Math.pow(2, 22/43), Math.pow(2, 32/43) ];
+      //var scale = [1,3,5,7,9,15,21,25,35,49]
 
       var s = scale[(col - 1) % scale.length];
       //var s = scale[Math.min(col-1,scale.length-1)];
       //var r = s * (j+this.skipX)/8;
 
       //Scale 2
+      //var scale2 = [1,3,5,7,9,15,21,25,35,49]
       //25 notes search
       //var scale2 = [1, 50/49, 25/24, 1.0638297, 1.0869565]; //small to large
       //var scale2 = [1, 46/45, 47/45, 48/45, 49/45]; //large to samall
@@ -517,13 +579,14 @@ export default {
 
       //var scale2 = [3/3, 4/3, 5/3, 6/3, 7/3, 8/3];
       //var scale2 = [6/6, 7/6, 8/6, 9/6, 10/6, 11/6, 12/6];
-      //var scale2 = [5/5, 6/5, 7/5, 8/5, 9/5];
+      var scale2 = [2, 5/3, 3/2, 4/3, 7/6, 1];
+      //var scale2 = [2, 1.8, 1.6, 1.4, 1.2, 1];
       //var scale2 = [1, 50/49, 25/24, 15/14, 10/9 ];
       //var scale2 = [1.000000000000,1.120106851735,1.336242470088,1.496734346326,1.785543938867
       //var scale2 = [1, 9/8,4/3,3/2,16/9];
       //var scale2 = [4/4, 5/4, 6/4, 7/4, 8/4];
       //var scale2 = [1, 8/7, 5/4, 10/7, 7/4];  //Praveen
-      var scale2 = [1, 1.1182868682113232, 1.1958732740440956, 1.250565519615403, 1.3373293784083966, 1.495517882348, 1.5992764622326086, 1.672418009005987, 1.788449866355 ];
+      //var scale2 = [1, 1.1182868682113232, 1.1958732740440956, 1.250565519615403, 1.3373293784083966, 1.495517882348, 1.5992764622326086, 1.672418009005987, 1.788449866355 ];
       //var scale2 = [1, 4/3, 16/9, 64/27];
       //var scale2 = [1, Math.pow(2, 11/43), Math.pow(2, 21/43), Math.pow(2, 29/43), Math.pow(2, 36/43)];
       //var scale2 = [1, 5/4, 3/2, 15/8, 2];
@@ -642,14 +705,20 @@ export default {
         return "";
       }
     },
-    normalizeValue(v) {
+    normalizeValue(v, normalizeEquivalence) {
       var equivalence = this.equivalence || 1; //3
+
+      if(equivalence == v && normalizeEquivalence){ return 1;}
 
       if (equivalence == 1) {
         return v;
       }
-      if (v >= equivalence) {
+      if (!normalizeEquivalence && v >= equivalence) {
         while (v > equivalence) {
+          v = v / equivalence;
+        }
+      }else if (normalizeEquivalence && v > equivalence) {
+        while (v >= equivalence) {
           v = v / equivalence;
         }
       } else if (v > 0 && v < 1) {
@@ -666,6 +735,40 @@ export default {
 
       return fraction + " " + normalized;
     },
+    getCustomNotes: function(customNotesInput){
+      var result = [];
+      var lines = (customNotesInput || "").split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        var v = undefined;
+        if (line.indexOf("/") !== -1) {
+          //Fração
+          var parts = line.split("/");
+          v = parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+        else if(line.indexOf("\\") !== -1){
+          //Index of edo
+          var parts = line.split("\\");
+          v = Math.pow(2, (parseFloat(parts[0]) / parseFloat(parts[1])));
+        }
+        else if(line.indexOf("c") !== -1){
+          //Cents
+          var parts = line.split("c");
+          var cent = parseFloat(parts[0]);
+          v = Math.pow(2, (cent / 1200));
+        }
+        else {
+          v = parseFloat(line);
+        }
+
+        if (v !== undefined && !isNaN(v)) {
+          result.push(v);
+        }
+      }
+
+      return result;
+    }
   },
 };
 </script>
