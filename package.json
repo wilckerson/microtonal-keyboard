@@ -5,6 +5,7 @@
   "author": "wilckerson.ganda <wilckerson@gmail.com>",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -15,6 +16,7 @@
     "core-js": "^3.6.5",
     "hchs-vue-charts": "^1.2.8",
     "howler": "^2.1.1",
+    "moment-of-symmetry": "^0.3.1",
     "pizzicato": "^0.6.4",
     "vue": "^2.6.11"
   },
