@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div>
     <h1>MOS Explorer</h1>
     <div>{{msg}}</div>
@@ -22,4 +22,4 @@ export default {
 
 <style>
 
-</style>
+</style> -->
