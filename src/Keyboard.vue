@@ -8,6 +8,7 @@
         <option value="wtg">Regular temperament</option>
         <option value="gtr">Guitar strings</option>
         <option value="code">Custom notes (code edit only)</option>
+        <option value="custom">Custom notes</option>
       </select>
 
 
@@ -88,6 +89,11 @@
         <input type="checkbox" v-model="usePrimeFilter" />
         <input type="text" v-model="primeFilter" />
       </div>
+
+      <span v-if="mode == 'custom'">
+        Repetition count:
+        <input type="number" step="1" min="1" v-model="repetitionCount" />
+      </span>
 
       <p v-if="mode != 'wtg'">
         <input type="checkbox" v-model="normalize" />
@@ -173,7 +179,7 @@
         "c)") :
         "None" }}
     </p>
-    <div v-if="enableCustomNotes" style="text-align: left">
+    <div v-if="enableCustomNotes || mode === 'custom'" style="text-align: left">
       <label>Custom Notes:</label>
       <textarea v-model="customNotesInput" rows="5" />
       <!-- <pre>{{customNotes}}</pre> -->
@@ -279,6 +285,7 @@ export default {
       normalize: false,
       repeatScale: false,
       repeatScaleValue: 2,
+      repetitionCount: 10,
       applySort: false,
       repeatScaleHarm: false,
       repeatScaleHarmValue: 1,
@@ -2018,6 +2025,23 @@ export default {
         }
       }
 
+      if (this.mode == "custom" && this.customNotes.length > 0) {
+
+        const periodRatio = this.customNotes[this.customNotes.length - 1];
+        const resultNotes = [1];
+        for (var r = 1; r <= this.repetitionCount; r++) {
+          for (let i = 0; i < this.customNotes.length; i++) {
+            const element = this.customNotes[i];
+            resultNotes.push(element * Math.pow(periodRatio, r - 1));
+          }
+        }
+        const v = resultNotes[idx - 1];
+        if (this.normalize) {
+          return this.normalizeValue(v)
+        } else {
+          return v;
+        }
+      }
       // if(true){
       //   var v = Math.log(Math.pow(this.base,idx));
       //   return v;
