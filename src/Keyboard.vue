@@ -1,5 +1,10 @@
 <template>
   <div>
+    <p>Audio sample:
+      <select @change="onChangeAudioSample">
+        <option v-for="audioSample in availableAudioSamples" :value="audioSample">{{ audioSample }}</option>
+      </select>
+    </p>
     <p>
       Mode:
       <select v-model="mode">
@@ -265,6 +270,27 @@ Array.prototype.unique = function () {
   return resultArray;
 };
 
+window.audioSamples = [
+  "./audio-samples/guitar-note_G.wav",
+  './audio-samples/sine.wav',
+  './audio-samples/flute.wav',
+  './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav',
+  './audio-samples/violaoMicrotonal2.wav',
+  './audio-samples/undertones_1000Hz.wav',
+  './audio-samples/undertones_100Hz_normalized.wav',
+  './audio-samples/phi_partials.wav',
+  './audio-samples/tampaPanela2.wav', //132hz
+  './audio-samples/piano-a_A_major.wav',
+  './audio-samples/clarinete_F.mp3',
+  './audio-samples/HangDrum_C03.wav', ///Hang!!
+  './audio-samples/163[kb]shamisen-pluck.wav.mp3', //Muito bom
+  './audio-samples/869[kb]tinshaw.aif.mp3', // Legal
+  './audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav', //Marimba
+  './audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav', //Marimba,
+  './audio-samples/F2_MelloKalimbaTape_SP_01_376.mp3', //Kalimba
+]
+window.selectedAudioSample = window.audioSamples[0];
+
 export default {
   components: {
     AudioKey,
@@ -320,6 +346,7 @@ export default {
       fixedStepValue: 0,
       usePrimeFilter: false,
       primeFilter: "",
+      availableAudioSamples: window.audioSamples || [],
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -2271,6 +2298,10 @@ export default {
     formantPartials(v) {
       var n = 2 / (v - 1);
       return [(n + 1) / n, (n + 2) / (n + 1)];
+    },
+    onChangeAudioSample(elm) {
+      window.selectedAudioSample = elm.target.value;
+      window.audioCache = undefined;
     }
   },
   watch: {

@@ -1,24 +1,19 @@
 <template>
-  <div
-    class="key"
-    :class="{ active: active }"
-    @mousedown="mouseDown"
-    @mouseup="mouseUp"
-    @touchstart="mouseDown"
-    @touchend="mouseUp"
-    :style="{ 'background-color': color }"
-  >
+  <div class="key" :class="{ active: active }" @mousedown="mouseDown" @mouseup="mouseUp" @touchstart="mouseDown"
+    @touchend="mouseUp" :style="{ 'background-color': color }">
     <div class="key-label">{{ keyName }}</div>
     <div class="key-tone">
-      <div v-if="text">{{text}}</div>
-      <small>{{parseFloat(freq).toFixed(2) + "Hz" }}</small>
-      </div>
+      <div v-if="text">{{ text }}</div>
+      <small>{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>
+    </div>
   </div>
 </template>
 
 <script>
 const AUDIO_CACHE_SIZE = 6;
- import {Howl} from "howler";
+import { Howl } from "howler";
+
+
 
 export default {
   props: ["keyName", "freq", "text", "color", "idx"],
@@ -56,28 +51,28 @@ export default {
     //this.soundFreq = 622.25;
 
     // if (!window["audioCache"]) {
-      //   window["audioCache"] = {};
+    //   window["audioCache"] = {};
     // }
 
     // if (!window.audioCache[this.freq]) {
-      //   if (!this.wave) {
-        //this.audioFile = "./audio-samples/guitar-note_G.wav";
-        //this.audioFile = './audio-samples/sine.wav';
-        //this.audioFile = './audio-samples/flute.wav';
-        this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
-        //this.audioFile = './audio-samples/violaoMicrotonal2.wav';
-        //this.audioFile = './audio-samples/undertones_1000Hz.wav';
-        //this.audioFile = './audio-samples/undertones_100Hz_normalized.wav';
-        //this.audioFile = './audio-samples/phi_partials.wav';
-        //this.audioFile = './audio-samples/tampaPanela2.wav'; //132hz
-        //this.audioFile = './audio-samples/piano-a_A_major.wav';
-        //this.audioFile = './audio-samples/clarinete_F.mp3';
-        //this.audioFile = './audio-samples/HangDrum_C03.wav'; ///Hang!!!
-        //this.audioFile = './audio-samples/163[kb]shamisen-pluck.wav.mp3'; //Muito bom
-        //this.audioFile = './audio-samples/869[kb]tinshaw.aif.mp3'; // Legal
-        //this.audioFile = './audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav'; //Marimba1
-        //this.audioFile = './audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav'; //Marimba1
-        //this.audioFile = './audio-samples/F2_MelloKalimbaTape_SP_01_376.mp3'; //Kalimba
+    //   if (!this.wave) {
+    //this.audioFile = "./audio-samples/guitar-note_G.wav";
+    //this.audioFile = './audio-samples/sine.wav';
+    //this.audioFile = './audio-samples/flute.wav';
+    //this.audioFile = './audio-samples/Alesis-Fusion-Clean-Guitar-C3.wav';
+    //this.audioFile = './audio-samples/violaoMicrotonal2.wav';
+    //this.audioFile = './audio-samples/undertones_1000Hz.wav';
+    //this.audioFile = './audio-samples/undertones_100Hz_normalized.wav';
+    //this.audioFile = './audio-samples/phi_partials.wav';
+    //this.audioFile = './audio-samples/tampaPanela2.wav'; //132hz
+    //this.audioFile = './audio-samples/piano-a_A_major.wav';
+    //this.audioFile = './audio-samples/clarinete_F.mp3';
+    //this.audioFile = './audio-samples/HangDrum_C03.wav'; ///Hang!!!
+    //this.audioFile = './audio-samples/163[kb]shamisen-pluck.wav.mp3'; //Muito bom
+    //this.audioFile = './audio-samples/869[kb]tinshaw.aif.mp3'; // Legal
+    //this.audioFile = './audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav'; //Marimba1
+    //this.audioFile = './audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav'; //Marimba1
+    //this.audioFile = './audio-samples/F2_MelloKalimbaTape_SP_01_376.mp3'; //Kalimba
 
 
     //     ///Howler
@@ -160,7 +155,6 @@ export default {
     //window.addEventListener("click", this.playSoundNote);
     // window.addEventListener("click", this.start);
 
-this.initAudioCache();
 
     window.addEventListener("keydown", this.keyDown);
     window.addEventListener("keyup", this.keyUp);
@@ -184,14 +178,16 @@ this.initAudioCache();
     //     this.sound.stop();
     //   }
     // },
-    initAudioCache(){
-       //Get sound from cache
+    initAudioCache() {
+      //Get sound from cache
       if (!window["audioCache"]) {
+        const selectedAudioSampleFile = window.selectedAudioSample;
+        console.log("Initializing audio cache with audioFile: " + selectedAudioSampleFile)
         window["audioCache"] = [];
         for (let index = 0; index < AUDIO_CACHE_SIZE; index++) {
           var audioCacheItem = {
             inUse: false,
-            sound: new Howl({ src: [this.audioFile] }),
+            sound: new Howl({ src: [selectedAudioSampleFile] }),
           };
           window["audioCache"].push(audioCacheItem);
         }
@@ -207,6 +203,8 @@ this.initAudioCache();
       }
     },
     playSoundNote() {
+      this.initAudioCache();
+
       var rate = parseFloat(this.freq) / this.soundFreq;
 
 
@@ -374,7 +372,7 @@ this.initAudioCache();
     keyDown: function (e) {
 
       //Ignore if is typing in any field
-      if(document.activeElement !== document.body){return;}
+      if (document.activeElement !== document.body) { return; }
 
       if (this.isIgnoredKey(e.key)) {
         return;
@@ -481,11 +479,16 @@ this.initAudioCache();
   min-height: 57px;
   text-align: center;
 
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Chrome/Safari/Opera */
-  -khtml-user-select: none; /* Konqueror */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
   user-select: none;
 }
 
@@ -501,11 +504,16 @@ this.initAudioCache();
   /* font-weight: bold; */
   text-transform: uppercase;
 
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Chrome/Safari/Opera */
-  -khtml-user-select: none; /* Konqueror */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
   user-select: none;
 }
 
@@ -516,11 +524,16 @@ this.initAudioCache();
   /* padding: 10px 0px; */
   font-size: 12px;
 
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Chrome/Safari/Opera */
-  -khtml-user-select: none; /* Konqueror */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
   user-select: none;
 }
 </style>
