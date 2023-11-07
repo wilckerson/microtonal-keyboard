@@ -12,7 +12,7 @@
         <option value="harm">Harmonics</option>
         <option value="wtg">Regular temperament</option>
         <option value="gtr">Guitar strings</option>
-        <option value="code">Custom notes (code edit only)</option>
+        <option value="code">Code edit only</option>
         <option value="custom">Custom notes</option>
       </select>
 
@@ -95,10 +95,14 @@
         <input type="text" v-model="primeFilter" />
       </div>
 
-      <span v-if="mode == 'custom'">
-        Repetition count:
-        <input type="number" step="1" min="1" v-model="repetitionCount" />
-      </span>
+      <div v-if="mode == 'custom'">
+        <span>
+          Repetition count:
+          <input type="number" step="1" min="1" v-model="repetitionCount" />
+        </span>
+        <span> <input type="checkbox" v-model="applySort" />
+          Sort</span>
+      </div>
 
       <p v-if="mode != 'wtg'">
         <input type="checkbox" v-model="normalize" />
@@ -2055,19 +2059,23 @@ export default {
       if (this.mode == "custom" && this.customNotes.length > 0) {
 
         const periodRatio = this.customNotes[this.customNotes.length - 1];
-        const resultNotes = [1];
+        let resultNotes = [1];
         for (var r = 1; r <= this.repetitionCount; r++) {
           for (let i = 0; i < this.customNotes.length; i++) {
             const element = this.customNotes[i];
-            resultNotes.push(element * Math.pow(periodRatio, r - 1));
+            let customRatio = element * Math.pow(periodRatio, r - 1);
+            if (this.normalize) {
+              customRatio = this.normalizeValue(customRatio);
+            }
+            resultNotes.push(customRatio);
           }
         }
-        const v = resultNotes[idx - 1];
-        if (this.normalize) {
-          return this.normalizeValue(v)
-        } else {
-          return v;
+        if (this.applySort) {
+          resultNotes = resultNotes.unique();
+          resultNotes = resultNotes.sort((a, b) => a - b);
         }
+        const v = resultNotes[idx - 1];
+        return v;
       }
       // if(true){
       //   var v = Math.log(Math.pow(this.base,idx));
