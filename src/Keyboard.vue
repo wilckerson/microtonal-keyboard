@@ -97,11 +97,19 @@
 
       <div v-if="mode == 'custom'">
         <span>
-          Repetition count:
-          <input type="number" step="1" min="1" v-model="repetitionCount" />
+          Elements count:
+          <input type="number" step="1" min="1" v-model="elementsCount" />
         </span>
-        <span> <input type="checkbox" v-model="applySort" />
-          Sort</span>
+        |
+        <span>
+          <input type="checkbox" v-model="applySort" />
+          Sort
+        </span>
+        |
+        <span>
+          Repeat
+          <input type="number" v-model="repeatScaleValue" step="0.0001" />
+        </span>
       </div>
 
       <p v-if="mode != 'wtg'">
@@ -315,7 +323,7 @@ export default {
       normalize: false,
       repeatScale: false,
       repeatScaleValue: 2,
-      repetitionCount: 10,
+      elementsCount: 5,
       applySort: false,
       repeatScaleHarm: false,
       repeatScaleHarmValue: 1,
@@ -2060,19 +2068,31 @@ export default {
 
         const periodRatio = this.customNotes[this.customNotes.length - 1];
         let resultNotes = [1];
-        for (var r = 1; r <= this.repetitionCount; r++) {
-          for (let i = 0; i < this.customNotes.length; i++) {
-            const element = this.customNotes[i];
-            let customRatio = element * Math.pow(periodRatio, r - 1);
-            if (this.normalize) {
-              customRatio = this.normalizeValue(customRatio);
-            }
-            resultNotes.push(customRatio);
+        for (var r = 1; r <= this.elementsCount; r++) {
+          //for (let i = 0; i < this.customNotes.length; i++) {
+          const element = this.customNotes[(r - 1) % this.customNotes.length];
+          const periodsCount = Math.floor((r - 1) / this.customNotes.length);
+          let customRatio = element * Math.pow(periodRatio, periodsCount);
+          if (this.normalize) {
+            customRatio = this.normalizeValue(customRatio);
           }
+          resultNotes.push(customRatio);
+          //}
         }
         if (this.applySort) {
           resultNotes = resultNotes.unique();
           resultNotes = resultNotes.sort((a, b) => a - b);
+        }
+
+
+        if (this.repeatScaleValue !== 0) {
+          const initialLength = resultNotes.length;
+          for (let repeatIndex = 1; repeatIndex <= 4; repeatIndex++) {
+            for (let l = 0; l < initialLength; l++) {
+              const repeatedElement = resultNotes[l] * Math.pow(this.repeatScaleValue, repeatIndex);
+              resultNotes.push(repeatedElement);
+            }
+          }
         }
         const v = resultNotes[idx - 1];
         return v;
