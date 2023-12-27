@@ -12,6 +12,7 @@
         <option value="harm">Harmonics</option>
         <option value="wtg">Regular temperament</option>
         <option value="gtr">Guitar strings</option>
+        <option value="dynamic-mos">Dynamic MOS</option>
         <option value="code">Code edit only</option>
         <option value="custom">Custom notes</option>
       </select>
@@ -80,6 +81,16 @@
         Sort
       </span>
 
+      <div v-if="mode == 'dynamic-mos'">
+        Mode:
+        <input type="text" placeholder="s L s L s" v-model="mosMode" />
+        <input type="checkbox" v-model="repeatScale" />
+        Repeat Period:
+        <input type="number" v-model="repeatScaleValue" step="0.0001" />
+        s/L ratio:
+        <input type="number" v-model="mosRatio" step="0.001" />
+      </div>
+
       <div v-if="mode == 'harm'">
         Harmonic number:
         <input type="number" step="1" v-model="eqt" />
@@ -116,6 +127,7 @@
         <input type="checkbox" v-model="normalize" />
         <span>Equivalence Period:</span>
         <input type="number" v-model="equivalence" step="0.0001" />
+      </p>
 
       <div v-if="mode == 'gtr'">
         Shift by:
@@ -138,10 +150,9 @@
         Fixed step:
         <input type="number" v-model="fixedStepValue" step="0.0001" />
       </div>
-      </p>
       <span v-if="mode == 'code' || mode == 'harm'">
         Test:
-        <input type="number" :value="testValue" @input="testValue = parseFloat($event.target.value)" :step="1 / 10000"
+        <input type="number" :value="testValue" @input="testValue = parseFloat($event.target.value)" :step="1 / 1000"
           style="width: 70px" />
       </span>
       <span v-if="mode == 'code'">
@@ -309,7 +320,7 @@ export default {
   },
   data() {
     return {
-      mode: "eqt",
+      mode: "dynamic-mos",
       eqt: 12, //12,
       base: 2, //1.4950347693089112,//Math.pow(5,1/4),
       ratioDiff: [],
@@ -344,6 +355,8 @@ export default {
       wtg: false,
       wtgMode: "alternated",
       harmMode: "over",
+      mosMode: "s L s L s",
+      mosRatio: 1.5,
       harmQtd: -1,
       shiftCount: 3,
       sDisplay: undefined,
@@ -1831,6 +1844,39 @@ export default {
       //   }
       // }
 
+      //Dynamic MOS
+
+      if (this.mode === 'dynamic-mos') {
+        var parts = this.mosMode.split('');
+        var s_count = parts.filter(i => i === 's').length || 0;
+        var L_count = parts.filter(i => i === 'L').length || 0;
+        var periodInCents = this.ratioToCents(this.repeatScaleValue || 2);
+        var mosRatio = parseFloat(this.mosRatio) || 2;
+
+        //Formula
+        //(s_count * s_value) + (l_count * l_value) = periodInCents
+        //where l_value = s_value * mosRatio
+        var s_value = periodInCents / (s_count + (L_count * mosRatio));
+        var l_value = s_value * mosRatio;
+
+        ratiosArr = [1];
+        var currentValue = 0;
+        for (let p = 0; p < parts.length - 1; p++) {
+          const part = parts[p];
+          if (part === 's') {
+            currentValue += s_value;
+            var r = this.centsToRatio(currentValue);
+            ratiosArr.push(r);
+          }
+          else if (part === 'L') {
+            currentValue += l_value;
+            var r = this.centsToRatio(currentValue);
+            ratiosArr.push(r);
+          }
+        }
+      }
+
+
 
 
       if (this.repeatScaleHarm) {
@@ -1964,8 +2010,9 @@ export default {
         idx = mapSum + 1;
       }
 
+
       //AQUI!
-      if (this.mode == "wtg" || this.mode == "code" || this.mode == "gtr") {
+      if (this.mode == "wtg" || this.mode == "code" || this.mode == "gtr" || this.mode == "dynamic-mos") {
         return ratiosArr[idx - 1] || 0;
       }
 
