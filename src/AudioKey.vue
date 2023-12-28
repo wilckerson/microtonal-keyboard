@@ -197,7 +197,7 @@ export default {
       if (this.audioCacheIdx != -1) {
         var sound = window["audioCache"][this.audioCacheIdx].sound;
         //sound.fade(1, 0, 500);
-        sound.fade(1, 0, 1618);
+        sound.fade(1, 0, 3000);
 
         window["audioCache"][this.audioCacheIdx].inUse = false;
       }

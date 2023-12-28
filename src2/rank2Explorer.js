@@ -9,17 +9,18 @@ import * as fs from "fs";
 //---------------------------
 //Parameters:
 const period = 2;
-const numberOfNotes = 12;
+const numberOfNotes = 17;
 const targetRatios = [
   //6 / 5, 5 / 4, 4 / 3, 3 / 2, 8 / 5, 5 / 3 //diamond 5-limit
-    8/7,7/6,6/5,5/4,4/3,7/5,10/7,3/2,8/5,5/3,12/7,7/4 //diamond 7-limit
+  //8 / 7, 7 / 6, 6 / 5, 5 / 4, 4 / 3, 7 / 5, 10 / 7, 3 / 2, 8 / 5, 5 / 3, 12 / 7, 7 / 4 //diamond 7-limit
+  8 / 7, 10 / 7, 12 / 7
 ];
 //const calculationMode = CALCULATION_MODES.includeMostElements;
 const generatorMin = 1;//1;
 const generatorMax = 2//2;
 const generatorIncrement = 1 / 1000;
 const maxToleranceInCents = 7;//16;
-const minMatchCount = Math.ceil(numberOfNotes * 0.5);
+const minMatchCount = 3;// Math.ceil(numberOfNotes * 0.5);
 mainComputation();
 
 //--------------------------
