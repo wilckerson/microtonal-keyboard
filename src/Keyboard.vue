@@ -219,6 +219,18 @@
     <div v-if="showChart">
       <input type="checkbox" v-model="inCents" />In cents
     </div>
+    <p v-if="showChart" style="text-align: left;">
+      <input type="checkbox" v-model="displayRotationData" />
+      Display Rotation Data:
+    <table v-if="displayRotationData" class="rotation-data">
+      <tr v-for="(rotationArray, ridx) in rotationData" v-bind:key="'rotation_' + ridx">
+        <td>1</td>
+        <td v-for="(ratio, cidx) in rotationArray" v-bind:key="'rotation_' + ridx + '_' + cidx">
+          {{ parseFloat(ratio).toFixed(4) }}
+        </td>
+      </tr>
+    </table>
+    </p>
 
     <table v-if="showChart" width="100%">
       <tr style="vertical-align: top;">
@@ -320,7 +332,7 @@ export default {
   },
   data() {
     return {
-      mode: "dynamic-mos",
+      mode: "eqt",
       eqt: 12, //12,
       base: 2, //1.4950347693089112,//Math.pow(5,1/4),
       ratioDiff: [],
@@ -370,6 +382,7 @@ export default {
       customNotesInput: "",
       fixedStepValue: 0,
       usePrimeFilter: false,
+      displayRotationData: false,
       primeFilter: "",
       availableAudioSamples: window.audioSamples || [],
       keys: [
@@ -480,6 +493,23 @@ export default {
       }
 
       return data;
+    },
+
+    mainScale() {
+      var mainScale = [];
+      for (let i = 1; i <= 36; i++) {
+        const item = this.ratio(i);
+        if ((Math.abs(item - this.repeatScaleValue) < 0.0001) || item === 0) {
+          break;
+        }
+        mainScale.push(item);
+      }
+      mainScale.push(this.repeatScaleValue);
+      return mainScale;
+    },
+    rotationData() {
+      return computeRotation(this.mainScale);
+
     },
 
     nEqt: function () {
@@ -2536,10 +2566,43 @@ function getMaxPrimeFactor(num) {
   return maxPrime;
 }
 
+function computeRotation(scaleArray) {
+  var result = [];
+  if (scaleArray[0] !== 1) {
+    scaleArray = [1, ...scaleArray];
+  }
+  var scaleLength = scaleArray.length - 1;
+  var period = scaleArray[scaleArray.length - 1];
+  for (let i = 0; i < scaleLength; i++) {
+    const tmpRoot = scaleArray[i];
+    var rotationArray = [];
+    for (let j = 0; j < scaleLength; j++) {
+      var idx = i + j + 1;
+      var modIdx = idx % scaleLength;
+      var idxPow = Math.floor(idx / scaleLength);
+      const item = scaleArray[modIdx];
+      const fixedItem = Math.pow(period, idxPow) * item;
+      rotationArray.push(fixedItem / tmpRoot);
+    }
+    result.push(rotationArray);
+  }
+  return result;
+}
+
 </script>
 
 <style scoped>
 .keyboard {
   width: 100%;
+}
+
+table.rotation-data {
+  border-spacing: 0;
+}
+
+table.rotation-data td {
+  border: 1px solid lightgray;
+  padding: 2px;
+  min-width: 20px;
 }
 </style>
