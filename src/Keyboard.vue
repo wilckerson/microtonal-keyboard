@@ -323,6 +323,7 @@ window.audioSamples = [
   './audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav', //Marimba
   './audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav', //Marimba,
   './audio-samples/F2_MelloKalimbaTape_SP_01_376.mp3', //Kalimba
+  './audio-samples/G4_.mp3',
 ]
 window.selectedAudioSample = window.audioSamples[0];
 
@@ -508,7 +509,7 @@ export default {
       return mainScale;
     },
     rotationData() {
-      return computeRotation(this.mainScale);
+      return computeRotations(this.mainScale);
 
     },
 
@@ -1875,39 +1876,13 @@ export default {
       // }
 
       //Dynamic MOS
-
       if (this.mode === 'dynamic-mos') {
-        var parts = this.mosMode.split('');
-        var s_count = parts.filter(i => i === 's').length || 0;
-        var L_count = parts.filter(i => i === 'L').length || 0;
-        var periodInCents = this.ratioToCents(this.repeatScaleValue || 2);
-        var mosRatio = parseFloat(this.mosRatio) || 2;
-
-        //Formula
-        //(s_count * s_value) + (l_count * l_value) = periodInCents
-        //where l_value = s_value * mosRatio
-        var s_value = periodInCents / (s_count + (L_count * mosRatio));
-        var l_value = s_value * mosRatio;
-
-        ratiosArr = [1];
-        var currentValue = 0;
-        for (let p = 0; p < parts.length - 1; p++) {
-          const part = parts[p];
-          if (part === 's') {
-            currentValue += s_value;
-            var r = this.centsToRatio(currentValue);
-            ratiosArr.push(r);
-          }
-          else if (part === 'L') {
-            currentValue += l_value;
-            var r = this.centsToRatio(currentValue);
-            ratiosArr.push(r);
-          }
-        }
+        ratiosArr = dynamicMos(
+          this.mosMode,
+          this.repeatScaleValue || 2,
+          parseFloat(this.mosRatio) || 2
+        );
       }
-
-
-
 
       if (this.repeatScaleHarm) {
         var harmArr = []
@@ -2566,7 +2541,7 @@ function getMaxPrimeFactor(num) {
   return maxPrime;
 }
 
-function computeRotation(scaleArray) {
+function computeRotations(scaleArray) {
   var result = [];
   if (scaleArray[0] !== 1) {
     scaleArray = [1, ...scaleArray];
@@ -2587,6 +2562,46 @@ function computeRotation(scaleArray) {
     result.push(rotationArray);
   }
   return result;
+}
+
+function dynamicMos(mosMode, period, stepRatio) {
+  var parts = mosMode.split('');
+  var s_count = parts.filter(i => i === 's').length || 0;
+  var L_count = parts.filter(i => i === 'L').length || 0;
+  var periodInCents = rToCents(period || 2);
+
+  //Formula
+  //(s_count * s_value) + (l_count * l_value) = periodInCents
+  //where l_value = s_value * stepRatio
+  var s_value = periodInCents / (s_count + (L_count * stepRatio));
+  var l_value = s_value * stepRatio;
+
+  var ratiosArr = [1];
+  var currentValue = 0;
+  for (let p = 0; p < parts.length - 1; p++) {
+    const part = parts[p];
+    if (part === 's') {
+      currentValue += s_value;
+      var r = cToRatio(currentValue);
+      ratiosArr.push(r);
+    }
+    else if (part === 'L') {
+      currentValue += l_value;
+      var r = cToRatio(currentValue);
+      ratiosArr.push(r);
+    }
+  }
+  return ratiosArr;
+}
+
+function rToCents(ratio) {
+  var cents = 1200 * Math.log2(parseFloat(ratio));
+  return cents;
+}
+
+function cToRatio(cents) {
+  var ratio = Math.pow(2, cents / 1200);
+  return ratio;
 }
 
 </script>
