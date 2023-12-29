@@ -24,6 +24,11 @@ export function ratioToCents(ratio) {
   return Math.log2(ratio) * 1200;
 }
 
+export function centsToRatio(cents) {
+  var ratio = Math.pow(2, cents / 1200);
+  return ratio;
+}
+
 export function ratiosDiffInCents(ratio1, ratio2) {
   return Math.abs(ratioToCents(ratio1) - ratioToCents(ratio2));
 }
@@ -36,7 +41,7 @@ export function getClosestRatioFromScale(targetRatio, scale) {
   const diffMap = scale.map((scaleRatio, scaleIndex) => ({
     scaleIndex,
     diffInCents: ratiosDiffInCents(scaleRatio, targetRatio)
-  })).sort((a,b) => a.diffInCents - b.diffInCents);
+  })).sort((a, b) => a.diffInCents - b.diffInCents);
 
   return diffMap[0];
 }
@@ -48,3 +53,52 @@ function scaleFindIndexByReducedRatio(scale, ratio) {
     isEqualRatio(reducedRatio, reduceRatio(scaleRatio, period))
   );
 }
+
+
+export function computeRotations(scaleArray) {
+  var result = [];
+  if (scaleArray[0] !== 1) {
+    scaleArray = [1, ...scaleArray];
+  }
+  var scaleLength = scaleArray.length - 1;
+  var period = scaleArray[scaleArray.length - 1];
+  for (let i = 0; i < scaleLength; i++) {
+    const tmpRoot = scaleArray[i];
+    var rotationArray = [];
+    for (let j = 0; j < scaleLength; j++) {
+      var idx = i + j + 1;
+      var modIdx = idx % scaleLength;
+      var idxPow = Math.floor(idx / scaleLength);
+      const item = scaleArray[modIdx];
+      const fixedItem = Math.pow(period, idxPow) * item;
+      rotationArray.push(fixedItem / tmpRoot);
+    }
+    result.push(rotationArray);
+  }
+  return result;
+}
+
+
+export function unique(array) {
+  var minValue = 0.00000001//0.01;
+  var resultArray = [];
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index];
+    var contains = false;
+
+    if (resultArray.length > 0) {
+      for (let j = 0; j < resultArray.length; j++) {
+        const element2 = resultArray[j];
+        if (Math.abs(element2 - element) < minValue) {
+          contains = true;
+          break;
+        }
+      }
+    }
+
+    if (!contains) {
+      resultArray.push(element);
+    }
+  }
+  return resultArray;
+};
