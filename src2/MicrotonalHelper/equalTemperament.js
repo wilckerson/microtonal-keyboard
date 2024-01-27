@@ -20,6 +20,7 @@ export function getEqualTemperamentScale(numberOfDivisions, period = 2) {
 export function getEqualTemperamentSubsets(
   numberOfNotes,
   numberOfDivisions,
+  minDistanceBetweenNotes = 1,
   period = 2
 ) {
   if (numberOfNotes > numberOfDivisions) {
@@ -28,9 +29,17 @@ export function getEqualTemperamentSubsets(
     );
   }
 
+  if (minDistanceBetweenNotes < 1) {
+    throw Error("The minDistanceBetweenNotes must be greater than 1");
+  }
+
   if (numberOfNotes === numberOfDivisions) {
     //For this scenario, the full scale is the only result
-    return getEqualTemperamentScale(numberOfDivisions, period);
+    return {
+      initialNumberOfCombinations: numberOfDivisions,
+      numberOfCombinations: numberOfDivisions,
+      result: [...new Array(numberOfDivisions).keys()]
+    };
   }
 
   //N0 -> 0 to (numberOfDivisions - 1 - (numberOfNotes - 1))
@@ -48,255 +57,100 @@ export function getEqualTemperamentSubsets(
   //     result.push(noteValue);
   //     lastNoteIndex = randomNoteIndex;
   // }
-  const result = [];
-  recursive(0, 1, [0], numberOfNotes, numberOfDivisions, period, result);
+  const bytesPerElement = Uint8Array.BYTES_PER_ELEMENT;
+  const MAX_VALUE = Math.pow(2, bytesPerElement * 8) - 1;
+  if (numberOfDivisions >= MAX_VALUE) {
+    throw Error(`The number of divisions must be less than ${MAX_VALUE}`);
+  }
+  const initialNumberOfCombinations = getNumberOfCombinations(
+    numberOfDivisions - 1,
+    numberOfNotes - 1
+  );
+  const arrayLength = initialNumberOfCombinations * numberOfNotes;
+  const MAX_ARRAY_LENGTH = Math.pow(2, 32) - 1;
+  if (arrayLength > MAX_ARRAY_LENGTH) {
+    throw Error(
+      `Too much combinations to calculate: ${initialNumberOfCombinations.toLocaleString()}`
+    );
+  }
+  const result = new Uint8Array(arrayLength);
+  //const result = [];
+  const data = recursive(
+    0,
+    1,
+    numberOfNotes,
+    numberOfDivisions,
+    [0],
+    result,
+    0,
+    minDistanceBetweenNotes
+  );
 
-  return result;
+  return {
+    initialNumberOfCombinations,
+    numberOfCombinations: data[1],
+    result
+  };
 }
 
-function recursive(
+export function recursive(
   lastNoteIndex,
   level,
-  previousResult,
   numberOfNotes,
   numberOfDivisions,
-  period,
-  outputArray
+  refArray,
+  outputArray,
+  outputIndex,
+  minDistanceBetweenNotes
 ) {
-  const rangeMin = lastNoteIndex + 1;
-  const rangeMax = numberOfDivisions - 1 - (numberOfNotes - (level + 1));
-  for (let index = rangeMin; index <= rangeMax; index++) {
-    //const noteValue = getEqualTemperamentNote(index, numberOfDivisions, period);
-    //previousResult.push(noteValue);
-    const tmpResult = [...previousResult, index];
-
-    const nextLevel = level + 1;
-    if (nextLevel < numberOfNotes) {
-      recursive(
-        index,
-        nextLevel,
-        tmpResult,
-        numberOfNotes,
-        numberOfDivisions,
-        period,
-        outputArray
-      );
-    } else {
-      outputArray.push(tmpResult);
-    }
-  }
-
-  return previousResult;
-}
-
-export function recursive2(
-  lastNoteIndex,
-  level,
-  numberOfNotes,
-  numberOfDivisions
-) {
-  const outputObj = {};
   let size = 0;
   const rangeMin = lastNoteIndex + 1;
   const rangeMax = numberOfDivisions - 1 - (numberOfNotes - (level + 1));
   for (let index = rangeMin; index <= rangeMax; index++) {
-    //const noteValue = getEqualTemperamentNote(index, numberOfDivisions, period);
-    //previousResult.push(noteValue);
-    //const tmpResult = [...previousResult, index];
+    const lastRefIndex = refArray[refArray.length - 1];
+    const indexDistance = index - lastRefIndex;
+    if (indexDistance < minDistanceBetweenNotes) continue;
 
-    const nextLevel = level + 1;
-    if (nextLevel < numberOfNotes) {
-      const tmpResult = recursive2(
-        index,
-        nextLevel,
-        numberOfNotes,
-        numberOfDivisions
-      );
-      outputObj[index] = tmpResult[0];
-      size += tmpResult[1];
-    } else {
-      outputObj[index] = true;
-      size++;
-    }
-  }
-
-  return [outputObj, size];
-}
-
-export function recursive3(
-  lastNoteIndex,
-  level,
-  numberOfNotes,
-  numberOfDivisions
-) {
-  //[item, children?]
-  const result = [];
-  let size = 0;
-  const rangeMin = lastNoteIndex + 1;
-  const rangeMax = numberOfDivisions - 1 - (numberOfNotes - (level + 1));
-  for (let index = rangeMin; index <= rangeMax; index++) {
     const nextLevel = level + 1;
     const isLeaf = nextLevel === numberOfNotes;
     if (isLeaf) {
-      result.push([index]);
+      for (let refIndex = 0; refIndex < refArray.length; refIndex++) {
+        outputArray[outputIndex] = refArray[refIndex];
+        outputIndex++;
+      }
+      outputArray[outputIndex] = index;
+      outputIndex++;
       size++;
     } else {
-      const tmpResult = recursive3(
+      refArray.push(index);
+      const tmpResult = recursive(
         index,
         nextLevel,
         numberOfNotes,
-        numberOfDivisions
+        numberOfDivisions,
+        refArray,
+        outputArray,
+        outputIndex,
+        minDistanceBetweenNotes
       );
-      result.push([index, tmpResult[0]]);
+      refArray.pop();
+      outputIndex = tmpResult[0];
       size += tmpResult[1];
     }
   }
 
-  return [result, size];
+  return [outputIndex, size];
 }
 
-export function recursive4(
-    lastNoteIndex,
-    level,
-    numberOfNotes,
-    numberOfDivisions,
-    refArray,
-    outputArray
-  ) {
-    //let size = 0;
-    const rangeMin = lastNoteIndex + 1;
-    const rangeMax = numberOfDivisions - 1 - (numberOfNotes - (level + 1));
-    for (let index = rangeMin; index <= rangeMax; index++) {
-      const nextLevel = level + 1;
-      const isLeaf = nextLevel === numberOfNotes;
-      if (isLeaf) {
-        outputArray.push(...refArray)
-        outputArray.push(index)
-        //size++;
-      } else {
-        refArray.push(index);
-        const tmpSize = recursive4(
-          index,
-          nextLevel,
-          numberOfNotes,
-          numberOfDivisions,
-          refArray,
-          outputArray
-        );
-        refArray.pop();
-        //size += tmpSize;
-      }
-    }
-  
-    //return size;
-  }
-
-
-  export function recursive5(
-    lastNoteIndex,
-    level,
-    numberOfNotes,
-    numberOfDivisions,
-    refArray,
-    outputArray,
-    outputIndex
-  ) {
-    //let size = 0;
-    const rangeMin = lastNoteIndex + 1;
-    const rangeMax = numberOfDivisions - 1 - (numberOfNotes - (level + 1));
-    for (let index = rangeMin; index <= rangeMax; index++) {
-      const nextLevel = level + 1;
-      const isLeaf = nextLevel === numberOfNotes;
-      if (isLeaf) {
-        for (let refIndex = 0; refIndex < refArray.length; refIndex++) {
-            outputArray[outputIndex] = refArray[refIndex];
-            outputIndex++;            
-        }
-        outputArray[outputIndex] = index;
-        outputIndex++;
-        //size++;
-      } else {
-        refArray.push(index);
-        const tmpOutputIndex = recursive5(
-          index,
-          nextLevel,
-          numberOfNotes,
-          numberOfDivisions,
-          refArray,
-          outputArray,
-          outputIndex
-        );
-        refArray.pop();
-        outputIndex = tmpOutputIndex;
-      }
-    }
-  
-    return outputIndex;
-  }
-
-/**
- * Generate all combinations of an array.
- * @param {Array} sourceArray - Array of input elements.
- * @param {number} comboLength - Desired length of combinations.
- * @return {Array} Array of combination arrays.
- */
-export function generateCombinations(
-  sourceArray,
-  comboLength,
-  initialValue = []
-) {
-  const sourceLength = sourceArray.length;
-  if (comboLength > sourceLength) return [];
-
-  const combos = []; // Stores valid combinations as they are generated.
-
-  // Accepts a partial combination, an index into sourceArray,
-  // and the number of elements required to be added to create a full-length combination.
-  // Called recursively to build combinations, adding subsequent elements at each call depth.
-
-  makeNextCombos(
-    initialValue,
-    0,
-    comboLength,
-    sourceLength,
-    sourceArray,
-    combos
+function factorial(num) {
+  if (num < 0) return "Undefined";
+  var fact = 1;
+  for (var i = num; i > 1; i--) fact *= i;
+  return fact;
+}
+function getNumberOfCombinations(numberOfElements, groupSize) {
+  return parseInt(
+    factorial(numberOfElements) /
+      (factorial(groupSize) * factorial(numberOfElements - groupSize))
   );
-  return combos;
-}
-
-function makeNextCombos(
-  workingCombo,
-  currentIndex,
-  remainingCount,
-  sourceLength,
-  sourceArray,
-  combos
-) {
-  const oneAwayFromComboLength = remainingCount == 1;
-
-  // For each element that remains to be added to the working combination.
-  for (
-    let sourceIndex = currentIndex;
-    sourceIndex < sourceLength;
-    sourceIndex++
-  ) {
-    // Get next (possibly partial) combination.
-    const next = [...workingCombo, sourceArray[sourceIndex]];
-
-    if (oneAwayFromComboLength) {
-      // Combo of right length found, save it.
-      combos.push(next);
-    } else {
-      // Otherwise go deeper to add more elements to the current partial combination.
-      makeNextCombos(
-        next,
-        sourceIndex + 1,
-        remainingCount - 1,
-        sourceLength,
-        sourceArray,
-        combos
-      );
-    }
-  }
 }

@@ -1,144 +1,194 @@
 import {
   getClosestRatioFromScale,
   computeRotations,
-  unique
+  unique,
+  ratioToCents
 } from "./MicrotonalHelper/operations.js";
 import * as mos from "./MicrotonalHelper/mos.js";
 import * as fs from "fs";
 import {
-  generateCombinations,
-  getEqualTemperamentScale,
-  getEqualTemperamentSubsets,
-  recursive2,
-  recursive3,
-  recursive4,
-  recursive5
+  getEqualTemperamentNote,
+  getEqualTemperamentSubsets
 } from "./MicrotonalHelper/equalTemperament.js";
+import { diamond5Limit } from "./MicrotonalHelper/diamond.js";
 
 //Notes Explorer
 //===========================
 //This searches for scales of N notes that satisfy the target ratios considering all related modes (rotations)
 //---------------------------
 //Parameters:
-const numberOfNotes = 7;
+const numberOfNotes = 5;
+const numberOfDivisions = 22;
 const period = 2;
-const numberOfDivisions = 72;
-const maxToleranceInCents = 7;
+const maxToleranceInCents = 16;
+const noteDistance = 1;//numberOfDivisions > 43 ? 2 : 1;
 const targetRatios = [
-  //diamond 5-limit
-  //6 / 5, 5 / 4, 4 / 3, 3 / 2, 8 / 5, 5 / 3
+ 
   //, 10 / 5, 10 / 4, 8 / 3 //tritave expansion
-
-  //diamond 7-limit
-  8 / 7,
-  7 / 6,
-  6 / 5,
-  5 / 4,
-  4 / 3,
-  7 / 5,
-  10 / 7 //, 3 / 2, 8 / 5, 5 / 3, 12 / 7, 7 / 4
-
-  //diamond 9-limit
-  //10 / 9, 9 / 8, 8 / 7, 7 / 6, 6 / 5, 5 / 4, 9 / 7, 4 / 3, 7 / 5, 10 / 7, 3 / 2, 14 / 9, 8 / 5, 5 / 3, 12 / 7, 7 / 4, 16 / 9, 9 / 5, 2 / 1
+  //...diamond5Limit,
+  ...diamond7Limit,
+  //...diamond9Limit,
 ];
+
+//Remove period from target ratios
+const periodIndex = targetRatios.findIndex(item => period - item <= 0.000001);
+targetRatios.splice(periodIndex,1);
+
 mainComputation();
 
 //--------------------------
 //Computation code
 function mainComputation() {
   //get all subset of N notes, with a minimum cents distance
+  console.time("calculateSubsets");
+  const subsetResult = getEqualTemperamentSubsets(
+    numberOfNotes,
+    numberOfDivisions,
+    noteDistance
+  );
+  console.timeEnd("calculateSubsets");
+  //   console.log(
+  //     "initialNumberOfCombinations",
+  //     result.initialNumberOfCombinations.toLocaleString()
+  //   );
+  console.log(
+    "numberOfCombinations",
+    subsetResult.numberOfCombinations.toLocaleString()
+  );
+
+  //Round target ratios to closest equal temperament index
+  console.time("getScaleRankInfo");
+  let result = [];
   //iterate on each one
-  //compute the rank relative to the target rations an its modes rotation
-  const data = [72, 12];
-  //const data = [5, 3];
-  const n = data[0];
-  const g = data[1];
+  subsetIterator(
+    subsetResult.result,
+    numberOfNotes,
+    subsetResult.numberOfCombinations,
+    subset => {
+      const scale = subsetToScale(subset, numberOfDivisions, period);
 
-
-function fact(num)
-{
-    if(num<0)
-     return "Undefined";
-    var fact=1;
-    for(var i=num;i>1;i--)
-      fact*=i;
-    return fact;
- }
- function getNumberOfCombinations(numberOfElements, groupSize){
-    return parseInt(fact(numberOfElements) / ( fact(groupSize) * fact(numberOfElements - groupSize) ));
- }
- const numberOfCombinations = getNumberOfCombinations(n-1,g-1);
- console.log("Number of combinations ", numberOfCombinations.toLocaleString());
-
-const MAX_LENGTH = Math.pow(2,32) - 1
-if(numberOfCombinations > MAX_LENGTH){
-    console.error('Too much combinations to calculate');
-    return;
-}
-
-//   console.time("algorithm1");
-//   const result = getEqualTemperamentSubsets(g, n);
-//   console.timeEnd("algorithm1");
-//   console.log(result.length);
-
-//   const elements = [...Array(n).keys()];
-//   elements.splice(0, 1);
-//   console.time("algorithmEx");
-//   //const result = getEqualTemperamentSubsets(g, n);
-//   const resultEx = generateCombinations(elements, g - 1, [0]);
-//   console.timeEnd("algorithmEx");
-//   //console.log(result);
-//   console.log(resultEx.length);
-
-//     console.time("algorithm2");
-//   const result2 = recursive2(0, 1, g, n);
-//   console.timeEnd("algorithm2");
-//   //console.log(JSON.stringify({ '0': result3[0]}));
-//   console.log(result2[1]);
-
-//   console.time("algorithm3");
-//   const result3 = recursive3(0, 1, g, n);
-//   console.timeEnd("algorithm3");
-//   const finalArrayTree = [0, result3[0]]
-//   //console.log(JSON.stringify(finalArrayTree));
-//   console.log(result3[1]);
-
-//   console.time("algorithm4");
-//   const result4 = [];
-//   recursive4(0, 1, g, n, [0],result4);
-//   console.timeEnd("algorithm4"); 
-
-  console.time("algorithm5");
-  const result5 = new Uint8Array(numberOfCombinations);
-  //const result5 = []
-  recursive5(0, 1, g, n, [0], result5, 0);
-  console.timeEnd("algorithm5");
-
+      //compute the rank relative to the target rations an its modes rotation
+      const rankInfo = getScaleRankInfo(
+        scale,
+        targetRatios,
+        maxToleranceInCents
+      );
+      const data = { scale, rankInfo };
+      result.push(data);
+    }
+  );
+  console.timeEnd("getScaleRankInfo");
 
   //Sort by rank
-  //result = result.sort((a, b) => b.rankInfo.rank - a.rankInfo.rank);
+  result = result.sort((a, b) => b.rankInfo.rank - a.rankInfo.rank);
 
   //Output mapping
-  // const output = result
-  //     .slice(0, 10)
-  //     //.filter(item => item.rankInfo.closestData.length >= minMatchCount)
-  //     .map((item, resultIndex) => ({
-  //         //index: resultIndex,
-  //         rank: item.rankInfo.rank,
-  //         stepRatio: item.stepRatio,
-  //         scale: item.scale
-  //         // matchDiffInCents: item.rankInfo.closestDiffInCents,
-  //         // matchCount: item.rankInfo.closestData.length,
-  //         // scale: item.scale.map((scaleRatio, index) =>
-  //         //   scaleRatioOutput(scaleRatio, index, item)
-  //         // )
-  //     }));
+  const output = result
+    .slice(0, 16)
+    //.filter(item => item.rankInfo.closestData.length >= minMatchCount)
+    .map((item, resultIndex) => ({
+      index: resultIndex,
+      rank: item.rankInfo.rank,
+      scale: item.scale, 
+      //closestData: item.rankInfo.closestData,
+      //joinedRotations: item.rankInfo.joinedRotations
+      
+    }));
   //console.log(output);
+    //const jsonOutput = JSON.stringify(output, undefined, 2)
+  const lines = [];
+  output.forEach(item => {
+    lines.push(`=============`);
+    lines.push(`Index: ${item.index}`);
+    lines.push(`Rank: ${item.rank}`);
+    lines.push(`Scale: ${item.scale.length-1}`);
+    item.scale.forEach(scaleNote => {
+        if(scaleNote === 1){ return }
+        const cents = ratioToCents(scaleNote)
+        lines.push(cents.toFixed(3));
+    })
+  });
+  const scaleWorkshopOutput = lines.join('\n');
 
-  // fs.writeFile("mos_output.json", JSON.stringify(output, undefined, 2), err => {
-  //     if (err) {
-  //         throw err;
-  //     }
-  //     console.log("JSON output is saved.");
-  // });
+  fs.writeFile("mos_output.json", scaleWorkshopOutput, err => {
+    if (err) {
+      throw err;
+    }
+    console.log("JSON output is saved.");
+  });
+}
+
+function subsetToScale(subset, numberOfDivisions, period) {
+  const scale = [];
+  for (let index = 0; index < subset.length; index++) {
+    const noteIndex = subset[index];
+    scale[index] = getEqualTemperamentNote(
+      noteIndex,
+      numberOfDivisions,
+      period
+    );
+  }
+  scale.push(period);
+  return scale;
+}
+
+function subsetIterator(
+  dataArray,
+  numberOfNotes,
+  numberOfCombinations,
+  callback
+) {
+  for (let index = 0; index < numberOfCombinations; index++) {
+    const start = index * numberOfNotes;
+    const end = start + numberOfNotes;
+    const subset = dataArray.slice(start, end);
+    if (callback !== undefined) {
+      callback(subset);
+    }
+  }
+}
+
+function getScaleRankInfo(scale, targetScale, toleranceInCents) {
+  const rotations = computeRotations(scale);
+
+  let rank = 0;
+  const closestData = [];
+  for (let rotation = 0; rotation < rotations.length; rotation++) {
+    const rotationScale = rotations[rotation];
+    const closestRatios = targetScale.map(targetScaleRatio => {
+      const closestRatioInfo = getClosestRatioFromScale(
+        targetScaleRatio,
+        rotationScale
+      );
+      return {
+        ...closestRatioInfo,
+        targetScaleRatio,
+        closestScaleRatio: rotationScale[closestRatioInfo.scaleIndex]
+      };
+    });
+    const closestRatiosInfoByTolerance = closestRatios.filter(
+      item => item.diffInCents <= toleranceInCents
+    );
+    let closestDiffInCents = closestRatiosInfoByTolerance.reduce(
+      (sum, item) => sum + item.diffInCents,
+      0
+    );
+
+    //TODO: deduzir numero de dissonancias por rotaçao 16/15 7/5
+    const rotationRank =
+      closestRatiosInfoByTolerance.length - closestDiffInCents / 1200;
+    rank += rotationRank;
+    closestData.push(closestRatiosInfoByTolerance);
+  }
+
+  let joinedRotations = [].concat.apply([], rotations);
+  joinedRotations.sort();
+  //joinedRotations.push(period);
+  joinedRotations = unique(joinedRotations);
+
+  return {
+    rank,
+    closestData,
+    joinedRotations
+  };
 }
