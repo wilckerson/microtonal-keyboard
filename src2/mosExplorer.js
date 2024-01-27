@@ -7,11 +7,11 @@ import * as fs from "fs";
 //This searches for the best MOS step ratio that satisfy the target ratios for teh given mode
 //---------------------------
 //Parameters:
-const period = 1.5;
-const mosMode = 'sLsLs';
+const period = 2;
+const mosMode = 'LssLssL';
 const searchMin = 1
-const searchMax = 10
-const searchIncrement = 1 / 100;
+const searchMax = 2
+const searchIncrement = 1 / 1000;
 const targetRatios = [
     //diamond 5-limit
     //6 / 5, 5 / 4, 4 / 3, 3 / 2, 8 / 5, 5 / 3
@@ -24,7 +24,7 @@ const targetRatios = [
     //10 / 9, 9 / 8, 8 / 7, 7 / 6, 6 / 5, 5 / 4, 9 / 7, 4 / 3, 7 / 5, 10 / 7, 3 / 2, 14 / 9, 8 / 5, 5 / 3, 12 / 7, 7 / 4, 16 / 9, 9 / 5, 2 / 1
 ];
 
-const maxToleranceInCents = 12;
+const maxToleranceInCents = 7;
 mainComputation();
 
 //--------------------------
@@ -43,6 +43,7 @@ function mainComputation() {
 
     //Output mapping
     const output = result
+        .slice(0, 10)
         //.filter(item => item.rankInfo.closestData.length >= minMatchCount)
         .map((item, resultIndex) => ({
             //index: resultIndex,
