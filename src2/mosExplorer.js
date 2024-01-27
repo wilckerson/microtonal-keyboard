@@ -1,10 +1,10 @@
-import { getClosestRatioFromScale, computeRotations, unique } from "./MicrotonalHelper/operations.js";
+import { getClosestRatioFromScale, computeRotations, unique, interator } from "./MicrotonalHelper/operations.js";
 import * as mos from "./MicrotonalHelper/mos.js";
 import * as fs from "fs";
 
 //MOS Explorer
 //===========================
-//This searches for the best MOS step ratio that satisfy the target ratios for teh given mode
+//This searches for the best MOS step ratio that satisfy the target ratios for the given mode
 //---------------------------
 //Parameters:
 const period = 2;
@@ -12,6 +12,7 @@ const mosMode = 'LssLssL';
 const searchMin = 1
 const searchMax = 2
 const searchIncrement = 1 / 1000;
+const maxToleranceInCents = 7;
 const targetRatios = [
     //diamond 5-limit
     //6 / 5, 5 / 4, 4 / 3, 3 / 2, 8 / 5, 5 / 3
@@ -23,8 +24,6 @@ const targetRatios = [
     //diamond 9-limit
     //10 / 9, 9 / 8, 8 / 7, 7 / 6, 6 / 5, 5 / 4, 9 / 7, 4 / 3, 7 / 5, 10 / 7, 3 / 2, 14 / 9, 8 / 5, 5 / 3, 12 / 7, 7 / 4, 16 / 9, 9 / 5, 2 / 1
 ];
-
-const maxToleranceInCents = 7;
 mainComputation();
 
 //--------------------------
@@ -65,27 +64,6 @@ function mainComputation() {
         console.log("JSON output is saved.");
     });
 }
-
-
-function interator(min, max, increment, callback) {
-    if (min >= max) {
-        throw Error(
-            "The max value must be greather than the min value"
-        );
-    }
-    const interationsCount = Math.floor((max - min) / increment);
-    console.log(`Number of interations: ${interationsCount}`);
-
-    var result = [];
-    for (let interation = 0; interation <= interationsCount; interation++) {
-        const currentValue = min + increment * interation;
-        const data = callback(currentValue)
-        if (data !== undefined)
-            result.push(data);
-    }
-    return result;
-}
-
 
 function getScaleRankInfo(scale, targetScale, toleranceInCents) {
 

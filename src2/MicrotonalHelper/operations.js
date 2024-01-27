@@ -102,3 +102,22 @@ export function unique(array) {
   }
   return resultArray;
 };
+
+export function iterator(min, max, increment, callback) {
+  if (min >= max) {
+      throw Error(
+          "The max value must be greater than the min value"
+      );
+  }
+  const iterationsCount = Math.floor((max - min) / increment);
+  console.log(`Number of iterations: ${iterationsCount}`);
+
+  var result = [];
+  for (let iteration = 0; iteration <= iterationsCount; iteration++) {
+      const currentValue = min + increment * iteration;
+      const data = callback(currentValue)
+      if (data !== undefined)
+          result.push(data);
+  }
+  return result;
+}
