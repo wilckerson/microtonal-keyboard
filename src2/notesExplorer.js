@@ -10,7 +10,7 @@ import {
   getEqualTemperamentNote,
   getEqualTemperamentSubsets
 } from "./MicrotonalHelper/equalTemperament.js";
-import { diamond5Limit } from "./MicrotonalHelper/diamond.js";
+import { diamond5Limit, diamond7Limit, diamond9Limit } from "./MicrotonalHelper/diamond.js";
 
 //Notes Explorer
 //===========================
@@ -25,8 +25,8 @@ const noteDistance = 1;//numberOfDivisions > 43 ? 2 : 1;
 const targetRatios = [
  
   //, 10 / 5, 10 / 4, 8 / 3 //tritave expansion
-  //...diamond5Limit,
-  ...diamond7Limit,
+  ...diamond5Limit,
+  //...diamond7Limit,
   //...diamond9Limit,
 ];
 
