@@ -36,3 +36,17 @@ export const diamond9Limit = [
   9 / 5,
   2 / 1
 ];
+
+export const diamond9LimitNo7 = [
+  10 / 9,
+  9 / 8,
+  6 / 5,
+  5 / 4,
+  4 / 3,
+  3 / 2,
+  8 / 5,
+  5 / 3,
+  16 / 9,
+  9 / 5,
+  2 / 1
+];

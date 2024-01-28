@@ -121,3 +121,15 @@ export function iterator(min, max, increment, callback) {
   }
   return result;
 }
+
+
+export function getMinInterval(scale){
+  let minInterval = scale[scale.length-1];
+  for (let index = 1; index < scale.length; index++) {
+    const interval = scale[index] / scale[index-1];
+    if(interval < minInterval){
+      minInterval = interval
+    }    
+  }
+  return minInterval;
+}

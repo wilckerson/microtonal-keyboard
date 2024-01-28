@@ -2,7 +2,8 @@ import {
   getClosestRatioFromScale,
   computeRotations,
   unique,
-  ratioToCents
+  ratioToCents,
+  getMinInterval
 } from "./MicrotonalHelper/operations.js";
 import * as mos from "./MicrotonalHelper/mos.js";
 import * as fs from "fs";
@@ -10,29 +11,34 @@ import {
   getEqualTemperamentNote,
   getEqualTemperamentSubsets
 } from "./MicrotonalHelper/equalTemperament.js";
-import { diamond5Limit, diamond7Limit, diamond9Limit } from "./MicrotonalHelper/diamond.js";
+import {
+  diamond5Limit,
+  diamond7Limit,
+  diamond9Limit,
+  diamond9LimitNo7
+} from "./MicrotonalHelper/diamond.js";
 
 //Notes Explorer
 //===========================
 //This searches for scales of N notes that satisfy the target ratios considering all related modes (rotations)
 //---------------------------
 //Parameters:
-const numberOfNotes = 5;
+const numberOfNotes = 6;
 const numberOfDivisions = 22;
 const period = 2;
 const maxToleranceInCents = 16;
-const noteDistance = 1;//numberOfDivisions > 43 ? 2 : 1;
+const noteDistance = 1; //numberOfDivisions > 43 ? 2 : 1;
 const targetRatios = [
- 
   //, 10 / 5, 10 / 4, 8 / 3 //tritave expansion
-  ...diamond5Limit,
-  //...diamond7Limit,
-  //...diamond9Limit,
+  //...diamond5Limit,
+  //...diamond7Limit
+  ...diamond9Limit,
+  //...diamond9LimitNo7,
 ];
 
 //Remove period from target ratios
 const periodIndex = targetRatios.findIndex(item => period - item <= 0.000001);
-targetRatios.splice(periodIndex,1);
+targetRatios.splice(periodIndex, 1);
 
 mainComputation();
 
@@ -89,26 +95,29 @@ function mainComputation() {
     .map((item, resultIndex) => ({
       index: resultIndex,
       rank: item.rankInfo.rank,
-      scale: item.scale, 
+      minInterval: item.rankInfo.minInterval,
+      scale: item.scale
       //closestData: item.rankInfo.closestData,
       //joinedRotations: item.rankInfo.joinedRotations
-      
     }));
   //console.log(output);
-    //const jsonOutput = JSON.stringify(output, undefined, 2)
+  //const jsonOutput = JSON.stringify(output, undefined, 2)
   const lines = [];
   output.forEach(item => {
     lines.push(`=============`);
     lines.push(`Index: ${item.index}`);
     lines.push(`Rank: ${item.rank}`);
-    lines.push(`Scale: ${item.scale.length-1}`);
+    lines.push(`MinInterval: ${item.minInterval.toFixed(3)}`);
+    lines.push(`Scale: ${item.scale.length - 1}`);
     item.scale.forEach(scaleNote => {
-        if(scaleNote === 1){ return }
-        const cents = ratioToCents(scaleNote)
-        lines.push(cents.toFixed(3));
-    })
+      if (scaleNote === 1) {
+        return;
+      }
+      const cents = ratioToCents(scaleNote);
+      lines.push(cents.toFixed(3));
+    });
   });
-  const scaleWorkshopOutput = lines.join('\n');
+  const scaleWorkshopOutput = lines.join("\n");
 
   fs.writeFile("mos_output.json", scaleWorkshopOutput, err => {
     if (err) {
@@ -149,6 +158,7 @@ function subsetIterator(
 }
 
 function getScaleRankInfo(scale, targetScale, toleranceInCents) {
+  const minInterval = getMinInterval(scale);
   const rotations = computeRotations(scale);
 
   let rank = 0;
@@ -189,6 +199,7 @@ function getScaleRankInfo(scale, targetScale, toleranceInCents) {
   return {
     rank,
     closestData,
-    joinedRotations
+    joinedRotations,
+    minInterval
   };
 }
