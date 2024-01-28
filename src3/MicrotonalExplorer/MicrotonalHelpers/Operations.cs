@@ -22,27 +22,28 @@ public static class Operations
 
     public static float[][] ComputeRotations(float[] scaleArray)
     {
+        // if (scaleArray[0] != 1)
+        // {
+        //     scaleArray = [1, .. scaleArray];
+        // }
         var result = new float[scaleArray.Length][];
-        if (scaleArray[0] != 1)
-        {
-            scaleArray = [1, .. scaleArray];
-        }
-        var scaleLength = scaleArray.Length - 1;
+        var scaleLength = scaleArray.Length;
         var period = scaleArray[scaleArray.Length - 1];
+        float tmpRoot = 1;
         for (var i = 0; i < scaleLength; i++)
         {
-            var tmpRoot = scaleArray[i];
             var rotationArray = new float[scaleArray.Length];
             for (var j = 0; j < scaleLength; j++)
             {
-                int idx = i + j + 1;
+                int idx = i + j;
                 var modIdx = idx % scaleLength;
                 var idxPow = (int)Math.Floor((float)idx / scaleLength);
                 var item = scaleArray[modIdx];
                 var fixedItem = (float)Math.Pow(period, idxPow) * item;
                 rotationArray[j] = fixedItem / tmpRoot;
             }
-            result[i] = rotationArray;
+            result[i] = rotationArray;            
+            tmpRoot = scaleArray[i];
         }
         return result;
     }

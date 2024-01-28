@@ -144,7 +144,7 @@ public static class EqualTemperament
         return (uint)result;
     }
 
-    public static float GetEqualTemperamentNote(int noteIndex, int numberOfDivisions, int period)
+    public static float GetEqualTemperamentNote(int noteIndex, int numberOfDivisions, float period)
     {
         if (numberOfDivisions <= 1)
         {

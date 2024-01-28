@@ -7,7 +7,7 @@ public class NotesExplorer
     {
         //Parameters:
         var numberOfNotes = 7;
-        var numberOfDivisions = 22;
+        var numberOfDivisions = 31;
         var period = 2;
         float maxToleranceInCents = 16;
         var noteDistance = 1; //numberOfDivisions > 43 ? 2 : 1;
@@ -29,9 +29,7 @@ public class NotesExplorer
             var start = index * numberOfNotes;
             var end = start + numberOfNotes;
             var subset = subsetResult.Result.Skip(start).Take(numberOfNotes);
-            var scale = subset.Select(noteIndex =>
-                EqualTemperament.GetEqualTemperamentNote(noteIndex, numberOfDivisions, period)
-            ).ToArray();
+            var scale = ConvertSubsetToScale(subset, numberOfDivisions, period);
 
             //compute the rank relative to the target rations an its modes rotation
             var rankInfo = GetScaleRankInfo(
@@ -55,23 +53,40 @@ public class NotesExplorer
         for (var rotation = 0; rotation < rotations.Length; rotation++)
         {
             var rotationScale = rotations[rotation];
-            var closestRatios = targetScale.Select(targetScaleRatio =>
+            float closestDiffInCents = 0;
+            int closestCount = 0;
+            for (int targetIndex = 0; targetIndex < targetScale.Length; targetIndex++)
             {
-                return Operations.GetClosestRatioFromScale(
+                var targetScaleRatio = targetScale[targetIndex];
+                var targetResult = Operations.GetClosestRatioFromScale(
                    targetScaleRatio,
                    rotationScale
                  );
-            });
-            var closestRatiosInfoByTolerance = closestRatios.Where(
-              item => item.DiffInCents <= toleranceInCents
-            );
-            var closestDiffInCents = closestRatiosInfoByTolerance.Sum(item => item.DiffInCents);
+                 if(targetResult.DiffInCents <= toleranceInCents){
+                    closestDiffInCents +=targetResult.DiffInCents;
+                    closestCount++;
+                    closestData.Add(targetResult);
+                 }
+            }
+            // var closestRatios = targetScale.Select(targetScaleRatio =>
+            // {
+            //     return Operations.GetClosestRatioFromScale(
+            //        targetScaleRatio,
+            //        rotationScale
+            //      );
+            // });
+            // var closestRatiosInfoByTolerance = closestRatios.Where(
+            //   item => item.DiffInCents <= toleranceInCents
+            // );
+            // var closestDiffInCents = closestRatiosInfoByTolerance.Sum(item => item.DiffInCents);
 
-            //TODO: deduzir numero de dissonancias por rotaçao 16/15 7/5
-            var rotationRank =
-              closestRatiosInfoByTolerance.Count() - closestDiffInCents / 1200;
+            // //TODO: deduzir numero de dissonancias por rotaçao 16/15 7/5
+            // var rotationRank =
+            //   closestRatiosInfoByTolerance.Count() - closestDiffInCents / 1200;
+
+            var rotationRank = closestCount - closestDiffInCents / 1200;
             rank += rotationRank;
-            closestData.AddRange(closestRatiosInfoByTolerance);
+            //closestData.AddRange(closestRatiosInfoByTolerance);
         }
 
         float[] joinedRotations = rotations.SelectMany(item => item).Distinct().Order().ToArray();
@@ -83,6 +98,23 @@ public class NotesExplorer
           minInterval,
           scale
         );
+    }
+
+    static float[] ConvertSubsetToScale(IEnumerable<int> subset, int numberOfDivisions, float period)
+    {
+        var subsetSize = subset.Count();
+        var scale = new float[subsetSize];
+        for (var index = 0; index < subsetSize - 1; index++)
+        {
+            var noteIndex = subset.ElementAt(index + 1);
+            scale[index] = EqualTemperament.GetEqualTemperamentNote(
+              noteIndex,
+              numberOfDivisions,
+              period
+            );
+        }
+        scale[subsetSize-1] = period;
+        return scale;
     }
 }
 
