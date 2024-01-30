@@ -54,12 +54,17 @@ public static class EqualTemperament
             throw new Exception($"Too much combinations to calculate: ${initialNumberOfCombinations.ToString("N")}");
         }
         var result = new int[arrayLength];
+        var refArray = new int[numberOfNotes];
+        var refArrayIndex = 0;
+        refArray[refArrayIndex] = 0;
+
         var data = Recursive(
           0,
           1,
           numberOfNotes,
           numberOfDivisions,
-          [0],
+          refArrayIndex,
+          refArray,
           result,
           0,
           minDistanceBetweenNotes
@@ -77,7 +82,8 @@ public static class EqualTemperament
       int level,
       int numberOfNotes,
       int numberOfDivisions,
-      IList<int> refArray,
+      int refArrayIndex,
+      int[] refArray,
       int[] outputArray,
       int outputIndex,
       int minDistanceBetweenNotes
@@ -88,7 +94,7 @@ public static class EqualTemperament
         var rangeMax = numberOfDivisions - 1 - (numberOfNotes - (level + 1));
         for (var index = rangeMin; index <= rangeMax; index++)
         {
-            var lastRefIndex = refArray[refArray.Count - 1];
+            var lastRefIndex = refArray[refArrayIndex];
             var indexDistance = index - lastRefIndex;
             if (indexDistance < minDistanceBetweenNotes) continue;
 
@@ -96,7 +102,7 @@ public static class EqualTemperament
             var isLeaf = nextLevel == numberOfNotes;
             if (isLeaf)
             {
-                for (var refIndex = 0; refIndex < refArray.Count; refIndex++)
+                for (var refIndex = 0; refIndex <= refArrayIndex; refIndex++)
                 {
                     outputArray[outputIndex] = refArray[refIndex];
                     outputIndex++;
@@ -107,18 +113,21 @@ public static class EqualTemperament
             }
             else
             {
-                refArray.Add(index);
+                refArrayIndex++;
+                refArray[refArrayIndex] = index;
                 var tmpResult = Recursive(
                   index,
                   nextLevel,
                   numberOfNotes,
                   numberOfDivisions,
+                  refArrayIndex,
                   refArray,
                   outputArray,
                   outputIndex,
                   minDistanceBetweenNotes
                 );
-                refArray.RemoveAt(refArray.Count - 1);
+                refArray[refArrayIndex] = 0;
+                refArrayIndex--;
                 outputIndex = tmpResult.outputIndex;
                 size += tmpResult.size;
             }

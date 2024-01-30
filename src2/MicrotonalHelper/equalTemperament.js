@@ -144,8 +144,8 @@ export function recursive(
 
 function factorial(num) {
   if (num < 0) return "Undefined";
-  var fact = 1;
-  for (var i = num; i > 1; i--) fact *= i;
+  var fact = BigInt(1);
+  for (var i = num; i > 1; i--) fact *= BigInt(i);
   return fact;
 }
 function getNumberOfCombinations(numberOfElements, groupSize) {

@@ -23,8 +23,8 @@ import {
 //This searches for scales of N notes that satisfy the target ratios considering all related modes (rotations)
 //---------------------------
 //Parameters:
-const numberOfNotes = 6;
-const numberOfDivisions = 22;
+const numberOfNotes = 7;
+const numberOfDivisions = 31;
 const period = 2;
 const maxToleranceInCents = 16;
 const noteDistance = 1; //numberOfDivisions > 43 ? 2 : 1;

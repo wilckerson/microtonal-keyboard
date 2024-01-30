@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Text;
+using MicrotonalExplorer;
 
 namespace MicrotonalExplorer;
 public class NotesExplorer
@@ -7,20 +9,21 @@ public class NotesExplorer
     {
         //Parameters:
         var numberOfNotes = 7;
-        var numberOfDivisions = 31;
+        var numberOfDivisions = 12;
         var period = 2;
         float maxToleranceInCents = 16;
         var noteDistance = 1; //numberOfDivisions > 43 ? 2 : 1;
-        var targetRatios = Diamond.Diamond5Limit.AsEnumerable();
+        var initialTargetRatios = Diamond.Diamond5Limit;
 
         //Remove period from target ratios
-        targetRatios = targetRatios.Where(item => period == item);
+        var targetRatios = initialTargetRatios.Where(item => period != item).ToArray();
 
         var watch = Stopwatch.StartNew();
         var subsetResult = EqualTemperament.GetEqualTemperamentSubsets(numberOfNotes, numberOfDivisions, noteDistance);
         watch.Stop();
         Console.WriteLine($"CalculateSubsets {watch.ElapsedMilliseconds}ms");
         Console.WriteLine($"numberOfCombinations {subsetResult.NumberOfCombinations}");
+        //Console.WriteLine(string.Join(',', subsetResult.Result));
 
         var result = new List<ScaleRankInfoResult>();
         watch = Stopwatch.StartNew();
@@ -34,12 +37,18 @@ public class NotesExplorer
             //compute the rank relative to the target rations an its modes rotation
             var rankInfo = GetScaleRankInfo(
               scale,
-              targetRatios.ToArray(),
+              targetRatios,
               maxToleranceInCents
             );
             result.Add(rankInfo);
         }
         Console.WriteLine($"GetScaleRankInfo {watch.ElapsedMilliseconds}ms");
+
+        var orderedResult = result
+            .OrderByDescending(item => item.Rank)
+            .Take(16);
+
+        SaveOutputFile(orderedResult);
     }
 
 
@@ -62,31 +71,16 @@ public class NotesExplorer
                    targetScaleRatio,
                    rotationScale
                  );
-                 if(targetResult.DiffInCents <= toleranceInCents){
-                    closestDiffInCents +=targetResult.DiffInCents;
+                if (targetResult.DiffInCents <= toleranceInCents)
+                {
+                    closestDiffInCents += targetResult.DiffInCents;
                     closestCount++;
                     closestData.Add(targetResult);
-                 }
+                }
             }
-            // var closestRatios = targetScale.Select(targetScaleRatio =>
-            // {
-            //     return Operations.GetClosestRatioFromScale(
-            //        targetScaleRatio,
-            //        rotationScale
-            //      );
-            // });
-            // var closestRatiosInfoByTolerance = closestRatios.Where(
-            //   item => item.DiffInCents <= toleranceInCents
-            // );
-            // var closestDiffInCents = closestRatiosInfoByTolerance.Sum(item => item.DiffInCents);
-
-            // //TODO: deduzir numero de dissonancias por rotaçao 16/15 7/5
-            // var rotationRank =
-            //   closestRatiosInfoByTolerance.Count() - closestDiffInCents / 1200;
 
             var rotationRank = closestCount - closestDiffInCents / 1200;
             rank += rotationRank;
-            //closestData.AddRange(closestRatiosInfoByTolerance);
         }
 
         float[] joinedRotations = rotations.SelectMany(item => item).Distinct().Order().ToArray();
@@ -113,8 +107,34 @@ public class NotesExplorer
               period
             );
         }
-        scale[subsetSize-1] = period;
+        scale[subsetSize - 1] = period;
         return scale;
+    }
+
+    static void SaveOutputFile(IEnumerable<ScaleRankInfoResult> result)
+    {
+        // Write the string array to a new file named "WriteLines.txt".
+        using (StreamWriter outputFile = new StreamWriter(Path.Combine("./", "output.txt")))
+        {
+            foreach (var item in result)
+            {
+                outputFile.WriteLine("=============");
+                //outputFile.WriteLine($"Index: ${item.index}");
+                outputFile.WriteLine($"Rank: {item.Rank:0.0000}");
+                outputFile.WriteLine($"MinInterval: {item.MinInterval:0.0000}");
+                outputFile.WriteLine($"Scale: {item.Scale.Length}");
+                foreach (var scaleNote in item.Scale)
+                {
+                    if (scaleNote == 1)
+                    {
+                        continue;
+                    }
+                    var cents = Operations.RatioToCents(scaleNote);
+                    outputFile.WriteLine(cents.ToString("0.00"));
+                }
+            }
+        }
+
     }
 }
 
