@@ -19,6 +19,16 @@ public class Diamond
         2f / 1f
     ];
 
+    public static readonly float[] Diamond7LimitNo5 = [
+        8f / 7f,
+        7f / 6f,       
+        4f / 3f,       
+        3f / 2f,        
+        12f / 7f,
+        7f / 4f,
+        2f / 1f
+    ];
+
     public static readonly float[] Diamond9Limit = [
         10f / 9f,
         9f / 8f,

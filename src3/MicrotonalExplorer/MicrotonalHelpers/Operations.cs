@@ -87,6 +87,37 @@ public static class Operations
             scale[scaleIndex]
         );
     }
+
+/// <summary>
+/// Verify if all target ratios are present inside the scale considering the tolerance. It returns an empty list if at least one target is not matched.
+/// </summary>
+/// <param name="targetRatios"></param>
+/// <param name="scale"></param>
+/// <param name="toleranceInCents"></param>
+/// <returns></returns>
+    public static List<ClosestRationFromScaleResult> FullMatchTargetRatiosToScale(float[] targetRatios, float[] scale, float toleranceInCents)
+    {
+        var closestData = new List<ClosestRationFromScaleResult>();
+        int closestCount = 0;
+        for (int targetIndex = 0; targetIndex < targetRatios.Length; targetIndex++)
+        {
+            var targetRatio = targetRatios[targetIndex];
+            var targetResult = GetClosestRatioFromScale(
+               targetRatio,
+               scale
+             );
+            if (targetResult.DiffInCents <= toleranceInCents)
+            {
+                closestCount++;
+                closestData.Add(targetResult);
+            }
+            else{
+                return new List<ClosestRationFromScaleResult>();
+            }
+        }
+
+        return closestData;
+    }
 }
 
 public record ClosestRationFromScaleResult(int ScaleIndex, float DiffInCents, float TargetScaleRatio, float ClosestScaleRatio);
