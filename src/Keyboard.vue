@@ -192,6 +192,7 @@
             <!-- <div>{{getFreq(key.idx)}}</div> -->
             <audio-key :keyName="key.k" :idx="key.idx" :freq="mainFreq * factor * ratio(key.idx)"
               :text="parseFloat(ratioToCents(ratio(key.idx) || 1)).toFixed(0) + '¢'" :color="color(key.idx)"
+              :markers="getMarkersFromChordGroups(ratio(key.idx))"
               @onChangeActive="onChangeActive" />
           </template>
           <template v-if="freqBased">
@@ -209,7 +210,7 @@
     </p>
     <div v-if="enableCustomNotes || mode === 'custom'" style="text-align: left">
       <label>Custom Notes:</label>
-      <textarea v-model="customNotesInput" rows="5" />
+      <textarea v-model="customNotesInput" rows="5"></textarea>
       <!-- <pre>{{customNotes}}</pre> -->
     </div>
     <div>
@@ -262,6 +263,33 @@
         </td>
       </tr>
     </table>
+    <div>
+      <input type="checkbox" v-model="showChordGroups" />
+      Display chord groups
+    </div>
+    <div v-if="showChordGroups">
+      Group tolerance cents: <input type="number" v-model="groupToleranceCents" step="1" min="0" max="1200" style="width: 70px;" />
+      <table>
+        <tr>
+          <td>
+            <label>Chord Group 1:  <div class="marker" :style="{ 'background-color': chordGroup1Color }"></div> </label>       
+            <textarea v-model="chordGroup1" rows="5" placeholder="Insert your notes"></textarea>
+          </td>
+          <td>
+            <label>Chord Group 2:  <div class="marker" :style="{ 'background-color': chordGroup2Color }"></div> </label>       
+            <textarea v-model="chordGroup2" rows="5" placeholder="Insert your notes"></textarea>
+          </td>
+          <td>
+            <label>Group 3 notes:  <div class="marker" :style="{ 'background-color': chordGroup3Color }"></div> </label>       
+            <textarea v-model="chordGroup3" rows="5" placeholder="Insert your notes"></textarea>
+          </td>
+          <td>
+            <label>Group 4 notes:  <div class="marker" :style="{ 'background-color': chordGroup4Color }"></div> </label>       
+            <textarea v-model="chordGroup4" rows="5" placeholder="Insert your notes"></textarea>
+          </td>
+        </tr>
+      </table>
+  </div>
   </div>
 </template>
 
@@ -386,6 +414,16 @@ export default {
       displayRotationData: false,
       primeFilter: "",
       availableAudioSamples: window.audioSamples || [],
+      showChordGroups:false,
+      groupToleranceCents: 7,
+      chordGroup1:"",
+      chordGroup1Color:"#ff0000",
+      chordGroup2:"",
+      chordGroup2Color:"#00ff00",
+      chordGroup3:"",
+      chordGroup3Color:"#0000ff",
+      chordGroup4:"",
+      chordGroup4Color:"#ff00ff",
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -518,8 +556,41 @@ export default {
     },
 
     customNotes: function () {
+     return this.extractCustomNotes(this.customNotesInput);
+    }
+  },
+  methods: {
+    getMarkersFromChordGroups(ratio){
+      const markers = [];
+      const toleranceCents = 7;
+      const ratioCents = this.ratioToCents(this.normalizeValue(ratio));
+      
+      //TODO: Use dynamic groups to avoid code repetition
+      const group1Ratios = this.extractCustomNotes(this.chordGroup1);
+      const includesGroup1 = group1Ratios.find(groupRatio => 
+        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents);
+      if(includesGroup1) markers.push(this.chordGroup1Color);
+
+      const group2Ratios = this.extractCustomNotes(this.chordGroup2);
+      const includesGroup2 = group2Ratios.find(groupRatio => 
+        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <=this.groupToleranceCents);
+      if(includesGroup2) markers.push(this.chordGroup2Color);
+
+      const group3Ratios = this.extractCustomNotes(this.chordGroup3);
+      const includesGroup3 = group3Ratios.find(groupRatio => 
+        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents);
+      if(includesGroup3) markers.push(this.chordGroup3Color);
+
+      const group4Ratios = this.extractCustomNotes(this.chordGroup4);
+      const includesGroup4 = group4Ratios.find(groupRatio => 
+        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents);
+      if(includesGroup4) markers.push(this.chordGroup4Color);
+      
+      return markers;
+    },
+    extractCustomNotes(input){
       var result = [];
-      var lines = this.customNotesInput.split("\n");
+      var lines = (input || "").split("\n");
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
 
@@ -550,9 +621,7 @@ export default {
       }
 
       return result;
-    }
-  },
-  methods: {
+    },
     mountKeyboardKeys() {
       var keyboardKeys = [
         ["Z", "X", "C", "V", "B", "N", "M", "<", ">"],
@@ -2251,10 +2320,10 @@ export default {
 
       if (normRatio) {
         var h = (normRatio - 1) / (this.equivalence - 1 || 1); //Matriz
-        var s = 0.77; //Saturaçao
+        var s = this.showChordGroups ? 0.3 : 0.6; //Saturaçao
         var v = 1; //range //Brilho
         var c = this.HSVtoRGB(h, s, v);
-        return "rgb(" + c.r + "," + c.g + "," + c.b + ")";
+        return "rgba(" + c.r + "," + c.g + "," + c.b + ")";
       }
 
       //return '';
@@ -2619,5 +2688,14 @@ table.rotation-data td {
   border: 1px solid lightgray;
   padding: 2px;
   min-width: 20px;
+}
+
+.marker{
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: aquamarine;
+  border: 1px solid white;
 }
 </style>
