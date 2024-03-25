@@ -561,6 +561,7 @@ export default {
   },
   methods: {
     getMarkersFromChordGroups(ratio){
+      if(!this.showChordGroups) return [];
       const markers = [];
       const toleranceCents = 7;
       const ratioCents = this.ratioToCents(this.normalizeValue(ratio));
