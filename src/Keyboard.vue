@@ -1498,8 +1498,20 @@ export default {
               var v = getCalculatedCustomNote(i, this.customNotes, shift);
 
               if (parsedFixedStepValue === 0) {
-                var vLineIdx = (l * Math.floor(this.testValueInt));
-                var vLine = getCalculatedCustomNote(vLineIdx, this.customNotes, 0);
+                //var vLineIdx = (l * Math.floor(this.testValueInt));
+                //var vLine = getCalculatedCustomNote(vLineIdx, this.customNotes, 0);
+                //ratiosArr.push(v * vLine);
+                var vLineIdx = (l * this.testValueInt);
+                if (!this.gtrSingleStep && l == 0) {
+                  vLineIdx = this.gtrStep1;
+                } else if (!this.gtrSingleStep && l == 1) {
+                  vLineIdx = this.gtrStep2;
+                } else if (!this.gtrSingleStep && l == 2) {
+                  vLineIdx = this.gtrStep3;
+                } else if (!this.gtrSingleStep && l == 3) {
+                  vLineIdx = this.gtrStep4;
+                }
+                vLine = Math.pow(this.base, (vLineIdx / this.eqt));
                 ratiosArr.push(v * vLine);
               } else {
                 var vLine = Math.pow(parsedFixedStepValue, l);
