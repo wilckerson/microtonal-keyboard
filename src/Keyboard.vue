@@ -269,24 +269,20 @@
     </div>
     <div v-if="showChordGroups">
       Group tolerance cents: <input type="number" v-model="groupToleranceCents" step="1" min="0" max="1200" style="width: 70px;" />
+      <div>
+        <button v-on:click="use5LimitChords">Use basic 5-limit chords</button>
+        <button v-on:click="use7LimitChords">Use basic 7-limit chords</button>
+        <button v-on:click="use9LimitChords">Use basic 9-limit chords</button>
+        <button v-on:click="clearChordGroups">Clear</button>
+      </div>
       <table>
         <tr>
-          <td>
-            <label>Chord Group 1:  <div class="marker" :style="{ 'background-color': chordGroup1Color }"></div> </label>       
-            <textarea v-model="chordGroup1" rows="5" placeholder="Insert your notes"></textarea>
-          </td>
-          <td>
-            <label>Chord Group 2:  <div class="marker" :style="{ 'background-color': chordGroup2Color }"></div> </label>       
-            <textarea v-model="chordGroup2" rows="5" placeholder="Insert your notes"></textarea>
-          </td>
-          <td>
-            <label>Group 3 notes:  <div class="marker" :style="{ 'background-color': chordGroup3Color }"></div> </label>       
-            <textarea v-model="chordGroup3" rows="5" placeholder="Insert your notes"></textarea>
-          </td>
-          <td>
-            <label>Group 4 notes:  <div class="marker" :style="{ 'background-color': chordGroup4Color }"></div> </label>       
-            <textarea v-model="chordGroup4" rows="5" placeholder="Insert your notes"></textarea>
-          </td>
+          <td v-for="(_, index) in chordGroups">
+            <label>
+              <input type="checkbox" v-model="chordGroupsEnabled[index]"/>
+              Chord Group {{index+1}}:  <div class="marker" :style="{ 'background-color': chordGroupsColor[index] }"></div> </label>       
+            <textarea v-model="chordGroups[index]" rows="5" placeholder="Insert your notes"></textarea>
+          </td>          
         </tr>
       </table>
   </div>
@@ -416,14 +412,9 @@ export default {
       availableAudioSamples: window.audioSamples || [],
       showChordGroups:false,
       groupToleranceCents: 7,
-      chordGroup1:"",
-      chordGroup1Color:"#ff0000",
-      chordGroup2:"",
-      chordGroup2Color:"#00ff00",
-      chordGroup3:"",
-      chordGroup3Color:"#0000ff",
-      chordGroup4:"",
-      chordGroup4Color:"#ff00ff",
+      chordGroups: ["","","","","",""],
+      chordGroupsEnabled: [true,true,true,true,true,true],
+      chordGroupsColor: ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#0000ff"],      
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -563,30 +554,17 @@ export default {
     getMarkersFromChordGroups(ratio){
       if(!this.showChordGroups) return [];
       const markers = [];
-      const toleranceCents = 7;
       const ratioCents = this.ratioToCents(this.normalizeValue(ratio));
       
-      //TODO: Use dynamic groups to avoid code repetition
-      const group1Ratios = this.extractCustomNotes(this.chordGroup1);
-      const includesGroup1 = group1Ratios.find(groupRatio => 
-        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents);
-      if(includesGroup1) markers.push(this.chordGroup1Color);
-
-      const group2Ratios = this.extractCustomNotes(this.chordGroup2);
-      const includesGroup2 = group2Ratios.find(groupRatio => 
-        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <=this.groupToleranceCents);
-      if(includesGroup2) markers.push(this.chordGroup2Color);
-
-      const group3Ratios = this.extractCustomNotes(this.chordGroup3);
-      const includesGroup3 = group3Ratios.find(groupRatio => 
-        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents);
-      if(includesGroup3) markers.push(this.chordGroup3Color);
-
-      const group4Ratios = this.extractCustomNotes(this.chordGroup4);
-      const includesGroup4 = group4Ratios.find(groupRatio => 
-        Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents);
-      if(includesGroup4) markers.push(this.chordGroup4Color);
-      
+      for (let index = 0; index < this.chordGroups.length; index++) {
+        if(!this.chordGroupsEnabled[index]) continue;
+        const chordGroup = this.chordGroups[index];
+        const groupRatios = this.extractCustomNotes(chordGroup);
+        const includesGroup = groupRatios.find(groupRatio => 
+          Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents
+        );
+        if(includesGroup) markers.push(this.chordGroupsColor[index]);
+      }
       return markers;
     },
     extractCustomNotes(input){
@@ -2452,6 +2430,29 @@ export default {
     onChangeAudioSample(elm) {
       window.selectedAudioSample = elm.target.value;
       window.audioCache = undefined;
+    },
+    use5LimitChords(){
+      Vue.set(this.chordGroups, 0, "1/1 \n5/4 \n3/2 \n2/1")
+      Vue.set(this.chordGroups, 1, "1/1 \n6/5 \n8/5 \n2/1")
+      Vue.set(this.chordGroups, 2, "1/1 \n4/3 \n5/3 \n2/1")
+    },
+    use7LimitChords(){
+      Vue.set(this.chordGroups, 0, "1/1 \n5/4 \n3/2 \n7/4 \n2/1")
+      Vue.set(this.chordGroups, 1, "1/1 \n6/5 \n7/5 \n8/5 \n2/1")
+      Vue.set(this.chordGroups, 2, "1/1 \n7/6 \n4/3 \n5/3 \n2/1")
+      Vue.set(this.chordGroups, 3, "1/1 \n8/7 \n10/7 \n12/7 \n2/1")
+    },
+    use9LimitChords(){
+      Vue.set(this.chordGroups, 0, "1/1 \n9/8 \n5/4 \n3/2 \n7/4 \n2/1")
+      Vue.set(this.chordGroups, 1, "1/1 \n6/5 \n7/5 \n8/5 \n9/5 \n2/1")
+      Vue.set(this.chordGroups, 2, "1/1 \n7/6 \n4/3 \n3/2 \n5/3 \n2/1")
+      Vue.set(this.chordGroups, 3, "1/1 \n8/7 \n9/7 \n10/7 \n12/7 \n2/1")
+      Vue.set(this.chordGroups, 4, "1/1 \n10/9 \n4/3 \n14/9 \n16/9 \n2/1")
+    },
+    clearChordGroups(){
+      for (let index = 0; index < this.chordGroups.length; index++) {
+        Vue.set(this.chordGroups, index, "");        
+      }
     }
   },
   watch: {
