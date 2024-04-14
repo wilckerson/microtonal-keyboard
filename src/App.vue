@@ -13,6 +13,7 @@
     <keyboardMos v-else-if="route == '#keyboardmos'" />
     <Mos v-else-if="route == '#mos'" />
     <TouchBoard v-else-if="route == '#touchboard'" />
+    <FretboardViewer v-else-if="route == '#fretboard'" />
     <keyboard v-else />
 
     <!-- <audio-key keyName="W" freq="220"/>
@@ -31,6 +32,7 @@ import KeyboardMos from "./KeyboardMos.vue";
 import LambdomaKeyboard from "./LambdomaKeyboard.vue";
 import TouchBoard from "./TouchBoard.vue";
 import Mos from "./Mos.vue";
+import FretboardViewer from "./FretboardViewer/Index.vue"
 
 export default {
   name: "app",
@@ -45,6 +47,7 @@ export default {
     KeyboardMos,
     TouchBoard,
     Mos,
+    FretboardViewer
   },
   data() {
     return {
