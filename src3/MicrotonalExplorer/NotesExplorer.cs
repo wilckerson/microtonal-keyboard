@@ -9,51 +9,90 @@ public class NotesExplorer
     {
         //Parameters:
         var numberOfNotes = 7;
-        var numberOfDivisions = 12;
-        var period = 2;
-        float maxToleranceInCents = 16;
+        var numberOfDivisions = 31;
+        var period = 2 / 1;
+        float maxToleranceInCents = 9;
         var noteDistance = 1; //numberOfDivisions > 43 ? 2 : 1;
-        var initialTargetRatios = Diamond.Diamond5Limit;
 
         //Remove period from target ratios
-        var targetRatios = initialTargetRatios.Where(item => period != item).ToArray();
+        var targetRatios = (
+            //Diamond.Diamond5Limit
+            //Diamond.Diamond7LimitNo5
+            //Diamond.Diamond7Limit
+            Diamond.Diamond9Limit
+        // new float[]{
+        //     16/15f,
+        //     10/9f,
+        //     8/7f,
+        //     7/6f,
+        //     6/5f, 
+        //     5/4f,
+        //     4/3f,
+        //     7/5f,
+        //     10/7f
+        // }
+        ).Where(item => period != item).ToArray();
+
+        var targetChords = new List<float[]>{
+            // Chord.Overtone5Limit_Inversion0,
+            // Chord.Overtone5Limit_Inversion1,
+            // Chord.Overtone5Limit_Inversion2,
+            // Chord.Undertone5Limit_Inversion0,
+            // Chord.Undertone5Limit_Inversion1,
+            // Chord.Undertone5Limit_Inversion2,
+
+            Chord.Overtone7Limit_Inversion0,
+            Chord.Overtone7Limit_Inversion1,
+            Chord.Overtone7Limit_Inversion2,
+            Chord.Overtone7Limit_Inversion3,
+            Chord.Undertone7Limit_Inversion0,
+            Chord.Undertone7Limit_Inversion1,
+            Chord.Undertone7Limit_Inversion2,
+            Chord.Undertone7Limit_Inversion3,
+        };
 
         var watch = Stopwatch.StartNew();
         var subsetResult = EqualTemperament.GetEqualTemperamentSubsets(numberOfNotes, numberOfDivisions, noteDistance);
         watch.Stop();
         Console.WriteLine($"CalculateSubsets {watch.ElapsedMilliseconds}ms");
-        Console.WriteLine($"numberOfCombinations {subsetResult.NumberOfCombinations}");
+        Console.WriteLine($"numberOfCombinations {subsetResult.NumberOfCombinations:N0}");
         //Console.WriteLine(string.Join(',', subsetResult.Result));
 
         var result = new List<ScaleRankInfoResult>();
         watch = Stopwatch.StartNew();
-        for (var index = 0; index < subsetResult.NumberOfCombinations; index++)
+        //Parallel.For(0, (int)subsetResult.NumberOfCombinations, (index) =>
+        for (int index = 0; index < (int)subsetResult.NumberOfCombinations; index++)
         {
             var start = index * numberOfNotes;
             var end = start + numberOfNotes;
             var subset = subsetResult.Result.Skip(start).Take(numberOfNotes);
-            var scale = ConvertSubsetToScale(subset, numberOfDivisions, period);
+            var scale = EqualTemperament.ConvertSubsetToScale(subset, numberOfDivisions, period);
 
-            //compute the rank relative to the target rations an its modes rotation
             var rankInfo = GetScaleRankInfo(
               scale,
               targetRatios,
-              maxToleranceInCents
+              maxToleranceInCents,
+              targetChords
             );
             result.Add(rankInfo);
         }
+        //});
         Console.WriteLine($"GetScaleRankInfo {watch.ElapsedMilliseconds}ms");
 
         var orderedResult = result
             .OrderByDescending(item => item.Rank)
-            .Take(16);
+            .Take(34);
 
         SaveOutputFile(orderedResult);
     }
 
 
-    public static ScaleRankInfoResult GetScaleRankInfo(float[] scale, float[] targetScale, float toleranceInCents)
+    public static ScaleRankInfoResult GetScaleRankInfo(float[] scale, float[] targetScale, float toleranceInCents, List<float[]> targetChords)
     {
+        //Compute the rank relative to the target rations an its modes rotation
+        //Considering also a rank addition when some target chords is fully present
+        //----------------------------------------------------------------------------
+
         var minInterval = Operations.GetMinInterval(scale);
         var rotations = Operations.ComputeRotations(scale);
 
@@ -81,6 +120,16 @@ public class NotesExplorer
 
             var rotationRank = closestCount - closestDiffInCents / 1200;
             rank += rotationRank;
+
+            //Full Chord verification
+            foreach (var chord in targetChords)
+            {
+                var chordVerificationResult = Operations.FullMatchTargetRatiosToScale(chord, rotationScale, toleranceInCents);
+                if (chordVerificationResult.Any())
+                {
+                    rank += 7;
+                }
+            }
         }
 
         float[] joinedRotations = rotations.SelectMany(item => item).Distinct().Order().ToArray();
@@ -94,22 +143,9 @@ public class NotesExplorer
         );
     }
 
-    static float[] ConvertSubsetToScale(IEnumerable<int> subset, int numberOfDivisions, float period)
-    {
-        var subsetSize = subset.Count();
-        var scale = new float[subsetSize];
-        for (var index = 0; index < subsetSize - 1; index++)
-        {
-            var noteIndex = subset.ElementAt(index + 1);
-            scale[index] = EqualTemperament.GetEqualTemperamentNote(
-              noteIndex,
-              numberOfDivisions,
-              period
-            );
-        }
-        scale[subsetSize - 1] = period;
-        return scale;
-    }
+
+
+
 
     static void SaveOutputFile(IEnumerable<ScaleRankInfoResult> result)
     {

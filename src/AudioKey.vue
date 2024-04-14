@@ -4,7 +4,10 @@
     <div class="key-label">{{ keyName }}</div>
     <div class="key-tone">
       <div v-if="text">{{ text }}</div>
-      <small>{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>
+      <small>{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>      
+    </div>
+    <div class="key-marker-container">
+      <div class="key-marker" v-for="markerColor in markers" :style="{ 'background-color': markerColor }"></div>
     </div>
   </div>
 </template>
@@ -16,7 +19,7 @@ import { Howl } from "howler";
 
 
 export default {
-  props: ["keyName", "freq", "text", "color", "idx"],
+  props: ["keyName", "freq", "text", "color", "idx", "markers"],
   data() {
     return {
       wave: false,
@@ -466,6 +469,7 @@ export default {
 
 <style>
 .key {
+  position: relative;
   /* width: 40px;
   height: 40px; */
 
@@ -535,5 +539,20 @@ export default {
   -ms-user-select: none;
   /* Internet Explorer/Edge */
   user-select: none;
+}
+
+.key-marker{
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: aquamarine;
+  border: 1px solid white;
+  margin-left:2px;
+}
+
+.key-marker-container{
+  position:absolute;
+  top:0;
 }
 </style>

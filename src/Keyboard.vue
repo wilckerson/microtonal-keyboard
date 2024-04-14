@@ -192,6 +192,7 @@
             <!-- <div>{{getFreq(key.idx)}}</div> -->
             <audio-key :keyName="key.k" :idx="key.idx" :freq="mainFreq * factor * ratio(key.idx)"
               :text="parseFloat(ratioToCents(ratio(key.idx) || 1)).toFixed(0) + '¢'" :color="color(key.idx)"
+              :markers="getMarkersFromChordGroups(ratio(key.idx))"
               @onChangeActive="onChangeActive" />
           </template>
           <template v-if="freqBased">
@@ -209,7 +210,7 @@
     </p>
     <div v-if="enableCustomNotes || mode === 'custom'" style="text-align: left">
       <label>Custom Notes:</label>
-      <textarea v-model="customNotesInput" rows="5" />
+      <textarea v-model="customNotesInput" rows="5"></textarea>
       <!-- <pre>{{customNotes}}</pre> -->
     </div>
     <div>
@@ -262,6 +263,29 @@
         </td>
       </tr>
     </table>
+    <div>
+      <input type="checkbox" v-model="showChordGroups" />
+      Display chord groups
+    </div>
+    <div v-if="showChordGroups">
+      Group tolerance cents: <input type="number" v-model="groupToleranceCents" step="1" min="0" max="1200" style="width: 70px;" />
+      <div>
+        <button v-on:click="use5LimitChords">Use basic 5-limit chords</button>
+        <button v-on:click="use7LimitChords">Use basic 7-limit chords</button>
+        <button v-on:click="use9LimitChords">Use basic 9-limit chords</button>
+        <button v-on:click="clearChordGroups">Clear</button>
+      </div>
+      <table>
+        <tr>
+          <td v-for="(_, index) in chordGroups">
+            <label>
+              <input type="checkbox" v-model="chordGroupsEnabled[index]"/>
+              Chord Group {{index+1}}:  <div class="marker" :style="{ 'background-color': chordGroupsColor[index] }"></div> </label>       
+            <textarea v-model="chordGroups[index]" rows="5" placeholder="Insert your notes"></textarea>
+          </td>          
+        </tr>
+      </table>
+  </div>
   </div>
 </template>
 
@@ -386,6 +410,11 @@ export default {
       displayRotationData: false,
       primeFilter: "",
       availableAudioSamples: window.audioSamples || [],
+      showChordGroups:false,
+      groupToleranceCents: 7,
+      chordGroups: ["","","","","",""],
+      chordGroupsEnabled: [true,true,true,true,true,true],
+      chordGroupsColor: ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#0000ff"],      
       keys: [
         // [
         //   { k: "1", idx: 28 },
@@ -518,8 +547,29 @@ export default {
     },
 
     customNotes: function () {
+     return this.extractCustomNotes(this.customNotesInput);
+    }
+  },
+  methods: {
+    getMarkersFromChordGroups(ratio){
+      if(!this.showChordGroups) return [];
+      const markers = [];
+      const ratioCents = this.ratioToCents(this.normalizeValue(ratio));
+      
+      for (let index = 0; index < this.chordGroups.length; index++) {
+        if(!this.chordGroupsEnabled[index]) continue;
+        const chordGroup = this.chordGroups[index];
+        const groupRatios = this.extractCustomNotes(chordGroup);
+        const includesGroup = groupRatios.find(groupRatio => 
+          Math.abs(this.ratioToCents(groupRatio) - ratioCents) <= this.groupToleranceCents
+        );
+        if(includesGroup) markers.push(this.chordGroupsColor[index]);
+      }
+      return markers;
+    },
+    extractCustomNotes(input){
       var result = [];
-      var lines = this.customNotesInput.split("\n");
+      var lines = (input || "").split("\n");
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
 
@@ -550,9 +600,7 @@ export default {
       }
 
       return result;
-    }
-  },
-  methods: {
+    },
     mountKeyboardKeys() {
       var keyboardKeys = [
         ["Z", "X", "C", "V", "B", "N", "M", "<", ">"],
@@ -1450,8 +1498,20 @@ export default {
               var v = getCalculatedCustomNote(i, this.customNotes, shift);
 
               if (parsedFixedStepValue === 0) {
-                var vLineIdx = (l * Math.floor(this.testValueInt));
-                var vLine = getCalculatedCustomNote(vLineIdx, this.customNotes, 0);
+                //var vLineIdx = (l * Math.floor(this.testValueInt));
+                //var vLine = getCalculatedCustomNote(vLineIdx, this.customNotes, 0);
+                //ratiosArr.push(v * vLine);
+                var vLineIdx = (l * this.testValueInt);
+                if (!this.gtrSingleStep && l == 0) {
+                  vLineIdx = this.gtrStep1;
+                } else if (!this.gtrSingleStep && l == 1) {
+                  vLineIdx = this.gtrStep2;
+                } else if (!this.gtrSingleStep && l == 2) {
+                  vLineIdx = this.gtrStep3;
+                } else if (!this.gtrSingleStep && l == 3) {
+                  vLineIdx = this.gtrStep4;
+                }
+                vLine = Math.pow(this.base, (vLineIdx / this.eqt));
                 ratiosArr.push(v * vLine);
               } else {
                 var vLine = Math.pow(parsedFixedStepValue, l);
@@ -2251,10 +2311,10 @@ export default {
 
       if (normRatio) {
         var h = (normRatio - 1) / (this.equivalence - 1 || 1); //Matriz
-        var s = 0.77; //Saturaçao
+        var s = this.showChordGroups ? 0.3 : 0.6; //Saturaçao
         var v = 1; //range //Brilho
         var c = this.HSVtoRGB(h, s, v);
-        return "rgb(" + c.r + "," + c.g + "," + c.b + ")";
+        return "rgba(" + c.r + "," + c.g + "," + c.b + ")";
       }
 
       //return '';
@@ -2382,6 +2442,29 @@ export default {
     onChangeAudioSample(elm) {
       window.selectedAudioSample = elm.target.value;
       window.audioCache = undefined;
+    },
+    use5LimitChords(){
+      Vue.set(this.chordGroups, 0, "1/1 \n5/4 \n3/2 \n2/1")
+      Vue.set(this.chordGroups, 1, "1/1 \n6/5 \n8/5 \n2/1")
+      Vue.set(this.chordGroups, 2, "1/1 \n4/3 \n5/3 \n2/1")
+    },
+    use7LimitChords(){
+      Vue.set(this.chordGroups, 0, "1/1 \n5/4 \n3/2 \n7/4 \n2/1")
+      Vue.set(this.chordGroups, 1, "1/1 \n6/5 \n7/5 \n8/5 \n2/1")
+      Vue.set(this.chordGroups, 2, "1/1 \n7/6 \n4/3 \n5/3 \n2/1")
+      Vue.set(this.chordGroups, 3, "1/1 \n8/7 \n10/7 \n12/7 \n2/1")
+    },
+    use9LimitChords(){
+      Vue.set(this.chordGroups, 0, "1/1 \n9/8 \n5/4 \n3/2 \n7/4 \n2/1")
+      Vue.set(this.chordGroups, 1, "1/1 \n6/5 \n7/5 \n8/5 \n9/5 \n2/1")
+      Vue.set(this.chordGroups, 2, "1/1 \n7/6 \n4/3 \n3/2 \n5/3 \n2/1")
+      Vue.set(this.chordGroups, 3, "1/1 \n8/7 \n9/7 \n10/7 \n12/7 \n2/1")
+      Vue.set(this.chordGroups, 4, "1/1 \n10/9 \n4/3 \n14/9 \n16/9 \n2/1")
+    },
+    clearChordGroups(){
+      for (let index = 0; index < this.chordGroups.length; index++) {
+        Vue.set(this.chordGroups, index, "");        
+      }
     }
   },
   watch: {
@@ -2619,5 +2702,14 @@ table.rotation-data td {
   border: 1px solid lightgray;
   padding: 2px;
   min-width: 20px;
+}
+
+.marker{
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: aquamarine;
+  border: 1px solid white;
 }
 </style>

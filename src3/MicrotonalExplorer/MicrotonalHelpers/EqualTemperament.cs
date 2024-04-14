@@ -165,4 +165,21 @@ public static class EqualTemperament
         }
         return (float)Math.Pow(period, (float)noteIndex / numberOfDivisions);
     }
+
+    public static float[] ConvertSubsetToScale(IEnumerable<int> subset, int numberOfDivisions, float period)
+    {
+        var subsetSize = subset.Count();
+        var scale = new float[subsetSize];
+        for (var index = 0; index < subsetSize - 1; index++)
+        {
+            var noteIndex = subset.ElementAt(index + 1);
+            scale[index] = GetEqualTemperamentNote(
+              noteIndex,
+              numberOfDivisions,
+              period
+            );
+        }
+        scale[subsetSize - 1] = period;
+        return scale;
+    }
 }
