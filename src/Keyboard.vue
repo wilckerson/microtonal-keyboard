@@ -140,10 +140,12 @@
 
         </span>
         <span v-if="!gtrSingleStep">
-          <input type="number" v-model="gtrStep1" :step="1 / stepDivision" />
-          <input type="number" v-model="gtrStep2" :step="1 / stepDivision" />
-          <input type="number" v-model="gtrStep3" :step="1 / stepDivision" />
-          <input type="number" v-model="gtrStep4" :step="1 / stepDivision" />
+          <input type="number" v-model="gtrStep1" :step="1 / stepDivision" style="width: 50px;" />
+          <input type="number" v-model="gtrStep2" :step="1 / stepDivision" style="width: 50px;" />
+          <input type="number" v-model="gtrStep3" :step="1 / stepDivision" style="width: 50px;" />
+          <input type="number" v-model="gtrStep4" :step="1 / stepDivision" style="width: 50px;" />
+          <input type="number" v-model="gtrStep5" :step="1 / stepDivision" style="width: 50px;" />
+          <input type="number" v-model="gtrStep6" :step="1 / stepDivision" style="width: 50px;" />
         </span>
         Steps division:
         <input type="number" v-model="stepDivision" :step="1" style="width: 70px" />
@@ -403,6 +405,8 @@ export default {
       gtrStep2: 0,
       gtrStep3: 0,
       gtrStep4: 0,
+      gtrStep5: 0,
+      gtrStep6: 0,
       enableCustomNotes: false,
       customNotesInput: "",
       fixedStepValue: 0,
@@ -607,6 +611,8 @@ export default {
         ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
         ["Q", "W", "E", "R", "T", "Y", "U", "I", "O"],
         ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        ["", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", ""],
       ];
 
       var result = [];
@@ -1475,7 +1481,8 @@ export default {
         if (this.enableCustomNotes && this.customNotes.length == 0) { return [1] }
         var parsedFixedStepValue = parseFloat(this.fixedStepValue);
 
-        for (let l = 0; l < 4; l++) {
+        const keyRows = this.keys.length
+        for (let l = 0; l < keyRows; l++) {
           //for (let l = 0; l < lineRatios.length; l++) {
           //const vLine = lineRatios[l];
 
@@ -1509,7 +1516,11 @@ export default {
                 } else if (!this.gtrSingleStep && l == 2) {
                   vLineIdx = this.gtrStep3;
                 } else if (!this.gtrSingleStep && l == 3) {
-                  vLineIdx = this.gtrStep4;
+                  vLineIdx = this.gtrStep4;                
+                } else if (!this.gtrSingleStep && l == 4) {
+                  vLineIdx = this.gtrStep5;                
+                } else if (!this.gtrSingleStep && l == 5) {
+                  vLineIdx = this.gtrStep6;
                 }
                 vLine = Math.pow(this.base, (vLineIdx / this.eqt));
                 ratiosArr.push(v * vLine);
@@ -1533,6 +1544,10 @@ export default {
                   vLineIdx = this.gtrStep3;
                 } else if (!this.gtrSingleStep && l == 3) {
                   vLineIdx = this.gtrStep4;
+                } else if (!this.gtrSingleStep && l == 4) {
+                  vLineIdx = this.gtrStep5;
+                } else if (!this.gtrSingleStep && l == 5) {
+                  vLineIdx = this.gtrStep6;
                 }
                 vLine = Math.pow(this.base, (vLineIdx / this.eqt));
               } else {
