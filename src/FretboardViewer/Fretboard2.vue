@@ -2,8 +2,13 @@
   <div>
     <div class="fretboard-wrapper">
       <div class="strings-tuning">
-        <div class="string-tuning-row"><input type="number" /></div>
-        <div class="string-tuning-row"><input type="number" /></div>
+        <div
+          class="string-tuning-row"
+          v-for="(_, idx) in stringsTuningIdx"
+          v-bind:key="'string-tuning-row-' + idx"
+        >
+          <input type="number" v-model="stringsTuningIdx[idx]" />
+        </div>
       </div>
       <div class="fretboard-scroller">
         <div class="fretboard">
@@ -29,23 +34,49 @@
       </div>
     </div>
     <div class="control-panels">
-      <div class="control-panel">Control 1</div>
-      <div class="control-panel">Control 2</div>
+      <div class="control-panel">
+        Control 1
+        <custom-notes @change="onChangeCustomNotes" />
+      </div>
+      <div class="control-panel">
+        <div>
+          <span>Normalize display:</span>
+          <input type="checkbox" v-model="normalizeDisplay" />
+        </div>
+      </div>
+      <div class="control-panel">Control 3</div>
     </div>
   </div>
 </template>
 
 <script>
 import AudioKey from "../AudioKey.vue";
+import CustomNotes from "../CustomNotes.vue";
 export default {
-  components: { AudioKey },
+  components: { AudioKey, CustomNotes },
   data() {
     return {
-      fretboardData: []
+      scale: [9 / 8, 5 / 4, 4 / 3, 3 / 2, 5 / 3, 15 / 8, 2 / 1],
+      baseFreq: 220,
+      stringsTuningIdx: [0, 0, 0, 0],
+      normalizeDisplay: false
     };
   },
-  mounted() {
-    this.fretboardData = buildFretboardData();
+  mounted() {},
+  computed: {
+    fretboardData() {
+      return buildFretboardData(
+        this.baseFreq,
+        this.scale,
+        this.stringsTuningIdx.map(x => parseInt(x)),
+        this.normalizeDisplay
+      );
+    }
+  },
+  methods: {
+    onChangeCustomNotes(notes) {
+      this.scale = notes;
+    }
   }
 };
 
@@ -76,16 +107,36 @@ function computeFretPercentageDistance(ratio, periodRatio) {
   return Math.log(ratio) / Math.log(periodRatio);
 }
 
-function buildFretsData(scale, baseFreq) {
+function buildFretData(ratio, baseFreq, width, normalizeDisplay, periodRatio) {
+  const displayRatio = normalizeDisplay
+    ? normalizeRatio(ratio, periodRatio)
+    : ratio;
+  return {
+    text: displayRatio.toFixed(4),
+    freq: baseFreq * ratio,
+    width: width
+  };
+}
+
+function buildFretsData(
+  scale,
+  baseFreq,
+  relativeRatio = 1,
+  normalizeDisplay = false
+) {
   const periodRatio = getScalePeriod(scale);
   const zeroFretPercentageDistance = 5;
   let lastPecentageDistance = zeroFretPercentageDistance;
   const result = [];
-  result.push({
-    text: (1).toFixed(4),
-    freq: baseFreq,
-    width: zeroFretPercentageDistance
-  });
+  result.push(
+    buildFretData(
+      relativeRatio,
+      baseFreq,
+      zeroFretPercentageDistance,
+      normalizeDisplay,
+      periodRatio
+    )
+  );
 
   for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
     const ratio = scale[ratioIdx];
@@ -98,40 +149,49 @@ function buildFretsData(scale, baseFreq) {
     fretWidth = fretPercentageDistance - lastPecentageDistance;
     lastPecentageDistance = fretPercentageDistance;
 
-    result.push({
-      text: ratio.toFixed(4),
-      freq: baseFreq * ratio,
-      width: fretWidth
-    });
+    result.push(
+      buildFretData(
+        ratio * relativeRatio,
+        baseFreq,
+        fretWidth,
+        normalizeDisplay,
+        periodRatio
+      )
+    );
   }
   return result;
 }
 
-function buildFretboardData(scale, stringsTuningIdx) {
-  scale = [1.25,1.5, 2];
-  stringsTuningIdx = [3, 2,1,0];
-  const baseFreq = 220;
+function buildFretboardData(
+  baseFreq,
+  scale,
+  stringsTuningIdx,
+  normalizeDisplay
+) {
+  if (!scale || scale.length === 0) {
+    scale = [2];
+  }
+  const periodRatio = getScalePeriod(scale);
   const data = stringsTuningIdx.map(stringTuningIdx => {
+    const relativeRatio =
+      stringTuningIdx === 0
+        ? 1
+        : scale[(stringTuningIdx - 1) % scale.length] *
+          Math.pow(
+            periodRatio,
+            Math.floor((stringTuningIdx - 1) / scale.length)
+          );
+
     const relativeScale = rotateScale(scale, stringTuningIdx);
-    console.log(relativeScale);
-    return buildFretsData(relativeScale, baseFreq);
+    return buildFretsData(
+      relativeScale,
+      baseFreq,
+      relativeRatio,
+      normalizeDisplay
+    );
   });
   return applyKeyMapping(data);
 }
-
-// function rotateScale(scale, startIdx) {
-//   const scalePeriod = getScalePeriod(scale);
-//   const scaleNoPeriod = scale.slice(0, scale.length - 1);
-//   const newRootRatio = scaleNoPeriod[startIdx % scaleNoPeriod.length];
-//   const result = [];
-//   for (let index = 0; index < scaleNoPeriod.length; index++) {
-//     const ratio = scaleNoPeriod[(startIdx + index) % scaleNoPeriod.length];
-//     const newRatio = normalizeRatio(ratio / newRootRatio, scalePeriod);
-//     result.push(newRatio);
-//   }
-//   result.push(scalePeriod);
-//   return result;
-// }
 
 function rotateScale(scale, count) {
   if (count < 0)
@@ -146,7 +206,7 @@ function rotateScale(scale, count) {
   for (let index = 0; index < scale.length; index++) {
     const ratio = scale[(count + index) % scale.length];
     var idxPow = Math.floor((count + index) / scale.length);
-    let newRatio = (ratio * Math.pow(scalePeriod, idxPow)) / newRootRatio;   
+    let newRatio = (ratio * Math.pow(scalePeriod, idxPow)) / newRootRatio;
     result.push(newRatio);
   }
   return result;
@@ -180,17 +240,20 @@ function getScalePeriod(scale) {
 }
 
 .control-panel {
+  margin-top: 24px;
+  text-align: left;
   flex-grow: 1;
 }
 /* ======== String tuning ======== */
 .strings-tuning {
   flex: 0;
-  padding-right: 8px;
+  padding-right: 6px;
 }
 
 .string-tuning-row {
   height: 57px;
-  margin-top: 12px;
+  padding-top: 20px;
+  box-sizing: border-box;
 }
 
 .string-tuning-row input {
