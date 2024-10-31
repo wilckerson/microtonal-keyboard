@@ -56,6 +56,7 @@
 <script>
 /*
 TODOs: 
+- [] Fix fret positions
 - [] Support negative values on string tuning index
 - [] Display position ratio 
 - [] Dropdown to change strign tuning input mode (index, customNoteInput) 
