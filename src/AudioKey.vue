@@ -9,7 +9,7 @@
     @touchend="mouseUp"
     :style="{ 'background-color': color }"
   >
-    <div class="key-label">{{ keyName }}</div>
+    <div class="key-label">[{{ keyName }}]</div>
     <div class="key-tone">
       <div v-if="text">{{ text }}</div>
       <small v-if="!hideFreq">{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>
