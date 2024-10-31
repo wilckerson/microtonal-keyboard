@@ -1,13 +1,25 @@
 <template>
-  <div class="key" :class="{ active: active }" @mousedown="mouseDown" @mouseup="mouseUp" @touchstart="mouseDown"
-    @touchend="mouseUp" :style="{ 'background-color': color }">
+  <div
+    class="key"
+    :class="{ active: active }"
+    @mousedown="mouseDown"
+    @mouseup="mouseUp"
+    @mouseout="mouseUp"
+    @touchstart="mouseDown"
+    @touchend="mouseUp"
+    :style="{ 'background-color': color }"
+  >
     <div class="key-label">{{ keyName }}</div>
     <div class="key-tone">
       <div v-if="text">{{ text }}</div>
-      <small>{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>      
+      <small v-if="!hideFreq">{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>
     </div>
     <div class="key-marker-container">
-      <div class="key-marker" v-for="markerColor in markers" :style="{ 'background-color': markerColor }"></div>
+      <div
+        class="key-marker"
+        v-for="markerColor in markers"
+        :style="{ 'background-color': markerColor }"
+      ></div>
     </div>
   </div>
 </template>
@@ -16,10 +28,19 @@
 const AUDIO_CACHE_SIZE = 6;
 import { Howl } from "howler";
 
-
-
 export default {
-  props: ["keyName", "freq", "text", "color", "idx", "markers"],
+  props: {
+    keyName: String,
+    freq: Number,
+    text: String,
+    color: String,
+    idx: String,
+    markers: Array,
+    hideFreq: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       wave: false,
@@ -30,17 +51,17 @@ export default {
         "<": 188,
         ">": 190,
         ";": 191,
-        "\\": 226,
+        "\\": 226
       },
       sound: undefined,
       soundFreq: 1,
       pressed: false,
       clickTimer: 0,
       audioFile: undefined,
-      audioCacheIdx: -1,
+      audioCacheIdx: -1
     };
   },
-  mounted: function () {
+  mounted: function() {
     //return;
     //if ((!this.freq && this.freq != 0) || !this.keyName) {
     if (!this.freq && this.freq != 0) {
@@ -76,7 +97,6 @@ export default {
     //this.audioFile = './audio-samples/Alesis-S4-Plus-SterMarimb-C4.wav'; //Marimba1
     //this.audioFile = './audio-samples/Ensoniq-ESQ-1-Marimba-C3.wav'; //Marimba1
     //this.audioFile = './audio-samples/F2_MelloKalimbaTape_SP_01_376.mp3'; //Kalimba
-
 
     //     ///Howler
     //     window.audioCache[this.freq] = new Howl({
@@ -158,11 +178,10 @@ export default {
     //window.addEventListener("click", this.playSoundNote);
     // window.addEventListener("click", this.start);
 
-
     window.addEventListener("keydown", this.keyDown);
     window.addEventListener("keyup", this.keyUp);
   },
-  beforeDestroy: function () {
+  beforeDestroy: function() {
     window.removeEventListener("keydown", this.keyDown);
 
     window.removeEventListener("keyup", this.keyUp);
@@ -185,12 +204,14 @@ export default {
       //Get sound from cache
       if (!window["audioCache"]) {
         const selectedAudioSampleFile = window.selectedAudioSample;
-        console.log("Initializing audio cache with audioFile: " + selectedAudioSampleFile)
+        console.log(
+          "Initializing audio cache with audioFile: " + selectedAudioSampleFile
+        );
         window["audioCache"] = [];
         for (let index = 0; index < AUDIO_CACHE_SIZE; index++) {
           var audioCacheItem = {
             inUse: false,
-            sound: new Howl({ src: [selectedAudioSampleFile] }),
+            sound: new Howl({ src: [selectedAudioSampleFile] })
           };
           window["audioCache"].push(audioCacheItem);
         }
@@ -210,11 +231,9 @@ export default {
 
       var rate = parseFloat(this.freq) / this.soundFreq;
 
-
-
       //Busca um cache disponivel
       this.audioCacheIdx = window["audioCache"].findIndex(
-        (i) => i.inUse == false
+        i => i.inUse == false
       );
 
       if (this.audioCacheIdx != -1) {
@@ -355,7 +374,7 @@ export default {
       // vca.connect(audioCtx.destination);
       //this.vca = vca;
     },
-    keyUp: function (e) {
+    keyUp: function(e) {
       if (this.isIgnoredKey(e.key)) {
         return;
       }
@@ -372,10 +391,11 @@ export default {
         this.stopSoundNote();
       }
     },
-    keyDown: function (e) {
-
+    keyDown: function(e) {
       //Ignore if is typing in any field
-      if (document.activeElement !== document.body) { return; }
+      if (document.activeElement !== document.body) {
+        return;
+      }
 
       if (this.isIgnoredKey(e.key)) {
         return;
@@ -397,14 +417,14 @@ export default {
       var ignore = ignoreList.indexOf(key) != -1;
       return ignore;
     },
-    mouseDown: function () {
+    mouseDown: function() {
       clearTimeout(this.clickTimer);
       this.clickTimer = setTimeout(() => {
         this.active = true;
         this.playSoundNote();
       }, 50);
     },
-    mouseUp: function () {
+    mouseUp: function() {
       this.active = false;
       this.stopSoundNote();
     },
@@ -424,14 +444,14 @@ export default {
         }
       }
       return gVco;
-    },
+    }
   },
   watch: {
-    active: function () {
+    active: function() {
       this.$emit("onChangeActive", {
         freq: this.freq,
         keyName: this.keyName,
-        idx: this.idx,
+        idx: this.idx
       });
 
       // var m = 0.05;
@@ -457,13 +477,13 @@ export default {
       //   }
       // }
     },
-    freq: function (val) {
+    freq: function(val) {
       //console.log("freq", val);
       if (this.vco) {
         this.vco.frequency.value = val;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -541,18 +561,18 @@ export default {
   user-select: none;
 }
 
-.key-marker{
+.key-marker {
   display: inline-block;
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background-color: aquamarine;
   border: 1px solid white;
-  margin-left:2px;
+  margin-left: 2px;
 }
 
-.key-marker-container{
-  position:absolute;
-  top:0;
+.key-marker-container {
+  position: absolute;
+  top: 0;
 }
 </style>
