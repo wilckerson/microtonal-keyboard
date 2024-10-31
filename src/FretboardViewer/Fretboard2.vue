@@ -22,7 +22,7 @@
               :freq="fretData.freq"
               :text="fretData.text"
               hideFreq
-              :style="'width: ' + fretData.width"
+              :style="'width: ' + fretData.width + '%'"
             />
           </div>
         </div>
@@ -72,25 +72,104 @@ function applyKeyMapping(fretboardData) {
   );
 }
 
-function buildFretboardData() {
-  const data = [
-    [
-      { text: "D", freq: 210, width: "10%", keyName: "" },
-      { text: "E", freq: 220, width: "25%", keyName: "" },
-      { text: "F", freq: 230, width: "65%", keyName: "" }
-    ],
-    [
-      { text: "A", freq: 110, width: "10%", keyName: "" },
-      { text: "B", freq: 120, width: "70%", keyName: "" },
-      { text: "C", freq: 130, width: "20%", keyName: "" }
-    ],
-    [
-      { text: "E", freq: 80, width: "10%", keyName: "" },
-      { text: "F", freq: 90, width: "30%", keyName: "" },
-      { text: "F#", freq: 100, width: "60%", keyName: "" }
-    ]
-  ];
+function computeFretPercentageDistance(ratio, periodRatio) {
+  return Math.log(ratio) / Math.log(periodRatio);
+}
+
+function buildFretsData(scale, baseFreq) {
+  const periodRatio = getScalePeriod(scale);
+  const zeroFretPercentageDistance = 5;
+  let lastPecentageDistance = zeroFretPercentageDistance;
+  const result = [];
+  result.push({
+    text: (1).toFixed(4),
+    freq: baseFreq,
+    width: zeroFretPercentageDistance
+  });
+
+  for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
+    const ratio = scale[ratioIdx];
+    let fretWidth = 0;
+
+    const remainingPercentageDistance = 100 - zeroFretPercentageDistance;
+    const fretPercentageDistance =
+      remainingPercentageDistance *
+      computeFretPercentageDistance(ratio, periodRatio);
+    fretWidth = fretPercentageDistance - lastPecentageDistance;
+    lastPecentageDistance = fretPercentageDistance;
+
+    result.push({
+      text: ratio.toFixed(4),
+      freq: baseFreq * ratio,
+      width: fretWidth
+    });
+  }
+  return result;
+}
+
+function buildFretboardData(scale, stringsTuningIdx) {
+  scale = [1.25,1.5, 2];
+  stringsTuningIdx = [3, 2,1,0];
+  const baseFreq = 220;
+  const data = stringsTuningIdx.map(stringTuningIdx => {
+    const relativeScale = rotateScale(scale, stringTuningIdx);
+    console.log(relativeScale);
+    return buildFretsData(relativeScale, baseFreq);
+  });
   return applyKeyMapping(data);
+}
+
+// function rotateScale(scale, startIdx) {
+//   const scalePeriod = getScalePeriod(scale);
+//   const scaleNoPeriod = scale.slice(0, scale.length - 1);
+//   const newRootRatio = scaleNoPeriod[startIdx % scaleNoPeriod.length];
+//   const result = [];
+//   for (let index = 0; index < scaleNoPeriod.length; index++) {
+//     const ratio = scaleNoPeriod[(startIdx + index) % scaleNoPeriod.length];
+//     const newRatio = normalizeRatio(ratio / newRootRatio, scalePeriod);
+//     result.push(newRatio);
+//   }
+//   result.push(scalePeriod);
+//   return result;
+// }
+
+function rotateScale(scale, count) {
+  if (count < 0)
+    throw Error(
+      "Invalid parameter count. It should be greather than or equal to zero."
+    );
+  count = count % scale.length;
+  if (count === 0) return scale;
+  const scalePeriod = getScalePeriod(scale);
+  const newRootRatio = scale[(count - 1) % scale.length];
+  const result = [];
+  for (let index = 0; index < scale.length; index++) {
+    const ratio = scale[(count + index) % scale.length];
+    var idxPow = Math.floor((count + index) / scale.length);
+    let newRatio = (ratio * Math.pow(scalePeriod, idxPow)) / newRootRatio;   
+    result.push(newRatio);
+  }
+  return result;
+}
+
+function normalizeRatio(ratio, period) {
+  if (period == 1) {
+    return ratio;
+  }
+  if (ratio > period) {
+    while (ratio > period) {
+      ratio = ratio / period;
+    }
+  } else if (ratio > 0 && ratio < 1) {
+    while (ratio < 1) {
+      ratio = ratio * period;
+    }
+  }
+  return ratio;
+}
+
+function getScalePeriod(scale) {
+  return scale[scale.length - 1];
 }
 </script>
 

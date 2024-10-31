@@ -2617,7 +2617,7 @@ for (let p = 0; p < permutations.length; p++) {
   }, 1);
   result.pop();
 }
-console.log(result.toString());
+//console.log(result.toString());
 // console.log();
 
 function isPrime(num) {
