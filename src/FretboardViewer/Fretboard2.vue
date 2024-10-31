@@ -35,25 +35,40 @@
     </div>
     <div class="control-panels">
       <div class="control-panel">
-        Control 1
         <custom-notes @change="onChangeCustomNotes" />
       </div>
       <div class="control-panel">
         <div>
           <span>Normalize display:</span>
           <input type="checkbox" v-model="normalizeDisplay" />
+          <!-- <toggle-switch v-model="normalizeDisplay" /> -->
+        </div>
+        <div>
+          Base frequency (Hz):
+          <input type="number" v-model="baseFreq" style="width: 70px;" />
         </div>
       </div>
-      <div class="control-panel">Control 3</div>
+      <div class="control-panel"></div>
     </div>
   </div>
 </template>
 
 <script>
+/*
+TODOs: 
+- [] Support negative values on string tuning index
+- [] Display position ratio 
+- [] Dropdown to change strign tuning input mode (index, customNoteInput) 
+- [] Display active interval 
+- [] Support navigate key mappings
+- [] Dropdown display note as (ratio / cents)
+*/
+
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
+import ToggleSwitch from "../ToggleSwitch.vue";
 export default {
-  components: { AudioKey, CustomNotes },
+  components: { AudioKey, CustomNotes, ToggleSwitch },
   data() {
     return {
       scale: [9 / 8, 5 / 4, 4 / 3, 3 / 2, 5 / 3, 15 / 8, 2 / 1],
@@ -271,7 +286,7 @@ function getScalePeriod(scale) {
 .fretboard {
   border: 1px solid #d3d0c7;
   background-color: #f0eee9;
-  /* width: 900px; */
+  min-width: 900px;
 }
 
 .fretboard-row {
