@@ -41,15 +41,15 @@
 <script>
 /*
 TODOs: 
-- [] Fix fret positions
+- [x] Fix fret positions
+- [x] Support custom notes names
 - [] Support negative values on string tuning index
-- [] Display position ratio 
-- [] Dropdown to change strign tuning input mode (index, customNoteInput) 
-- [] Display active interval 
-- [] Support navigate key mappings
-- [] Dropdown display note as (ratio / cents)
-- [] Support custom notes names
 - [] Support disable frets to allow easy subset explorations
+- [] Support navigate key mappings
+- [] Display active interval 
+- [] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
+- [] Dropdown to change strings tuning input mode (index, customNoteInput) 
+- [] Custom notes templates (12edo with names, 31edo with names, etc)
 */
 
 import AudioKey from "../AudioKey.vue";
@@ -62,6 +62,7 @@ export default {
   data() {
     return {
       scale: [9 / 8, 5 / 4, 4 / 3, 3 / 2, 5 / 3, 15 / 8, 2 / 1],
+      noteNames: ["D", "E", "F", "G", "A", "B", "C"],
       baseFreq: 220,
       stringsTuningIdx: [0, 0, 0, 0],
       normalizeDisplay: false
@@ -74,13 +75,15 @@ export default {
         this.baseFreq,
         this.scale,
         this.stringsTuningIdx.map(x => parseInt(x)),
-        this.normalizeDisplay
+        this.normalizeDisplay,
+        this.noteNames
       );
     }
   },
   methods: {
-    onChangeCustomNotes(notes) {
+    onChangeCustomNotes(notes, noteNames) {
       this.scale = notes;
+      this.noteNames = noteNames;
     }
   }
 };
@@ -166,7 +169,7 @@ export default {
   opacity: 0.25;
 }
 
-.fret-zero {
+.fretboard-viewer .fret-zero {
   border-right: 10px solid gray;
 }
 </style>

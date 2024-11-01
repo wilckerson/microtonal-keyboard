@@ -3,7 +3,7 @@ import {
   normalizeRatio,
   getKeyName,
   rotateScale
-} from "./core";
+} from "../core/core";
 
 function applyKeyMapping(fretboardData) {
   return fretboardData.map((rowData, rowIdx) =>
@@ -20,12 +20,19 @@ function computeFretPercentageDistance(ratio, periodRatio) {
   return ratioDistance / periodDistance;
 }
 
-function buildFretData(ratio, baseFreq, width, normalizeDisplay, periodRatio) {
+function buildFretData(
+  ratio,
+  baseFreq,
+  width,
+  normalizeDisplay,
+  periodRatio,
+  noteName
+) {
   const displayRatio = normalizeDisplay
     ? normalizeRatio(ratio, periodRatio)
     : ratio;
   return {
-    text: displayRatio.toFixed(4),
+    text: noteName || displayRatio.toFixed(4),
     freq: baseFreq * ratio,
     width: width
   };
@@ -35,7 +42,9 @@ function buildFretsData(
   scale,
   baseFreq,
   relativeRatio = 1,
-  normalizeDisplay = false
+  normalizeDisplay = false,
+  noteNames = [],
+  stringTuningIdx = 0
 ) {
   const periodRatio = getScalePeriod(scale);
   const zeroFretPercentageDistance = 5;
@@ -47,10 +56,14 @@ function buildFretsData(
       baseFreq,
       zeroFretPercentageDistance,
       normalizeDisplay,
-      periodRatio
+      periodRatio,
+      noteNames[
+        stringTuningIdx > 0
+          ? (stringTuningIdx - 1) % noteNames.length
+          : noteNames.length - 1
+      ]
     )
   );
-  debugger;
   for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
     const ratio = scale[ratioIdx];
     let fretWidth = 0;
@@ -68,7 +81,8 @@ function buildFretsData(
         baseFreq,
         fretWidth,
         normalizeDisplay,
-        periodRatio
+        periodRatio,
+        noteNames[(stringTuningIdx + ratioIdx) % noteNames.length]
       )
     );
   }
@@ -79,7 +93,8 @@ export function buildFretboardData(
   baseFreq,
   scale,
   stringsTuningIdx,
-  normalizeDisplay
+  normalizeDisplay,
+  noteNames
 ) {
   if (!scale || scale.length === 0) {
     scale = [2];
@@ -100,7 +115,9 @@ export function buildFretboardData(
       relativeScale,
       baseFreq,
       relativeRatio,
-      normalizeDisplay
+      normalizeDisplay,
+      noteNames,
+      stringTuningIdx
     );
   });
   return applyKeyMapping(data);
