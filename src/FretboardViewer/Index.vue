@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h1>Fretboard Viewer</h1>
-        <Fretboard2/>
+        <h2>Fretboard Viewer</h2>
+        <Fretboard2 />
     </div>
 </template>
 
@@ -9,7 +9,7 @@
 import Fretboard2 from "./Fretboard2.vue"
 
 export default {
-    components:{
+    components: {
         Fretboard2
     }
 }

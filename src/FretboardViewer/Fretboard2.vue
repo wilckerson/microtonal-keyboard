@@ -1,34 +1,19 @@
 <template>
-  <div>
+  <div class="fretboard-viewer">
     <div class="fretboard-wrapper">
       <div class="strings-tuning">
-        <div
-          class="string-tuning-row"
-          v-for="(_, idx) in stringsTuningIdx"
-          v-bind:key="'string-tuning-row-' + idx"
-        >
+        <div class="string-tuning-row" v-for="(_, idx) in stringsTuningIdx" v-bind:key="'string-tuning-row-' + idx">
           <input type="number" v-model="stringsTuningIdx[idx]" />
         </div>
       </div>
       <div class="fretboard-scroller">
         <div class="fretboard">
-          <div
-            v-for="(rowData, rowIdx) in fretboardData"
-            v-bind:key="'fretboard-row-' + rowIdx"
-            class="fretboard-row"
-          >
+          <div v-for="(rowData, rowIdx) in fretboardData" v-bind:key="'fretboard-row-' + rowIdx" class="fretboard-row">
             <div class="string-indicator"></div>
-            <audio-key
-              v-for="(fretData, fretIdx) in rowData"
-              v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
-              :class="fretIdx === 0 ? 'fret-zero' : ''"
-              :keyName="fretData.keyName"
-              :idx="'fret-' + rowIdx + '-' + fretIdx"
-              :freq="fretData.freq"
-              :text="fretData.text"
-              hideFreq
-              :style="'width: ' + fretData.width + '%'"
-            />
+            <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
+              :class="fretIdx === 0 ? 'fret-zero' : ''" :keyName="fretData.keyName"
+              :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text" hideFreq
+              :style="'width: ' + fretData.width + '%'" />
           </div>
         </div>
       </div>
@@ -63,11 +48,15 @@ TODOs:
 - [] Display active interval 
 - [] Support navigate key mappings
 - [] Dropdown display note as (ratio / cents)
+- [] Support custom notes names
+- [] Support disable frets to allow easy subset explorations
 */
 
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
+import { buildFretboardData } from "./fretboard";
+
 export default {
   components: { AudioKey, CustomNotes, ToggleSwitch },
   data() {
@@ -78,7 +67,7 @@ export default {
       normalizeDisplay: false
     };
   },
-  mounted() {},
+  mounted() { },
   computed: {
     fretboardData() {
       return buildFretboardData(
@@ -95,158 +84,6 @@ export default {
     }
   }
 };
-
-function getKeyName(i, j) {
-  var keys = [
-    ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O"],
-    ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-    ["Z", "X", "C", "V", "B", "N", "M", "¼", "¾"]
-  ];
-  if (i >= 0 && i < 4 && j < 9) {
-    return keys[i][j];
-  } else {
-    return "";
-  }
-}
-
-function applyKeyMapping(fretboardData) {
-  return fretboardData.map((rowData, rowIdx) =>
-    rowData.map((fretData, fretIdx) => ({
-      ...fretData,
-      keyName: getKeyName(rowIdx, fretIdx)
-    }))
-  );
-}
-
-function computeFretPercentageDistance(ratio, periodRatio) {
-  return Math.log(ratio) / Math.log(periodRatio);
-}
-
-function buildFretData(ratio, baseFreq, width, normalizeDisplay, periodRatio) {
-  const displayRatio = normalizeDisplay
-    ? normalizeRatio(ratio, periodRatio)
-    : ratio;
-  return {
-    text: displayRatio.toFixed(4),
-    freq: baseFreq * ratio,
-    width: width
-  };
-}
-
-function buildFretsData(
-  scale,
-  baseFreq,
-  relativeRatio = 1,
-  normalizeDisplay = false
-) {
-  const periodRatio = getScalePeriod(scale);
-  const zeroFretPercentageDistance = 5;
-  let lastPecentageDistance = zeroFretPercentageDistance;
-  const result = [];
-  result.push(
-    buildFretData(
-      relativeRatio,
-      baseFreq,
-      zeroFretPercentageDistance,
-      normalizeDisplay,
-      periodRatio
-    )
-  );
-
-  for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
-    const ratio = scale[ratioIdx];
-    let fretWidth = 0;
-
-    const remainingPercentageDistance = 100 - zeroFretPercentageDistance;
-    const fretPercentageDistance =
-      remainingPercentageDistance *
-      computeFretPercentageDistance(ratio, periodRatio);
-    fretWidth = fretPercentageDistance - lastPecentageDistance;
-    lastPecentageDistance = fretPercentageDistance;
-
-    result.push(
-      buildFretData(
-        ratio * relativeRatio,
-        baseFreq,
-        fretWidth,
-        normalizeDisplay,
-        periodRatio
-      )
-    );
-  }
-  return result;
-}
-
-function buildFretboardData(
-  baseFreq,
-  scale,
-  stringsTuningIdx,
-  normalizeDisplay
-) {
-  if (!scale || scale.length === 0) {
-    scale = [2];
-  }
-  const periodRatio = getScalePeriod(scale);
-  const data = stringsTuningIdx.map(stringTuningIdx => {
-    const relativeRatio =
-      stringTuningIdx === 0
-        ? 1
-        : scale[(stringTuningIdx - 1) % scale.length] *
-          Math.pow(
-            periodRatio,
-            Math.floor((stringTuningIdx - 1) / scale.length)
-          );
-
-    const relativeScale = rotateScale(scale, stringTuningIdx);
-    return buildFretsData(
-      relativeScale,
-      baseFreq,
-      relativeRatio,
-      normalizeDisplay
-    );
-  });
-  return applyKeyMapping(data);
-}
-
-function rotateScale(scale, count) {
-  if (count < 0)
-    throw Error(
-      "Invalid parameter count. It should be greather than or equal to zero."
-    );
-  count = count % scale.length;
-  if (count === 0) return scale;
-  const scalePeriod = getScalePeriod(scale);
-  const newRootRatio = scale[(count - 1) % scale.length];
-  const result = [];
-  for (let index = 0; index < scale.length; index++) {
-    const ratio = scale[(count + index) % scale.length];
-    var idxPow = Math.floor((count + index) / scale.length);
-    let newRatio = (ratio * Math.pow(scalePeriod, idxPow)) / newRootRatio;
-    result.push(newRatio);
-  }
-  return result;
-}
-
-function normalizeRatio(ratio, period) {
-  if (period == 1) {
-    return ratio;
-  }
-  if (ratio > period) {
-    while (ratio > period) {
-      ratio = ratio / period;
-    }
-  } else if (ratio > 0 && ratio < 1) {
-    while (ratio < 1) {
-      ratio = ratio * period;
-    }
-  }
-  return ratio;
-}
-
-function getScalePeriod(scale) {
-  return scale[scale.length - 1];
-}
 </script>
 
 <style>
@@ -260,6 +97,7 @@ function getScalePeriod(scale) {
   text-align: left;
   flex-grow: 1;
 }
+
 /* ======== String tuning ======== */
 .strings-tuning {
   flex: 0;
@@ -280,14 +118,17 @@ function getScalePeriod(scale) {
 .fretboard-wrapper {
   display: flex;
 }
+
 .fretboard-scroller {
   flex: 1;
   overflow-x: auto;
 }
+
 .fretboard {
   border: 1px solid #d3d0c7;
   background-color: #f0eee9;
   min-width: 900px;
+  text-align: left;
 }
 
 .fretboard-row {
@@ -305,13 +146,13 @@ function getScalePeriod(scale) {
 
 /* ======== Fret ======== */
 
-.key-marker-container {
+.fretboard-viewer .key-marker-container {
   top: auto;
   bottom: 0;
   right: 0;
 }
 
-.key {
+.fretboard-viewer .key {
   padding-right: 8px;
   text-align: right;
   vertical-align: top;
@@ -321,7 +162,7 @@ function getScalePeriod(scale) {
   box-sizing: border-box;
 }
 
-.key-label {
+.fretboard-viewer .key-label {
   opacity: 0.25;
 }
 
