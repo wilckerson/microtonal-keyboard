@@ -2134,7 +2134,7 @@ export default {
         if (numHarmQtd > 0) {
 
           var arrHarm = []
-          var primeList = this.primeFilter?.split(' ').map(v => parseFloat(v));
+          var primeList = this.primeFilter.split(' ').map(v => parseFloat(v));
           var hBase = 1;
           for (let index = 0; index < numHarmQtd; index++) {
             var v = 1;

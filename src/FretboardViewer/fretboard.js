@@ -99,17 +99,8 @@ export function buildFretboardData(
   if (!scale || scale.length === 0) {
     scale = [2];
   }
-  const periodRatio = getScalePeriod(scale);
   const data = stringsTuningIdx.map(stringTuningIdx => {
-    const relativeRatio =
-      stringTuningIdx === 0
-        ? 1
-        : scale[(stringTuningIdx - 1) % scale.length] *
-          Math.pow(
-            periodRatio,
-            Math.floor((stringTuningIdx - 1) / scale.length)
-          );
-
+    const relativeRatio = getRelativeRatioByIndex(scale, stringTuningIdx);
     const relativeScale = rotateScale(scale, stringTuningIdx);
     return buildFretsData(
       relativeScale,
@@ -121,4 +112,22 @@ export function buildFretboardData(
     );
   });
   return applyKeyMapping(data);
+}
+
+export function getRelativeRatioByIndex(scale, index) {
+  const periodRatio = getScalePeriod(scale);
+  if (index === 0) {
+    return 1;
+  } else if (index > 0) {
+    return (
+      scale[(index - 1) % scale.length] *
+      Math.pow(periodRatio, Math.floor((index - 1) / scale.length))
+    );
+  } else if (index < 0) {
+    return (
+      scale[scale.length - 1 - (Math.abs(index) % scale.length)] *
+      Math.pow(periodRatio, -Math.ceil(Math.abs(index - 1) / scale.length))
+    );
+  }
+  return index === 0;
 }

@@ -1,9 +1,9 @@
 export function rotateScale(scale, count) {
-  if (count < 0)
-    throw Error(
-      "Invalid parameter count. It should be greather than or equal to zero."
-    );
-  count = count % scale.length;
+  if (count > 0) {
+    count = Math.abs(count) % scale.length;
+  } else if (count < 0) {
+    count = scale.length - (Math.abs(count) % scale.length);
+  }
   if (count === 0) return scale;
   const scalePeriod = getScalePeriod(scale);
   const newRootRatio = scale[(count - 1) % scale.length];

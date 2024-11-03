@@ -43,7 +43,7 @@
 TODOs: 
 - [x] Fix fret positions
 - [x] Support custom notes names
-- [] Support negative values on string tuning index
+- [x] Support negative values on string tuning index
 - [] Support disable frets to allow easy subset explorations
 - [] Support navigate key mappings
 - [] Display active interval 
