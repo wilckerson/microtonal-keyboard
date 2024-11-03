@@ -50,3 +50,8 @@ export function getKeyName(i, j) {
     return "";
   }
 }
+
+export function ratioToCents(ratio) {
+  var cents = 1200 * Math.log2(parseFloat(ratio));
+  return cents;
+}

@@ -17,8 +17,10 @@
           </div>
         </div>
         <div class="fretboard-fret-numbers">
-          <div class="fretboard-fret-number" v-for="(fretData, fretIdx) in fretboardData[fretboardData.length - 1]"
-            v-bind:key="'fret-number-' + rowIdx + '-' + fretIdx" :style="'width: ' + fretData.width + '%'">{{ fretIdx }}
+          <div class="fretboard-fret-number" v-for="(fretData, fretIdx) in fretboardData[
+            fretboardData.length - 1
+          ]" v-bind:key="'fret-number-' + fretIdx" :style="'width: ' + fretData.width + '%'">
+            {{ fretIdx }}
           </div>
         </div>
       </div>
@@ -32,12 +34,20 @@
         <custom-notes @change="onChangeCustomNotes" />
       </div>
       <div class="control-panel">
-        <div>
-          <span>Normalize display:</span>
-          <input type="checkbox" v-model="normalizeDisplay" />
-          <!-- <toggle-switch v-model="normalizeDisplay" /> -->
-        </div>
-
+        <label>
+          Display mode:
+          <select v-model="displayMode">
+            <option :value="DISPLAY_MODES.DEFAULT">Default (Note name or Ratio)</option>
+            <option :value="DISPLAY_MODES.RATIO">Ratio</option>
+            <option :value="DISPLAY_MODES.RATIO_REDUCED">Ratio reduced by period</option>
+            <option :value="DISPLAY_MODES.RATIO_RELATIVE">Ratio relative to string</option>
+            <option :value="DISPLAY_MODES.CENTS">Cents (¢)</option>
+            <option :value="DISPLAY_MODES.CENTS_REDUCED">Cents (¢) reduced by period</option>
+            <option :value="DISPLAY_MODES.CENTS_RELATIVE">Cents (¢) relative to string</option>
+            <option :value="DISPLAY_MODES.FREQUENCY">Frequency (Hz)</option>
+          </select>
+        </label>
+        <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
       <div class="control-panel"></div>
     </div>
@@ -53,7 +63,7 @@ TODOs:
 - [] Support disable frets to allow easy subset explorations
 - [] Support navigate key mappings
 - [] Display active interval 
-- [] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
+- [x] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 - [x] Custom notes templates (12edo with names, 31edo with names, etc)
 - [x] Display fret numbers for lowest string
@@ -63,7 +73,7 @@ TODOs:
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
-import { buildFretboardData } from "./fretboard";
+import { buildFretboardData, DISPLAY_MODES } from "./fretboard";
 
 export default {
   components: { AudioKey, CustomNotes, ToggleSwitch },
@@ -73,19 +83,19 @@ export default {
       noteNames: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
-      normalizeDisplay: false,
+      displayMode: DISPLAY_MODES.DEFAULT,
+      DISPLAY_MODES
     };
   },
-  mounted() {
-  },
+  mounted() { },
   computed: {
     fretboardData() {
       return buildFretboardData(
         this.baseFreq,
         this.scale,
         this.stringsTuningIdx,
-        this.normalizeDisplay,
-        this.noteNames
+        this.noteNames,
+        this.displayMode
       );
     }
   },

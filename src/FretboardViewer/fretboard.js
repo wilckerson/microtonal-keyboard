@@ -2,7 +2,8 @@ import {
   getScalePeriod,
   normalizeRatio,
   getKeyName,
-  rotateScale
+  rotateScale,
+  ratioToCents
 } from "../core/core";
 
 function applyKeyMapping(fretboardData) {
@@ -20,21 +21,62 @@ function computeFretPercentageDistance(ratio, periodRatio) {
   return ratioDistance / periodDistance;
 }
 
+export const DISPLAY_MODES = {
+  DEFAULT: "DEFAULT",
+  RATIO: "RATIO",
+  RATIO_REDUCED: "RATIO_REDUCED",
+  RATIO_RELATIVE: "RATIO_RELATIVE",
+  CENTS: "CENTS",
+  CENTS_REDUCED: "CENTS_REDUCED",
+  CENTS_RELATIVE: "CENTS_RELATIVE",
+  FREQUENCY: "FREQUENCY"
+};
+
 function buildFretData(
   ratio,
+  relativeRatio,
   baseFreq,
   width,
-  normalizeDisplay,
   periodRatio,
-  noteName
+  noteName,
+  displayMode = DISPLAY_MODES.DEFAULT
 ) {
-  const displayRatio = normalizeDisplay
-    ? normalizeRatio(ratio, periodRatio)
-    : ratio;
+  const finalRatio = ratio * relativeRatio;
+  const freq = baseFreq * finalRatio;
+  //Default
+  let text = "";
+  switch (displayMode) {
+    case DISPLAY_MODES.RATIO:
+      text = finalRatio.toFixed(4);
+      break;
+    case DISPLAY_MODES.RATIO_REDUCED:
+      text = normalizeRatio(finalRatio, periodRatio).toFixed(4);
+      break;
+    case DISPLAY_MODES.RATIO_RELATIVE:
+      text = ratio.toFixed(4);
+      break;
+    case DISPLAY_MODES.CENTS:
+      text = ratioToCents(finalRatio).toFixed(2) + "¢";
+      break;
+    case DISPLAY_MODES.CENTS_REDUCED:
+      text =
+        ratioToCents(normalizeRatio(finalRatio, periodRatio)).toFixed(2) + "¢";
+      break;
+    case DISPLAY_MODES.CENTS_RELATIVE:
+      text = ratioToCents(ratio).toFixed(2) + "¢";
+      break;
+    case DISPLAY_MODES.FREQUENCY:
+      text = freq.toFixed(2) + " Hz";
+      break;
+    default:
+      text = noteName || finalRatio.toFixed(4);
+      break;
+  }
+
   return {
-    text: noteName || displayRatio.toFixed(4),
-    freq: baseFreq * ratio,
-    width: width
+    text,
+    freq,
+    width
   };
 }
 
@@ -42,22 +84,23 @@ function buildFretsData(
   scale,
   baseFreq,
   relativeRatio = 1,
-  normalizeDisplay = false,
   noteNames = [],
-  stringTuningIdx = 0
+  stringTuningIdx = 0,
+  displayMode = DISPLAY_MODES.DEFAULT
 ) {
   const periodRatio = getScalePeriod(scale);
-  const zeroFretPercentageDistance = 5;
+  const zeroFretPercentageDistance = 7;
   let lastPecentageDistance = 0;
   const result = [];
   result.push(
     buildFretData(
+      1,
       relativeRatio,
       baseFreq,
       zeroFretPercentageDistance,
-      normalizeDisplay,
       periodRatio,
-      getNoteNameByStringTuningIdx(stringTuningIdx, noteNames)
+      getNoteNameByStringTuningIdx(stringTuningIdx, noteNames),
+      displayMode
     )
   );
   for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
@@ -73,12 +116,13 @@ function buildFretsData(
 
     result.push(
       buildFretData(
-        ratio * relativeRatio,
+        ratio,
+        relativeRatio,
         baseFreq,
         fretWidth,
-        normalizeDisplay,
         periodRatio,
-        getNoteNameByStringTuningIdx(stringTuningIdx + ratioIdx + 1, noteNames)
+        getNoteNameByStringTuningIdx(stringTuningIdx + ratioIdx + 1, noteNames),
+        displayMode
       )
     );
   }
@@ -89,8 +133,8 @@ export function buildFretboardData(
   baseFreq,
   scale,
   stringsTuningIdx,
-  normalizeDisplay,
-  noteNames
+  noteNames,
+  displayMode
 ) {
   if (!scale || scale.length === 0) {
     scale = [2];
@@ -102,9 +146,9 @@ export function buildFretboardData(
       relativeScale,
       baseFreq,
       relativeRatio,
-      normalizeDisplay,
       noteNames,
-      stringTuningIdx
+      stringTuningIdx,
+      displayMode
     );
   });
   return applyKeyMapping(data);
