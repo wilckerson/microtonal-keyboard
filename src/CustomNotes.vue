@@ -6,6 +6,7 @@
           noteTemplate }}</option>
         <option value="">Custom</option>
       </select></label>
+    <br />
     <textarea @change="onChangeInput" rows="13" v-model="inputText"></textarea>
   </div>
 </template>

@@ -16,10 +16,19 @@
               :style="'width: ' + fretData.width + '%'" hideFreq />
           </div>
         </div>
+        <div class="fretboard-fret-numbers">
+          <div class="fretboard-fret-number" v-for="(fretData, fretIdx) in fretboardData[fretboardData.length - 1]"
+            v-bind:key="'fret-number-' + rowIdx + '-' + fretIdx" :style="'width: ' + fretData.width + '%'">{{ fretIdx }}
+          </div>
+        </div>
       </div>
     </div>
     <div class="control-panels">
       <div class="control-panel">
+        <label>
+          Base frequency (Hz):
+          <input type="number" v-model.number="baseFreq" style="width: 70px;" />
+        </label>
         <custom-notes @change="onChangeCustomNotes" />
       </div>
       <div class="control-panel">
@@ -28,10 +37,7 @@
           <input type="checkbox" v-model="normalizeDisplay" />
           <!-- <toggle-switch v-model="normalizeDisplay" /> -->
         </div>
-        <div>
-          Base frequency (Hz):
-          <input type="number" v-model.number="baseFreq" style="width: 70px;" />
-        </div>
+
       </div>
       <div class="control-panel"></div>
     </div>
@@ -50,7 +56,7 @@ TODOs:
 - [] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 - [x] Custom notes templates (12edo with names, 31edo with names, etc)
-- [] Display fret numbers for lowest string
+- [x] Display fret numbers for lowest string
 - [] URL data similar to ScaleWorkshop
 */
 
@@ -161,7 +167,7 @@ export default {
 }
 
 .fretboard-viewer .key {
-  padding-right: 8px;
+  padding-right: 6px;
   text-align: right;
   vertical-align: top;
   display: inline-block;
@@ -176,5 +182,11 @@ export default {
 
 .fretboard-viewer .fret-zero {
   border-right: 10px solid gray;
+}
+
+.fretboard-fret-number {
+  font-size: 12px;
+  display: inline-block;
+  text-align: right;
 }
 </style>
