@@ -51,6 +51,7 @@ TODOs:
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 - [x] Custom notes templates (12edo with names, 31edo with names, etc)
 - [] Display fret numbers for lowest string
+- [] URL data similar to ScaleWorkshop
 */
 
 import AudioKey from "../AudioKey.vue";
@@ -84,8 +85,8 @@ export default {
   },
   methods: {
     onChangeCustomNotes(notes, noteNames, baseFreq, stringsTuningIdx) {
-      this.baseFreq = baseFreq;
-      this.stringsTuningIdx = stringsTuningIdx;
+      if (baseFreq) this.baseFreq = baseFreq;
+      if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
       this.scale = notes;
       this.noteNames = noteNames;
     }

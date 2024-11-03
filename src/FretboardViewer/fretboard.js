@@ -57,11 +57,7 @@ function buildFretsData(
       zeroFretPercentageDistance,
       normalizeDisplay,
       periodRatio,
-      noteNames[
-        stringTuningIdx > 0
-          ? (stringTuningIdx - 1) % noteNames.length
-          : noteNames.length - 1
-      ]
+      getNoteNameByStringTuningIdx(stringTuningIdx, noteNames)
     )
   );
   for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
@@ -82,7 +78,7 @@ function buildFretsData(
         fretWidth,
         normalizeDisplay,
         periodRatio,
-        noteNames[(stringTuningIdx + ratioIdx) % noteNames.length]
+        getNoteNameByStringTuningIdx(stringTuningIdx + ratioIdx + 1, noteNames)
       )
     );
   }
@@ -130,4 +126,14 @@ export function getRelativeRatioByIndex(scale, index) {
     );
   }
   return index === 0;
+}
+
+export function getNoteNameByStringTuningIdx(stringTuningIdx, noteNames) {
+  if (stringTuningIdx === 0) return noteNames[noteNames.length - 1];
+  if (stringTuningIdx > 0)
+    return noteNames[(stringTuningIdx - 1) % noteNames.length];
+  if (stringTuningIdx < 0)
+    return noteNames[
+      noteNames.length - 1 - (Math.abs(stringTuningIdx) % noteNames.length)
+    ];
 }
