@@ -2,7 +2,7 @@ export function extractCustomNotes(input) {
   var result = [];
   var lines = (input || "").split("\n");
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    let line = lines[i].trim();
 
     //Extracting note name
     const matchResult = line.match(/\"(.*?)\"/);

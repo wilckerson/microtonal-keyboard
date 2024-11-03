@@ -3,7 +3,7 @@
     <div class="fretboard-wrapper">
       <div class="strings-tuning">
         <div class="string-tuning-row" v-for="(_, idx) in stringsTuningIdx" v-bind:key="'string-tuning-row-' + idx">
-          <input type="number" v-model="stringsTuningIdx[idx]" />
+          <input type="number" v-model.number="stringsTuningIdx[idx]" />
         </div>
       </div>
       <div class="fretboard-scroller">
@@ -12,8 +12,8 @@
             <div class="string-indicator"></div>
             <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
               :class="fretIdx === 0 ? 'fret-zero' : ''" :keyName="fretData.keyName"
-              :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text" hideFreq
-              :style="'width: ' + fretData.width + '%'" />
+              :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
+              :style="'width: ' + fretData.width + '%'" hideFreq />
           </div>
         </div>
       </div>
@@ -30,7 +30,7 @@
         </div>
         <div>
           Base frequency (Hz):
-          <input type="number" v-model="baseFreq" style="width: 70px;" />
+          <input type="number" v-model.number="baseFreq" style="width: 70px;" />
         </div>
       </div>
       <div class="control-panel"></div>
@@ -49,7 +49,8 @@ TODOs:
 - [] Display active interval 
 - [] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
-- [] Custom notes templates (12edo with names, 31edo with names, etc)
+- [x] Custom notes templates (12edo with names, 31edo with names, etc)
+- [] Display fret numbers for lowest string
 */
 
 import AudioKey from "../AudioKey.vue";
@@ -61,27 +62,30 @@ export default {
   components: { AudioKey, CustomNotes, ToggleSwitch },
   data() {
     return {
-      scale: [9 / 8, 5 / 4, 4 / 3, 3 / 2, 5 / 3, 15 / 8, 2 / 1],
-      noteNames: ["D", "E", "F", "G", "A", "B", "C"],
-      baseFreq: 220,
-      stringsTuningIdx: [0, 0, 0, 0],
-      normalizeDisplay: false
+      scale: [],
+      noteNames: [],
+      baseFreq: 110,
+      stringsTuningIdx: [0, 0, 0, 0, 0, 0],
+      normalizeDisplay: false,
     };
   },
-  mounted() { },
+  mounted() {
+  },
   computed: {
     fretboardData() {
       return buildFretboardData(
         this.baseFreq,
         this.scale,
-        this.stringsTuningIdx.map(x => parseInt(x)),
+        this.stringsTuningIdx,
         this.normalizeDisplay,
         this.noteNames
       );
     }
   },
   methods: {
-    onChangeCustomNotes(notes, noteNames) {
+    onChangeCustomNotes(notes, noteNames, baseFreq, stringsTuningIdx) {
+      this.baseFreq = baseFreq;
+      this.stringsTuningIdx = stringsTuningIdx;
       this.scale = notes;
       this.noteNames = noteNames;
     }
