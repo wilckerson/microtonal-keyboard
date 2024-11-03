@@ -54,10 +54,10 @@
               <td>
                 <input type="checkbox" v-model="subsetEnabled[idx]" />
               </td>
-              <td>
+              <td>{{ noteTexts[idx] }}</td>
+              <td style="padding-left:6px;">
                 {{ noteNames[idx] }}
               </td>
-              <td>{{ scale[idx].toFixed(4) }}</td>
             </tr>
           </table>
         </div>
@@ -75,13 +75,17 @@ TODOs:
 - [x] Support custom notes names
 - [x] Support negative values on string tuning index
 - [x] Support disable frets to allow easy subset explorations
-- [] Support navigate key mappings
-- [] Display active interval 
 - [x] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
-- [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 - [x] Custom notes templates (12edo with names, 31edo with names, etc)
 - [x] Display fret numbers for lowest string
+- [x] Display note text in default mode
+- [] Support navigate key mappings on active notes
+- [] Display active interval 
+- [] Notes highlight list CRUD (name, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
+- [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
+- [] Total number of notes across strings
 - [] URL data similar to ScaleWorkshop
+- [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 */
 
 import AudioKey from "../AudioKey.vue";
@@ -95,6 +99,7 @@ export default {
     return {
       scale: [],
       noteNames: [],
+      noteTexts: [],
       subsetEnabled: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
@@ -110,16 +115,24 @@ export default {
         this.scale,
         this.stringsTuningIdx,
         this.noteNames,
+        this.noteTexts,
         this.displayMode
       );
     }
   },
   methods: {
-    onChangeCustomNotes(notes, noteNames, baseFreq, stringsTuningIdx) {
+    onChangeCustomNotes(
+      notes,
+      noteNames,
+      noteTexts,
+      baseFreq,
+      stringsTuningIdx
+    ) {
       if (baseFreq) this.baseFreq = baseFreq;
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
       this.scale = notes;
       this.noteNames = noteNames;
+      this.noteTexts = noteTexts;
       this.subsetEnabled = Array(notes.length).fill(true);
     }
   }

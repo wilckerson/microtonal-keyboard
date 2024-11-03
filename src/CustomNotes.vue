@@ -45,10 +45,18 @@ export default {
     onChangeInput(ev) {
       const text = ev.target.value;
       const result = extractCustomNotes(text);
+      console.log(result);
       if (!ev.keepSelectedTemplate) {
         this.selectedTemplate = "";
       }
-      this.$emit("change", result.values, result.names, ev.baseFreq, ev.stringsTuningIdx);
+      this.$emit(
+        "change",
+        result.values,
+        result.names,
+        result.texts,
+        ev.baseFreq,
+        ev.stringsTuningIdx
+      );
     }
   }
 };

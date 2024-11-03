@@ -31,12 +31,13 @@ export function extractCustomNotes(input) {
     }
 
     if (v !== undefined && !isNaN(v)) {
-      result.push({ value: v, name });
+      result.push({ value: v, name, text: line });
     }
   }
 
   const sortedResult = result.sort((a, b) => a.value - b.value);
   const values = sortedResult.map(item => item.value);
   const names = sortedResult.map(item => item.name);
-  return { values, names };
+  const texts = sortedResult.map(item => item.text);
+  return { values, names, texts };
 }

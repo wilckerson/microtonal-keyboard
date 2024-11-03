@@ -39,9 +39,11 @@ function buildFretData(
   width,
   periodRatio,
   noteName,
+  noteText,
   scaleIdx,
   displayMode = DISPLAY_MODES.DEFAULT
 ) {
+  console.log(arguments)
   const finalRatio = ratio * relativeRatio;
   const freq = baseFreq * finalRatio;
   //Default
@@ -70,7 +72,7 @@ function buildFretData(
       text = freq.toFixed(2) + " Hz";
       break;
     default:
-      text = noteName || finalRatio.toFixed(4);
+      text = noteName || noteText;
       break;
   }
 
@@ -87,6 +89,7 @@ function buildFretsData(
   baseFreq,
   relativeRatio = 1,
   noteNames = [],
+  noteTexts = [],
   stringTuningIdx = 0,
   displayMode = DISPLAY_MODES.DEFAULT
 ) {
@@ -94,6 +97,7 @@ function buildFretsData(
   const zeroFretPercentageDistance = 7;
   let lastPecentageDistance = 0;
   const result = [];
+  const zeroFretScaleIdx = getScaleIdx(stringTuningIdx, scale.length);
   result.push(
     buildFretData(
       1,
@@ -102,7 +106,8 @@ function buildFretsData(
       zeroFretPercentageDistance,
       periodRatio,
       getNoteNameByStringTuningIdx(stringTuningIdx, noteNames),
-      getScaleIdx(stringTuningIdx, scale.length),
+      noteTexts[zeroFretScaleIdx],
+      zeroFretScaleIdx,
       displayMode
     )
   );
@@ -118,6 +123,7 @@ function buildFretsData(
     lastPecentageDistance = fretPercentageDistance;
 
     const relativeIdx = stringTuningIdx + scaleIdx + 1;
+    const relativeScaleIdx = getScaleIdx(relativeIdx, scale.length)
     result.push(
       buildFretData(
         ratio,
@@ -126,11 +132,12 @@ function buildFretsData(
         fretWidth,
         periodRatio,
         getNoteNameByStringTuningIdx(relativeIdx, noteNames),
-        getScaleIdx(relativeIdx, scale.length),
+        noteTexts[relativeScaleIdx],
+        relativeScaleIdx,
         displayMode
       )
     );
-  }
+  }  
   return result;
 }
 
@@ -139,6 +146,7 @@ export function buildFretboardData(
   scale,
   stringsTuningIdx,
   noteNames,
+  noteTexts,
   displayMode
 ) {
   if (!scale || scale.length === 0) {
@@ -152,6 +160,7 @@ export function buildFretboardData(
       baseFreq,
       relativeRatio,
       noteNames,
+      noteTexts,
       stringTuningIdx,
       displayMode
     );
