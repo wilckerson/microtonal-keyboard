@@ -39,6 +39,7 @@ function buildFretData(
   width,
   periodRatio,
   noteName,
+  scaleIdx,
   displayMode = DISPLAY_MODES.DEFAULT
 ) {
   const finalRatio = ratio * relativeRatio;
@@ -76,7 +77,8 @@ function buildFretData(
   return {
     text,
     freq,
-    width
+    width,
+    scaleIdx
   };
 }
 
@@ -100,11 +102,12 @@ function buildFretsData(
       zeroFretPercentageDistance,
       periodRatio,
       getNoteNameByStringTuningIdx(stringTuningIdx, noteNames),
+      getScaleIdx(stringTuningIdx, scale.length),
       displayMode
     )
   );
-  for (let ratioIdx = 0; ratioIdx < scale.length; ratioIdx++) {
-    const ratio = scale[ratioIdx];
+  for (let scaleIdx = 0; scaleIdx < scale.length; scaleIdx++) {
+    const ratio = scale[scaleIdx];
     let fretWidth = 0;
 
     const remainingPercentageDistance = 100 - zeroFretPercentageDistance;
@@ -114,6 +117,7 @@ function buildFretsData(
     fretWidth = fretPercentageDistance - lastPecentageDistance;
     lastPecentageDistance = fretPercentageDistance;
 
+    const relativeIdx = stringTuningIdx + scaleIdx + 1;
     result.push(
       buildFretData(
         ratio,
@@ -121,7 +125,8 @@ function buildFretsData(
         baseFreq,
         fretWidth,
         periodRatio,
-        getNoteNameByStringTuningIdx(stringTuningIdx + ratioIdx + 1, noteNames),
+        getNoteNameByStringTuningIdx(relativeIdx, noteNames),
+        getScaleIdx(relativeIdx, scale.length),
         displayMode
       )
     );
@@ -173,11 +178,12 @@ export function getRelativeRatioByIndex(scale, index) {
 }
 
 export function getNoteNameByStringTuningIdx(stringTuningIdx, noteNames) {
-  if (stringTuningIdx === 0) return noteNames[noteNames.length - 1];
-  if (stringTuningIdx > 0)
-    return noteNames[(stringTuningIdx - 1) % noteNames.length];
-  if (stringTuningIdx < 0)
-    return noteNames[
-      noteNames.length - 1 - (Math.abs(stringTuningIdx) % noteNames.length)
-    ];
+  const scaleIdx = getScaleIdx(stringTuningIdx, noteNames.length);
+  return noteNames[scaleIdx];
+}
+
+function getScaleIdx(index, scaleSize) {
+  if (index === 0) return scaleSize - 1;
+  if (index > 0) return (index - 1) % scaleSize;
+  if (index < 0) return scaleSize - 1 - (Math.abs(index) % scaleSize);
 }

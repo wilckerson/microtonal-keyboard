@@ -1,25 +1,13 @@
 <template>
-  <div
-    class="key"
-    :class="{ active: active }"
-    @mousedown="mouseDown"
-    @mouseup="mouseUp"
-    @mouseout="mouseUp"
-    @touchstart="mouseDown"
-    @touchend="mouseUp"
-    :style="{ 'background-color': color }"
-  >
+  <div class="key" :class="{ active: active, disabled: disabled }" @mousedown="mouseDown" @mouseup="mouseUp"
+    @mouseout="mouseUp" @touchstart="mouseDown" @touchend="mouseUp" :style="{ 'background-color': color }">
     <div class="key-label">[{{ keyName }}]</div>
     <div class="key-tone">
       <div v-if="text">{{ text }}</div>
       <small v-if="!hideFreq">{{ parseFloat(freq).toFixed(2) + "Hz" }}</small>
     </div>
     <div class="key-marker-container">
-      <div
-        class="key-marker"
-        v-for="markerColor in markers"
-        :style="{ 'background-color': markerColor }"
-      ></div>
+      <div class="key-marker" v-for="markerColor in markers" :style="{ 'background-color': markerColor }"></div>
     </div>
   </div>
 </template>
@@ -37,6 +25,10 @@ export default {
     idx: String,
     markers: Array,
     hideFreq: {
+      type: Boolean,
+      default: false
+    },
+    disabled: {
       type: Boolean,
       default: false
     }
@@ -61,7 +53,7 @@ export default {
       audioCacheIdx: -1
     };
   },
-  mounted: function() {
+  mounted: function () {
     //return;
     //if ((!this.freq && this.freq != 0) || !this.keyName) {
     if (!this.freq && this.freq != 0) {
@@ -181,7 +173,7 @@ export default {
     window.addEventListener("keydown", this.keyDown);
     window.addEventListener("keyup", this.keyUp);
   },
-  beforeDestroy: function() {
+  beforeDestroy: function () {
     window.removeEventListener("keydown", this.keyDown);
 
     window.removeEventListener("keyup", this.keyUp);
@@ -227,6 +219,7 @@ export default {
       }
     },
     playSoundNote() {
+      if (this.disabled) return;
       this.initAudioCache();
 
       var rate = parseFloat(this.freq) / this.soundFreq;
@@ -374,7 +367,7 @@ export default {
       // vca.connect(audioCtx.destination);
       //this.vca = vca;
     },
-    keyUp: function(e) {
+    keyUp: function (e) {
       if (this.isIgnoredKey(e.key)) {
         return;
       }
@@ -391,7 +384,7 @@ export default {
         this.stopSoundNote();
       }
     },
-    keyDown: function(e) {
+    keyDown: function (e) {
       //Ignore if is typing in any field
       if (document.activeElement !== document.body) {
         return;
@@ -417,14 +410,14 @@ export default {
       var ignore = ignoreList.indexOf(key) != -1;
       return ignore;
     },
-    mouseDown: function() {
+    mouseDown: function () {
       clearTimeout(this.clickTimer);
       this.clickTimer = setTimeout(() => {
         this.active = true;
         this.playSoundNote();
       }, 50);
     },
-    mouseUp: function() {
+    mouseUp: function () {
       this.active = false;
       this.stopSoundNote();
     },
@@ -447,7 +440,7 @@ export default {
     }
   },
   watch: {
-    active: function() {
+    active: function () {
       this.$emit("onChangeActive", {
         freq: this.freq,
         keyName: this.keyName,
@@ -477,7 +470,7 @@ export default {
       //   }
       // }
     },
-    freq: function(val) {
+    freq: function (val) {
       //console.log("freq", val);
       if (this.vco) {
         this.vco.frequency.value = val;
@@ -519,6 +512,10 @@ export default {
 .key.active {
   opacity: 0.8;
   background: #ccc;
+}
+
+.key.disabled {
+  opacity: 0.1;
 }
 
 .key-label {

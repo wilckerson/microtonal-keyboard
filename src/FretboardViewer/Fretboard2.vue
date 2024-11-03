@@ -11,9 +11,9 @@
           <div v-for="(rowData, rowIdx) in fretboardData" v-bind:key="'fretboard-row-' + rowIdx" class="fretboard-row">
             <div class="string-indicator"></div>
             <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
-              :class="fretIdx === 0 ? 'fret-zero' : ''" :keyName="fretData.keyName"
-              :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
-              :style="'width: ' + fretData.width + '%'" hideFreq />
+              :class="{ 'fret-zero': fretIdx === 0 }" :disabled="!subsetEnabled[fretData.scaleIdx]"
+              :keyName="fretData.keyName" :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq"
+              :text="fretData.text" :style="'width: ' + fretData.width + '%'" hideFreq />
           </div>
         </div>
         <div class="fretboard-fret-numbers">
@@ -47,6 +47,20 @@
             <option :value="DISPLAY_MODES.FREQUENCY">Frequency (Hz)</option>
           </select>
         </label>
+        <div>
+          <label>Subset enabled notes:</label>
+          <table>
+            <tr v-for="(_, idx) in subsetEnabled" v-bind:key="'subset-' + idx">
+              <td>
+                <input type="checkbox" v-model="subsetEnabled[idx]" />
+              </td>
+              <td>
+                {{ noteNames[idx] }}
+              </td>
+              <td>{{ scale[idx].toFixed(4) }}</td>
+            </tr>
+          </table>
+        </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
       <div class="control-panel"></div>
@@ -60,7 +74,7 @@ TODOs:
 - [x] Fix fret positions
 - [x] Support custom notes names
 - [x] Support negative values on string tuning index
-- [] Support disable frets to allow easy subset explorations
+- [x] Support disable frets to allow easy subset explorations
 - [] Support navigate key mappings
 - [] Display active interval 
 - [x] Dropdown display note mode (default [note name or ratio] / ratio-normalized / cents / distance-ratio )
@@ -81,6 +95,7 @@ export default {
     return {
       scale: [],
       noteNames: [],
+      subsetEnabled: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
       displayMode: DISPLAY_MODES.DEFAULT,
@@ -105,6 +120,7 @@ export default {
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
       this.scale = notes;
       this.noteNames = noteNames;
+      this.subsetEnabled = Array(notes.length).fill(true);
     }
   }
 };
@@ -187,7 +203,7 @@ export default {
 }
 
 .fretboard-viewer .key-label {
-  opacity: 0.25;
+  opacity: 0.4;
 }
 
 .fretboard-viewer .fret-zero {
