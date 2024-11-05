@@ -75,13 +75,14 @@ TODOs:
 - [x] Display fret numbers for lowest string
 - [x] Display note text in default mode
 - [x] Notes highlight group CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
+- [] Strings count input
 - [] Fix note frequency according to physical tunner
 - [] Display active interval 
-- [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
 - [] Support navigate key mappings on active notes
-- [] Fix play bug on touch
 - [] Total number of notes across strings
 - [] URL data similar to ScaleWorkshop
+- [] Fix play bug on touch
+- [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 */
 
