@@ -13,7 +13,8 @@
             <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
               :class="{ 'fret-zero': fretIdx === 0 }" :disabled="!subsetEnabled[fretData.scaleIdx]"
               :keyName="fretData.keyName" :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq"
-              :text="fretData.text" :style="'width: ' + fretData.width + '%'" hideFreq />
+              :text="fretData.text" :style="'width: ' + fretData.width + '%'"
+              :markers="getMarkersFromNoteGroups(fretData.scaleIdx)" hideFreq />
           </div>
         </div>
         <div class="fretboard-fret-numbers">
@@ -51,22 +52,12 @@
           <label>Subset enabled notes:</label>
           <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames" :defaultChecked="true"
             @change="onChangeSubset" />
-          <!-- <table>
-            <tr v-for="(_, idx) in subsetEnabled" v-bind:key="'subset-' + idx">
-              <td>
-                <input type="checkbox" v-model="subsetEnabled[idx]" />
-              </td>
-              <td>{{ noteTexts[idx] }}</td>
-              <td style="padding-left:6px;">
-                {{ noteNames[idx] }}
-              </td>
-            </tr>
-          </table> -->
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
       <div class="control-panel">
-        <note-group />
+        <label>Note highlight groups: </label>
+        <note-group style="width: 350px" @change="onChangeNoteGroup" :noteTexts="noteTexts" :noteNames="noteNames" />
       </div>
     </div>
   </div>
@@ -83,7 +74,8 @@ TODOs:
 - [x] Custom notes templates (12edo with names, 31edo with names, etc)
 - [x] Display fret numbers for lowest string
 - [x] Display note text in default mode
-- [] Notes highlight list CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
+- [x] Notes highlight group CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
+- [] Fix note frequency according to physical tunner
 - [] Display active interval 
 - [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
 - [] Support navigate key mappings on active notes
@@ -108,6 +100,7 @@ export default {
       noteNames: [],
       noteTexts: [],
       subsetEnabled: [],
+      noteGroups: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
       displayMode: DISPLAY_MODES.DEFAULT,
@@ -140,12 +133,18 @@ export default {
       this.scale = notes;
       this.noteNames = noteNames;
       this.noteTexts = noteTexts;
-      console.log("onChangeCustomNotes", this.noteTexts);
-      //this.subsetEnabled = Array(notes.length).fill(true);
     },
     onChangeSubset(selectedNotes, selectedNotesIdx) {
       this.subsetEnabled = selectedNotes;
-    }
+    },
+    onChangeNoteGroup(noteGroups) {
+      this.noteGroups = noteGroups;
+    },
+    getMarkersFromNoteGroups(scaleIdx) {
+      return this.noteGroups.filter(noteGroup =>
+        noteGroup.enabled && noteGroup.selectedNotesIdx.includes(scaleIdx)
+      ).map(noteGroup => noteGroup.color);
+    },
   }
 };
 </script>

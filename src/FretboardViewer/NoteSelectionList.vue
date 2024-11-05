@@ -26,19 +26,18 @@ export default {
   },
   mounted() {
     this.populateNotes();
+
   },
   watch: {
-    noteTexts: function () {
+    noteTexts: function (newValue, oldValue) {
+      if (!newValue || newValue.toString() === oldValue.toString()) return;
       this.populateNotes();
+      this.emitChange();
     },
   },
   methods: {
     onChangeSelectedNote() {
-      const selectedNotesIdx = this.selectedNotes
-        .map((isSelected, index) => isSelected ? index : null)
-        .filter(value => value != null);
-
-      this.$emit('change', this.selectedNotes, selectedNotesIdx);
+      this.emitChange();
     },
     populateNotes() {
       if (this.initialSelectedNotesIdx) {
@@ -50,6 +49,13 @@ export default {
       } else {
         this.selectedNotes = Array(this.noteTexts.length).fill(this.defaultChecked);
       }
+    },
+    emitChange() {
+      const selectedNotesIdx = this.selectedNotes
+        .map((isSelected, index) => isSelected ? index : null)
+        .filter(value => value != null);
+
+      this.$emit('change', this.selectedNotes, selectedNotesIdx);
     }
   }
 }

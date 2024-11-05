@@ -63,9 +63,19 @@ export default {
     baseFreq: 55,
     stringsTuningIdx: [10, 5, 0, -5]
   },
-  "31edo": {
+  "12edo - Ukelele - Standard Tuning": {
+    notes: notes12edo,
+    baseFreq: 110,
+    stringsTuningIdx: [12, 7, 3 , 10]
+  },
+  "31edo - Guitar - Standard Tuning": {
     notes: notes31edo,
     baseFreq: 110,
     stringsTuningIdx: [49, 36, 26, 13, 0, -13]
-  }
+  },
+  "31edo - Bass - Standard Tuning": {
+    notes: notes31edo,
+    baseFreq: 55,
+    stringsTuningIdx: [26, 13, 0, -13]
+  },
 };

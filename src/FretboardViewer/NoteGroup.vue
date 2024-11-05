@@ -1,17 +1,17 @@
 <template>
     <div>
-        <label>Note groups: </label>
+
         <ul>
             <li v-for="(noteGroup, index) in groups" :key="'note-group-' + index" class="note-group">
-                <input type="checkbox" v-model="noteGroup.enabled" />
+                <input type="checkbox" v-model="noteGroup.enabled" @change="onChangeEnabled" />
                 {{ noteGroup.description }}
                 <span class="color-label" :style="'background-color:' + noteGroup.color"></span>
-                <button class="btn-action" @click="onRemove(index)">Remove</button>
-                <button class="btn-action" @click="onEdit(index)">Edit</button>
+                <button v-if="!showForm" class="btn-action" @click="onRemove(index)">Remove</button>
+                <button v-if="!showForm" class="btn-action" @click="onEdit(index)">Edit</button>
             </li>
         </ul>
-        <button @click="onAdd" v-if="!displayAdd">Add group</button>
-        <fieldset v-if="displayAdd">
+        <button @click="onAdd" v-if="!showForm">Add group</button>
+        <fieldset v-if="showForm" class="note-group-form">
             <legend>{{ groupItemIndex != null ? 'Edit group:' : 'Add group:' }}</legend>
             <label>
                 Description:
@@ -28,7 +28,7 @@
                 </li>
             </ul>
             <label>Notes:</label>
-            <note-selection-list :noteTexts="['C', 'D', 'E', 'F', 'G', 'A', 'B']"
+            <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames"
                 :initialSelectedNotesIdx="groupItemSelectedNotesIdx" @change="onChangeSelectedNotes" />
             <br />
             <button @click="onSaveGroup">Save</button>
@@ -41,10 +41,21 @@
 import NoteSelectionList from "./NoteSelectionList.vue"
 export default {
     components: { NoteSelectionList },
+    props: {
+        noteTexts: {
+            type: Array,
+            required: true
+        },
+        noteNames: {
+            type: Array,
+            required: true
+        }
+
+    },
     data() {
         return {
             groups: [],
-            displayAdd: false,
+            showForm: false,
             colors: ["red", "orange", "yellow", "green", "blue", "purple", "magenta"],
             groupItemIndex: null,
             groupItemDescription: "",
@@ -56,6 +67,7 @@ export default {
         onSaveGroup() {
             //Validate
             if (!this.groupItemDescription || !this.groupItemColor || this.groupItemSelectedNotesIdx.length === 0) {
+                alert("Please fill all fields");
                 return;
             }
 
@@ -77,14 +89,15 @@ export default {
                 this.groups.push(groupItem);
             }
 
-            this.displayAdd = false;
+            this.showForm = false;
             this.clearForm();
+            this.$emit('change', this.groups);
         },
         onAdd() {
-            this.displayAdd = true;
+            this.showForm = true;
         },
         onCancelAdd() {
-            this.displayAdd = false;
+            this.showForm = false;
             this.clearForm();
         },
         onChangeSelectedNotes(_, selectedNotesIdx) {
@@ -99,13 +112,16 @@ export default {
             this.groupItemDescription = selectedGroup.description;
             this.groupItemColor = selectedGroup.color;
             this.groupItemSelectedNotesIdx = selectedGroup.selectedNotesIdx;
-            this.displayAdd = true;
+            this.showForm = true;
         },
         clearForm() {
             this.groupItemIndex = null;
             this.groupItemDescription = "";
             this.groupItemColor = "";
             this.groupItemSelectedNotesIdx = [];
+        },
+        onChangeEnabled() {
+            this.$emit('change', this.groups);
         }
     }
 }
@@ -134,6 +150,7 @@ export default {
 
 .group-colors {
     margin-top: 0;
+    width: 200px;
 }
 
 .group-colors li {
