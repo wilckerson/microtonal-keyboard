@@ -43,7 +43,6 @@ function buildFretData(
   scaleIdx,
   displayMode = DISPLAY_MODES.DEFAULT
 ) {
-  console.log(arguments)
   const finalRatio = ratio * relativeRatio;
   const freq = baseFreq * finalRatio;
   //Default

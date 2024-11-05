@@ -45,7 +45,6 @@ export default {
     onChangeInput(ev) {
       const text = ev.target.value;
       const result = extractCustomNotes(text);
-      console.log(result);
       if (!ev.keepSelectedTemplate) {
         this.selectedTemplate = "";
       }

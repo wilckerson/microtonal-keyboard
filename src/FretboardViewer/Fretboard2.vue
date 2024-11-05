@@ -49,7 +49,9 @@
         </label>
         <div>
           <label>Subset enabled notes:</label>
-          <table>
+          <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames" :defaultChecked="true"
+            @change="onChangeSubset" />
+          <!-- <table>
             <tr v-for="(_, idx) in subsetEnabled" v-bind:key="'subset-' + idx">
               <td>
                 <input type="checkbox" v-model="subsetEnabled[idx]" />
@@ -59,11 +61,13 @@
                 {{ noteNames[idx] }}
               </td>
             </tr>
-          </table>
+          </table> -->
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
-      <div class="control-panel"></div>
+      <div class="control-panel">
+        <note-group />
+      </div>
     </div>
   </div>
 </template>
@@ -79,22 +83,25 @@ TODOs:
 - [x] Custom notes templates (12edo with names, 31edo with names, etc)
 - [x] Display fret numbers for lowest string
 - [x] Display note text in default mode
-- [] Support navigate key mappings on active notes
+- [] Notes highlight list CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
 - [] Display active interval 
-- [] Notes highlight list CRUD (name, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
 - [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
+- [] Support navigate key mappings on active notes
+- [] Fix play bug on touch
 - [] Total number of notes across strings
 - [] URL data similar to ScaleWorkshop
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 */
 
+import NoteSelectionList from "./NoteSelectionList.vue";
+import NoteGroup from "./NoteGroup.vue";
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
 import { buildFretboardData, DISPLAY_MODES } from "./fretboard";
 
 export default {
-  components: { AudioKey, CustomNotes, ToggleSwitch },
+  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList },
   data() {
     return {
       scale: [],
@@ -133,7 +140,11 @@ export default {
       this.scale = notes;
       this.noteNames = noteNames;
       this.noteTexts = noteTexts;
-      this.subsetEnabled = Array(notes.length).fill(true);
+      console.log("onChangeCustomNotes", this.noteTexts);
+      //this.subsetEnabled = Array(notes.length).fill(true);
+    },
+    onChangeSubset(selectedNotes, selectedNotesIdx) {
+      this.subsetEnabled = selectedNotes;
     }
   }
 };
