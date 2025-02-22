@@ -82,8 +82,9 @@ TODOs:
 - [x] Notes highlight group CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
 - [x] Fret distance in mm
 - [x] Note select All/None
+- [x] Automatic group name (Group {idx}) instead of validation
+- [x] Improved color selection
 - [] Display mode "only frets"
-- [] Automatic group name (Group {idx}) instead of validation
 - [] Display active interval
 - [] Full frets mode based on string zero
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
