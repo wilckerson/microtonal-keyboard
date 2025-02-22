@@ -46,8 +46,13 @@
             <option :value="DISPLAY_MODES.CENTS_REDUCED">Cents (¢) reduced by period</option>
             <option :value="DISPLAY_MODES.CENTS_RELATIVE">Cents (¢) relative to string</option>
             <option :value="DISPLAY_MODES.FREQUENCY">Frequency (Hz)</option>
+            <option :value="DISPLAY_MODES.FRETS_DISTANCE">Frets distance (mm) from Nut</option>
           </select>
         </label>
+        <div v-if="displayMode === DISPLAY_MODES.FRETS_DISTANCE">
+          <label>String Length (mm): <input type="number" style="width: 70px;" :value="stringLength" min="1" max="10000"
+              @change="stringLength = (Math.min(Math.max(1, parseFloat($event.target.value)), 10000) || 1)" /></label>
+        </div>
         <div>
           <label>Subset enabled notes:</label>
           <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames" :defaultChecked="true"
@@ -75,10 +80,11 @@ TODOs:
 - [x] Display fret numbers for lowest string
 - [x] Display note text in default mode
 - [x] Notes highlight group CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
+- [x] Fret distance in mm
 - [] Display mode "only frets"
 - [] Automatic group name (Group {idx}) instead of validation
-- [] Display active interval 
-- [] Full frets mode
+- [] Display active interval
+- [] Full frets mode based on string zero
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 - [] Display number of common frets between strings
 - [] Fix play bug on touch
@@ -110,7 +116,8 @@ export default {
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
       displayMode: DISPLAY_MODES.DEFAULT,
-      DISPLAY_MODES
+      DISPLAY_MODES,
+      stringLength: 650
     };
   },
   mounted() { },
@@ -122,7 +129,8 @@ export default {
         this.stringsTuningIdx,
         this.noteNames,
         this.noteTexts,
-        this.displayMode
+        this.displayMode,
+        this.stringLength
       );
     }
   },
