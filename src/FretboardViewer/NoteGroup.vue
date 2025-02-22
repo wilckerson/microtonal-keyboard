@@ -18,15 +18,13 @@
             </label>
             <input type="text" v-model="groupItemDescription" required />
             <label>Color:</label>
-            <ul class="group-colors">
-                <li v-for="color in colors" :key="'color-' + color">
-                    <label>
-                        <input type="radio" name="group-color" :value="color" v-model="groupItemColor">
-                        <span class="color-label" :style="'background-color:' + color"></span>
-                        {{ color }}
-                    </label>
-                </li>
-            </ul>
+            <div>
+                <select v-model="groupItemColor">
+                    <option v-for="color in colors" :key="'color-' + color"
+                        :style="'color: white; background-color: ' + color">{{ color }}</option>
+                </select>
+                <span class="color-label" :style="'background-color:' + groupItemColor"></span>
+            </div>
             <label>Notes:</label>
             <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames"
                 :initialSelectedNotesIdx="groupItemSelectedNotesIdx" @change="onChangeSelectedNotes" />
@@ -56,7 +54,27 @@ export default {
         return {
             groups: [],
             showForm: false,
-            colors: ["red", "orange", "yellow", "green", "blue", "purple", "magenta"],
+            colors: [
+                "Red",
+                "DarkOrange",
+                "Orange",
+                "Yellow",
+                "Lime",
+                "YellowGreen",
+                "Green",
+                "ForestGreen",
+                "SeaGreen",
+                "MediumTurquoise",
+                "Turquoise",
+                "SkyBlue",
+                "CornflowerBlue",
+                "DodgerBlue",
+                "RoyalBlue",
+                "MediumPurple",
+                "BlueViolet",
+                "Indigo",
+                "Violet"
+            ],
             groupItemIndex: null,
             groupItemDescription: "",
             groupItemColor: "",
@@ -95,6 +113,8 @@ export default {
         },
         onAdd() {
             this.showForm = true;
+            this.groupItemDescription = 'Group ' + (this.groups.length + 1);
+            this.groupItemColor = this.colors[this.groups.length % this.colors.length];
         },
         onCancelAdd() {
             this.showForm = false;
