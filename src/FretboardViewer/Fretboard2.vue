@@ -81,6 +81,7 @@ TODOs:
 - [x] Display note text in default mode
 - [x] Notes highlight group CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
 - [x] Fret distance in mm
+- [x] Note select All/None
 - [] Display mode "only frets"
 - [] Automatic group name (Group {idx}) instead of validation
 - [] Display active interval
