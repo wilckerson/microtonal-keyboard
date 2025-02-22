@@ -3,7 +3,8 @@ import {
   normalizeRatio,
   getKeyName,
   rotateScale,
-  ratioToCents
+  ratioToCents,
+  ratioToFretDistance
 } from "../core/core";
 
 function applyKeyMapping(fretboardData) {
@@ -29,7 +30,8 @@ export const DISPLAY_MODES = {
   CENTS: "CENTS",
   CENTS_REDUCED: "CENTS_REDUCED",
   CENTS_RELATIVE: "CENTS_RELATIVE",
-  FREQUENCY: "FREQUENCY"
+  FREQUENCY: "FREQUENCY",
+  FRETS_DISTANCE: "FRETS_DISTANCE"
 };
 
 function buildFretData(
@@ -41,7 +43,8 @@ function buildFretData(
   noteName,
   noteText,
   scaleIdx,
-  displayMode = DISPLAY_MODES.DEFAULT
+  displayMode = DISPLAY_MODES.DEFAULT,
+  stringLength = 650
 ) {
   const finalRatio = ratio * relativeRatio;
   const freq = baseFreq * finalRatio;
@@ -70,6 +73,10 @@ function buildFretData(
     case DISPLAY_MODES.FREQUENCY:
       text = freq.toFixed(2) + " Hz";
       break;
+    case DISPLAY_MODES.FRETS_DISTANCE:
+      text =
+        ratio === 1 ? "" : ratioToFretDistance(ratio, stringLength).toFixed(2);
+      break;
     default:
       text = noteName || noteText;
       break;
@@ -90,7 +97,8 @@ function buildFretsData(
   noteNames = [],
   noteTexts = [],
   stringTuningIdx = 0,
-  displayMode = DISPLAY_MODES.DEFAULT
+  displayMode = DISPLAY_MODES.DEFAULT,
+  stringLength = 650
 ) {
   const periodRatio = getScalePeriod(scale);
   const zeroFretPercentageDistance = 7;
@@ -107,7 +115,8 @@ function buildFretsData(
       getNoteNameByStringTuningIdx(stringTuningIdx, noteNames),
       noteTexts[zeroFretScaleIdx],
       zeroFretScaleIdx,
-      displayMode
+      displayMode,
+      stringLength
     )
   );
   for (let scaleIdx = 0; scaleIdx < scale.length; scaleIdx++) {
@@ -122,7 +131,7 @@ function buildFretsData(
     lastPecentageDistance = fretPercentageDistance;
 
     const relativeIdx = stringTuningIdx + scaleIdx + 1;
-    const relativeScaleIdx = getScaleIdx(relativeIdx, scale.length)
+    const relativeScaleIdx = getScaleIdx(relativeIdx, scale.length);
     result.push(
       buildFretData(
         ratio,
@@ -133,10 +142,11 @@ function buildFretsData(
         getNoteNameByStringTuningIdx(relativeIdx, noteNames),
         noteTexts[relativeScaleIdx],
         relativeScaleIdx,
-        displayMode
+        displayMode,
+        stringLength
       )
     );
-  }  
+  }
   return result;
 }
 
@@ -146,7 +156,8 @@ export function buildFretboardData(
   stringsTuningIdx,
   noteNames,
   noteTexts,
-  displayMode
+  displayMode,
+  stringLength
 ) {
   if (!scale || scale.length === 0) {
     scale = [2];
@@ -161,7 +172,8 @@ export function buildFretboardData(
       noteNames,
       noteTexts,
       stringTuningIdx,
-      displayMode
+      displayMode,
+      parseFloat(stringLength) || 650
     );
   });
   return applyKeyMapping(data);

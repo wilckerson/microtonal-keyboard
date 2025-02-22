@@ -55,3 +55,7 @@ export function ratioToCents(ratio) {
   var cents = 1200 * Math.log2(parseFloat(ratio));
   return cents;
 }
+
+export function ratioToFretDistance(ratio, stringLength) {
+  return stringLength - stringLength / ratio;
+}
