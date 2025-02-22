@@ -75,15 +75,20 @@ TODOs:
 - [x] Display fret numbers for lowest string
 - [x] Display note text in default mode
 - [x] Notes highlight group CRUD (description, notes index, color, startingNoteIndex=0 (get index from dropdown with note names))
+- [] Display mode "only frets"
+- [] Automatic group name (Group {idx}) instead of validation
+- [] Display active interval 
+- [] Full frets mode
+- [] Dropdown to change strings tuning input mode (index, customNoteInput) 
+- [] Display number of common frets between strings
+- [] Fix play bug on touch
+- [] Play with drag
 - [] Strings count input
 - [] Fix note frequency according to physical tunner
-- [] Display active interval 
 - [] Support navigate key mappings on active notes
 - [] Total number of notes across strings
 - [] URL data similar to ScaleWorkshop
-- [] Fix play bug on touch
 - [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
-- [] Dropdown to change strings tuning input mode (index, customNoteInput) 
 */
 
 import NoteSelectionList from "./NoteSelectionList.vue";
