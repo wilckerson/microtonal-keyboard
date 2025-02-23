@@ -2,6 +2,13 @@
   <div>
     <button @click="selectAll">Select All</button>
     <button @click="selectNone">Select None</button>
+    <button v-if="useScaleOptions" @click="toggleShowScaleOptions">
+      <span v-if="!showScaleOptions">Show scale options</span>
+      <span v-if="showScaleOptions">Close scale options</span>
+    </button>
+
+    <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
+      :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScale" />
 
     <table>
       <tr v-for="(noteText, idx) in noteTexts" v-bind:key="'note-selection-' + idx">
@@ -17,15 +24,21 @@
   </div>
 </template>
 <script>
+import ScaleOptions from "./ScaleOptions.vue"
+
 export default {
+  components: { ScaleOptions },
   props: {
     noteTexts: Array,
     noteNames: Array,
     defaultChecked: Boolean,
     initialSelectedNotesIdx: Array,
+    useScaleOptions: Boolean,
+    selectedTemplate: String,
   },
   data() {
     return {
+      showScaleOptions: false,
       selectedNotes: [],
     }
   },
@@ -41,6 +54,9 @@ export default {
     },
   },
   methods: {
+    toggleShowScaleOptions() {
+      this.showScaleOptions = !this.showScaleOptions;
+    },
     onChangeSelectedNote() {
       this.emitChange();
     },
@@ -65,13 +81,21 @@ export default {
     selectAll() {
       const newSelectedNotes = this.selectedNotes.map(i => true);
       this.selectedNotes = newSelectedNotes;
-      this.$emit('change', this.selectedNotes, -1);
+      this.emitChange();
     },
     selectNone() {
       const newSelectedNotes = this.selectedNotes.map(i => false);
       this.selectedNotes = newSelectedNotes;
-      this.$emit('change', this.selectedNotes, -1);
+      this.emitChange();
     },
+    onApplyScale(scaleDegrees) {
+      const newSelectedNotes = this.selectedNotes.map(i => false);
+      scaleDegrees.forEach(idx => {
+        newSelectedNotes[idx] = true;
+      });
+      this.selectedNotes = newSelectedNotes;
+      this.emitChange();
+    }
   }
 }
 </script>

@@ -36,7 +36,8 @@ export default {
           target: { value: this.inputText },
           keepSelectedTemplate: true,
           baseFreq: templateData.baseFreq,
-          stringsTuningIdx: templateData.stringsTuningIdx
+          stringsTuningIdx: templateData.stringsTuningIdx,
+          selectedTemplate: value
         });
       }
     }
@@ -54,7 +55,8 @@ export default {
         result.names,
         result.texts,
         ev.baseFreq,
-        ev.stringsTuningIdx
+        ev.stringsTuningIdx,
+        ev.selectedTemplate
       );
     }
   }

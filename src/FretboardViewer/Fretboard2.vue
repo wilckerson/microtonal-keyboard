@@ -62,7 +62,8 @@
       </div>
       <div class="control-panel">
         <label>Note highlight groups: </label>
-        <note-group style="width: 350px" @change="onChangeNoteGroup" :noteTexts="noteTexts" :noteNames="noteNames" />
+        <note-group style="width: 350px" @change="onChangeNoteGroup" :noteTexts="noteTexts" :noteNames="noteNames"
+          :selectedTemplate="selectedTemplate" />
       </div>
     </div>
   </div>
@@ -119,7 +120,8 @@ export default {
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
       displayMode: DISPLAY_MODES.DEFAULT,
       DISPLAY_MODES,
-      stringLength: 650
+      stringLength: 650,
+      selectedTemplate: undefined
     };
   },
   mounted() { },
@@ -142,13 +144,15 @@ export default {
       noteNames,
       noteTexts,
       baseFreq,
-      stringsTuningIdx
+      stringsTuningIdx,
+      selectedTemplate
     ) {
       if (baseFreq) this.baseFreq = baseFreq;
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
       this.scale = notes;
       this.noteNames = noteNames;
       this.noteTexts = noteTexts;
+      this.selectedTemplate = selectedTemplate;
     },
     onChangeSubset(selectedNotes, selectedNotesIdx) {
       this.subsetEnabled = selectedNotes;

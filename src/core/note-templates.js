@@ -12,6 +12,16 @@ const notes12edo = [
   '11\\12 "G#"',
   '12\\12 "A"'
 ];
+const scales12edo = [
+  {
+    name: "Major",
+    degrees: [0, 2, 4, 5, 7, 9, 11]
+  },
+  {
+    name: "Minor",
+    degrees: [0, 2, 3, 5, 7, 8, 10]
+  }
+];
 
 const notes31edo = [
   '1\\31 "A‡"',
@@ -47,35 +57,52 @@ const notes31edo = [
   '31\\31 "A"'
 ];
 
+const scales31edo = [
+  {
+    name: "Major",
+    degrees: [0, 5, 10, 13, 18, 23, 28]
+  },
+  {
+    name: "Minor",
+    degrees: [0, 5, 8, 13, 18, 21, 26]
+  }
+];
+
 export default {
   "12edo - Guitar - Standard Tuning": {
     notes: notes12edo,
     baseFreq: 110,
-    stringsTuningIdx: [19, 14, 10, 5, 0, -5]
+    stringsTuningIdx: [19, 14, 10, 5, 0, -5],
+    scales: scales12edo
   },
   "12edo - Guitar - DADGAD": {
     notes: notes12edo,
     baseFreq: 110,
-    stringsTuningIdx: [17, 12, 10, 5, 0, -7]
+    stringsTuningIdx: [17, 12, 10, 5, 0, -7],
+    scales: scales12edo
   },
   "12edo - Bass - Standard Tuning": {
     notes: notes12edo,
     baseFreq: 55,
-    stringsTuningIdx: [10, 5, 0, -5]
+    stringsTuningIdx: [10, 5, 0, -5],
+    scales: scales12edo
   },
   "12edo - Ukelele - Standard Tuning": {
     notes: notes12edo,
     baseFreq: 110,
-    stringsTuningIdx: [12, 7, 3 , 10]
+    stringsTuningIdx: [12, 7, 3, 10],
+    scales: scales12edo
   },
   "31edo - Guitar - Standard Tuning": {
     notes: notes31edo,
     baseFreq: 110,
-    stringsTuningIdx: [49, 36, 26, 13, 0, -13]
+    stringsTuningIdx: [49, 36, 26, 13, 0, -13],
+    scales: scales31edo
   },
   "31edo - Bass - Standard Tuning": {
     notes: notes31edo,
     baseFreq: 55,
-    stringsTuningIdx: [26, 13, 0, -13]
-  },
+    stringsTuningIdx: [26, 13, 0, -13],
+    scales: scales31edo
+  }
 };

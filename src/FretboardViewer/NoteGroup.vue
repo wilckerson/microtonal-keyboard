@@ -27,7 +27,8 @@
             </div>
             <label>Notes:</label>
             <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames"
-                :initialSelectedNotesIdx="groupItemSelectedNotesIdx" @change="onChangeSelectedNotes" />
+                :initialSelectedNotesIdx="groupItemSelectedNotesIdx" @change="onChangeSelectedNotes"
+                :useScaleOptions="true" :selectedTemplate="selectedTemplate" />
             <br />
             <button @click="onSaveGroup">Save</button>
             <button class="btn-cancel" @click="onCancelAdd">Cancel</button>
@@ -47,8 +48,8 @@ export default {
         noteNames: {
             type: Array,
             required: true
-        }
-
+        },
+        selectedTemplate: String,
     },
     data() {
         return {
@@ -147,7 +148,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .btn-action {
     margin-left: 6px;
     float: right;
