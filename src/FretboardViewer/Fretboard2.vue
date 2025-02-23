@@ -56,7 +56,7 @@
         <div>
           <label>Subset enabled notes:</label>
           <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames" :defaultChecked="true"
-            @change="onChangeSubset" />
+            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
@@ -97,7 +97,7 @@ TODOs:
 - [] Support navigate key mappings on active notes
 - [] Total number of notes across strings
 - [] URL data similar to ScaleWorkshop
-- [] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
+- [x] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
 */
 
 import NoteSelectionList from "./NoteSelectionList.vue";

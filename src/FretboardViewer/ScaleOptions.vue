@@ -12,6 +12,10 @@
       <select v-model="selectedScaleIdx">
         <option v-for="(scale, idx) in scales" :key="'scale-selection-' + idx" :value="idx">{{ scale.name }}</option>
       </select>
+      <label>
+        <input type="checkbox" v-model="clearOnApply" />
+        Clear on apply
+      </label>
       <button @click="onClickApplyScale">Apply scale</button>
     </div>
   </div>
@@ -29,6 +33,7 @@ export default {
     return {
       selectedScaleIdx: 0,
       selectedRootNoteIdx: 0,
+      clearOnApply: true,
     }
   },
   computed: {
@@ -44,7 +49,7 @@ export default {
       const scaleSize = this.noteTexts.length;
       const scaleDegrees = this.scales[this.selectedScaleIdx].degrees;
       const scaleDegreesFromRoot = scaleDegrees.map(i => (this.selectedRootNoteIdx + i) % scaleSize);
-      this.$emit('onApplyScale', scaleDegreesFromRoot);
+      this.$emit('onApplyScale', scaleDegreesFromRoot, this.clearOnApply);
     }
   }
 }
@@ -54,5 +59,9 @@ export default {
 <style scoped>
 .scale-options {
   margin: 12px 0;
+}
+
+label {
+  font-weight: normal !important;
 }
 </style>

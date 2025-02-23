@@ -88,8 +88,8 @@ export default {
       this.selectedNotes = newSelectedNotes;
       this.emitChange();
     },
-    onApplyScale(scaleDegrees) {
-      const newSelectedNotes = this.selectedNotes.map(i => false);
+    onApplyScale(scaleDegrees, clearOnApply) {
+      const newSelectedNotes = this.selectedNotes.map(i => clearOnApply ? false : i);
       scaleDegrees.forEach(idx => {
         newSelectedNotes[idx] = true;
       });
