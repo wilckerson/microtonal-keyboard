@@ -11,7 +11,7 @@
           <div v-for="(rowData, rowIdx) in fretboardData" v-bind:key="'fretboard-row-' + rowIdx" class="fretboard-row">
             <div class="string-indicator"></div>
             <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
-              :class="{ 'fret-zero': fretIdx === 0 }" :disabled="!subsetEnabled[fretData.scaleIdx]"
+              :class="{ 'fret-zero': fretIdx === 0 }" :disabled="isFretDisabled(fretIdx, fretData.scaleIdx)"
               :keyName="fretData.keyName" :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq"
               :text="fretData.text" :style="'width: ' + fretData.width + '%'"
               :markers="getMarkersFromNoteGroups(fretData.scaleIdx)" hideFreq />
@@ -35,6 +35,7 @@
         <custom-notes @change="onChangeCustomNotes" />
       </div>
       <div class="control-panel">
+
         <label>
           Display mode:
           <select v-model="displayMode">
@@ -47,6 +48,7 @@
             <option :value="DISPLAY_MODES.CENTS_RELATIVE">Cents (¢) relative to string</option>
             <option :value="DISPLAY_MODES.FREQUENCY">Frequency (Hz)</option>
             <option :value="DISPLAY_MODES.FRETS_DISTANCE">Frets distance (mm) from Nut</option>
+            <!-- <option :value="DISPLAY_MODES.FULL_FRETS">Full frets</option> -->
           </select>
         </label>
         <div v-if="displayMode === DISPLAY_MODES.FRETS_DISTANCE">
@@ -54,13 +56,24 @@
               @change="stringLength = (Math.min(Math.max(1, parseFloat($event.target.value)), 10000) || 1)" /></label>
         </div>
         <div>
+          <input type="checkbox" v-model="fullFrets" />
+          Full frets only
+        </div>
+        <div>
           <label>Subset enabled notes:</label>
-          <note-selection-list :noteTexts="noteTexts" :noteNames="noteNames" :defaultChecked="true"
+          <note-selection-list :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
             @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
       <div class="control-panel">
+        <div>
+          <input type="checkbox" v-model="displayUniqueNotes" /> Display unique notes
+          <div v-if="displayUniqueNotes">Total: {{ getUniqueNotes.length }}</div>
+          <div v-if="displayUniqueNotes" style="max-width: 350px">Notes: {{
+            getUniqueNotes
+          }}</div>
+        </div>
         <label>Note highlight groups: </label>
         <note-group style="width: 350px" @change="onChangeNoteGroup" :noteTexts="noteTexts" :noteNames="noteNames"
           :selectedTemplate="selectedTemplate" />
@@ -87,9 +100,9 @@ TODOs:
 - [x] Improved color selection
 - [] Display mode "only frets"
 - [] Display active interval
-- [] Full frets mode based on string zero
+- [x] Full frets mode based on string zero
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
-- [] Display number of common frets between strings
+- [x] Display number of common frets between strings
 - [] Fix play bug on touch
 - [] Play with drag
 - [] Strings count input
@@ -106,6 +119,7 @@ import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
 import { buildFretboardData, DISPLAY_MODES } from "./fretboard";
+import { unique } from "../core/core.js";
 
 export default {
   components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList },
@@ -121,7 +135,9 @@ export default {
       displayMode: DISPLAY_MODES.DEFAULT,
       DISPLAY_MODES,
       stringLength: 650,
-      selectedTemplate: undefined
+      selectedTemplate: undefined,
+      fullFrets: false,
+      displayUniqueNotes: false
     };
   },
   mounted() { },
@@ -134,11 +150,42 @@ export default {
         this.noteNames,
         this.noteTexts,
         this.displayMode,
-        this.stringLength
+        this.stringLength,
+        this.fullFrets,
       );
-    }
+    },
+    getUniqueNotes() {
+      const data = buildFretboardData(
+        this.baseFreq,
+        this.scale,
+        this.stringsTuningIdx,
+        this.noteNames,
+        this.noteTexts,
+        DISPLAY_MODES.RATIO_REDUCED,
+        this.stringLength,
+        this.fullFrets,
+      );
+      const ratios = data.map(stringNotes => stringNotes.filter((fretData, fretIdx) => !this.isFretDisabled(fretIdx, fretData.scaleIdx)))
+        .flat().map(item => parseFloat(item.text)).sort();
+      const result = unique(ratios);
+      if (result[0] === 1 && result[result.length - 1] === 2) {
+        result.pop(); //Removing ratio 2 from the end
+      }
+      return result;
+    },
+
   },
   methods: {
+
+    isFretDisabled(fretIdx, fretScaleIdx) {
+      if (this.fullFrets) {
+        if (fretIdx === 0) return false;
+        return !this.subsetEnabled[fretIdx - 1];
+      }
+      else {
+        return !this.subsetEnabled[fretScaleIdx];
+      }
+    },
     onChangeCustomNotes(
       notes,
       noteNames,

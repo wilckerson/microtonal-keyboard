@@ -157,14 +157,16 @@ export function buildFretboardData(
   noteNames,
   noteTexts,
   displayMode,
-  stringLength
+  stringLength,
+  fullFrets
 ) {
   if (!scale || scale.length === 0) {
     scale = [2];
   }
+
   const data = stringsTuningIdx.map(stringTuningIdx => {
     const relativeRatio = getRelativeRatioByIndex(scale, stringTuningIdx);
-    const relativeScale = rotateScale(scale, stringTuningIdx);
+    const relativeScale = rotateScale(scale, fullFrets ? 0 : stringTuningIdx);
     return buildFretsData(
       relativeScale,
       baseFreq,

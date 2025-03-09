@@ -59,3 +59,27 @@ export function ratioToCents(ratio) {
 export function ratioToFretDistance(ratio, stringLength) {
   return stringLength - stringLength / ratio;
 }
+
+export function unique(array) {
+  var minValue = 0.00000001; //0.01;
+  var resultArray = [];
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index];
+    var contains = false;
+
+    if (resultArray.length > 0) {
+      for (let j = 0; j < resultArray.length; j++) {
+        const element2 = resultArray[j];
+        if (Math.abs(element2 - element) < minValue) {
+          contains = true;
+          break;
+        }
+      }
+    }
+
+    if (!contains) {
+      resultArray.push(element);
+    }
+  }
+  return resultArray;
+}
