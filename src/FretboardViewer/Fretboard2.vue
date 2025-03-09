@@ -12,9 +12,11 @@
             <div class="string-indicator"></div>
             <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
               :class="{ 'fret-zero': fretIdx === 0 }" :disabled="isFretDisabled(fretIdx, fretData.scaleIdx)"
-              :keyName="fretData.keyName" :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq"
-              :text="fretData.text" :style="'width: ' + fretData.width + '%'"
-              :markers="getMarkersFromNoteGroups(fretData.scaleIdx)" hideFreq />
+              :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx, fretData.scaleIdx)"
+              :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
+              :style="'width: ' + fretData.width + '%'" :markers="getMarkersFromNoteGroups(fretData.scaleIdx)"
+              hideFreq />
+
           </div>
         </div>
         <div class="fretboard-fret-numbers">
@@ -102,13 +104,14 @@ TODOs:
 - [] Display active interval
 - [x] Full frets mode based on string zero
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
-- [x] Display number of common frets between strings
+- [] Display number of common frets between strings
 - [] Fix play bug on touch
 - [] Play with drag
 - [] Strings count input
 - [] Fix note frequency according to physical tunner
 - [] Support navigate key mappings on active notes
-- [] Total number of notes across strings
+- [x] Key mappings on enabled notes
+- [x] Total number of notes across strings
 - [] URL data similar to ScaleWorkshop
 - [x] Template with notes highlight (Ex: Major - Ionian, Minor - Aeolian, Mixolydean, MOS, etc)
 */
@@ -119,7 +122,7 @@ import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
 import { buildFretboardData, DISPLAY_MODES } from "./fretboard";
-import { unique } from "../core/core.js";
+import { unique, getKeyName, rotateScale } from "../core/core.js";
 
 export default {
   components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList },
@@ -176,7 +179,20 @@ export default {
 
   },
   methods: {
-
+    getKeyNameForEnabledFret(rowIdx, fretIdx, fretScaleIdx) {
+      const startFrom = this.fullFrets ? 0 : fretScaleIdx - fretIdx;
+      const enabledRotated = [
+        ...this.subsetEnabled.slice(startFrom, this.subsetEnabled.length),
+        ...this.subsetEnabled.slice(0, startFrom),
+      ];
+      const isDisabled = this.isFretDisabled(fretIdx, fretScaleIdx);
+      let keyName = '';
+      if (!isDisabled) {
+        const enabledCountsUpToIndex = enabledRotated.slice(0, fretIdx).filter(item => item === true).length;
+        keyName = getKeyName(rowIdx, enabledCountsUpToIndex);
+      }
+      return keyName;
+    },
     isFretDisabled(fretIdx, fretScaleIdx) {
       if (this.fullFrets) {
         if (fretIdx === 0) return false;
