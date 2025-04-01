@@ -20,21 +20,42 @@ public class FretsSectionExplorer
         float toleranceInCents = 30;
         //float[] targetNotes = [1.2f, 8 / 7f];
         var targetNotesList = new List<float>();
+        targetNotesList.Add(1);
         targetNotesList.AddRange(Chord.Overtone7Limit_Inversion0);
-        // targetNotesList.AddRange(Chord.Overtone7Limit_Inversion1);
-        // targetNotesList.AddRange(Chord.Overtone7Limit_Inversion2);
-        // targetNotesList.AddRange(Chord.Overtone7Limit_Inversion3);
+        targetNotesList.AddRange(Chord.Overtone7Limit_Inversion1);
+        targetNotesList.AddRange(Chord.Overtone7Limit_Inversion2);
+        targetNotesList.AddRange(Chord.Overtone7Limit_Inversion3);
         float[] targetNotes = targetNotesList.ToArray();
 
-        float[,] notes = GetFretSectionNotes(stringsNumber, fretSpan, stringStep, baseValue, eqt);
-        DisplayArray2D(notes, baseRefValue);
 
-        var iterationZero = GetIteration(stringsNumber, fretSpan, stringStep, baseRefValue, toleranceInCents, targetNotes, notes);
-        Console.WriteLine(iterationZero);
+        var iterationsResult = new List<IterationResult>();
+        var numberOfIterations = stringStep * eqt;
+        for (int i = 0; i < numberOfIterations; i++)
+        {
+            var stepsByString = stringStep * (i + 1);
+            var iteration = GetIteration(
+                stringsNumber,
+                fretSpan,
+                stepsByString,
+                baseRefValue,
+                toleranceInCents,
+                targetNotes,
+                baseValue,
+                eqt,
+                false);
+            iterationsResult.Add(iteration);
+        }
+        var sortedResult = iterationsResult.OrderBy(o => o.Points).Take(3);
+        //Console.WriteLine($"Best result points: {sortedResult.Points}");
+        Console.WriteLine("Best result points:");
+        Console.WriteLine(string.Join(Environment.NewLine, sortedResult));
     }
 
-    private static IterationResult GetIteration(int stringsNumber, int fretSpan, float stringStep, float baseRefValue, float toleranceInCents, float[] targetNotes, float[,] notes)
+    private static IterationResult GetIteration(int stringsNumber, int fretSpan, float stringStep, float baseRefValue, float toleranceInCents, float[] targetNotes, float baseValue, float eqt, bool displayOutput)
     {
+        float[,] notes = GetFretSectionNotes(stringsNumber, fretSpan, stringStep, baseValue, eqt);
+        if (displayOutput) DisplayArray2D(notes, baseRefValue);
+
         //For each string, find the closest notes to the target notes
         var closestNotes = new List<StringResult>();
         for (int i = 0; i < stringsNumber; i++)
@@ -45,11 +66,18 @@ public class FretsSectionExplorer
             var result = Operations.MatchTargetRatiosToScale(targetNotes, stringScale, toleranceInCents);
             closestNotes.AddRange(result.Select((s) => new StringResult(i, s.ScaleIndex - fretSpan + 1, s.ClosestScaleRatio, s.TargetScaleRatio)));
         }
-        var filteredResult = closestNotes.GroupBy(x => x.TargetRatio).Select(g => g.OrderBy(o => o.Distance).First());
-        var pointsByTargetCounts = 100 - (100 * filteredResult.Count() / targetNotes.Length);
-        var pointsByDistance = filteredResult.Sum(s => Math.Abs(s.Distance));
-        var points = pointsByTargetCounts + pointsByDistance;
-        return new IterationResult(points, stringStep, filteredResult);
+        closestNotes = closestNotes.OrderBy(o => o.TargetRatio).ToList();
+        var uniqueNotesCount = closestNotes.GroupBy(x => x.TargetRatio).Count();
+        //var filteredResult = closestNotes.GroupBy(x => x.TargetRatio).Select(g => g.OrderBy(o => o.Distance).First());
+        var pointsByUniqueTargetCounts = 100 - (100 * ((float)uniqueNotesCount / targetNotes.Length));
+        var pointsByDistance = closestNotes.GroupBy(x => x.TargetRatio).Sum(g => g.Sum(s => Math.Abs(s.Distance)) / g.Count());
+        //var pointsByUniqueByString =
+        var points = pointsByUniqueTargetCounts + pointsByDistance;
+        var iterationResult = new IterationResult(points, stringStep, closestNotes);
+
+        if (displayOutput) Console.WriteLine(iterationResult);
+
+        return iterationResult;
     }
 
     private static float[,] GetFretSectionNotes(int stringsNumber, int fretSpan, float stepsByString, float baseValue, float eqt)
