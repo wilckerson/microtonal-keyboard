@@ -42,7 +42,7 @@ public static class Operations
                 var fixedItem = (float)Math.Pow(period, idxPow) * item;
                 rotationArray[j] = fixedItem / tmpRoot;
             }
-            result[i] = rotationArray;            
+            result[i] = rotationArray;
             tmpRoot = scaleArray[i];
         }
         return result;
@@ -73,7 +73,8 @@ public static class Operations
         {
             var scaleRatio = scale[i];
             var diff = RatiosDiffInCents(scaleRatio, targetRatio);
-            if(diff < minDiff){
+            if (diff < minDiff)
+            {
                 minDiff = diff;
                 scaleIndex = i;
             }
@@ -88,13 +89,13 @@ public static class Operations
         );
     }
 
-/// <summary>
-/// Verify if all target ratios are present inside the scale considering the tolerance. It returns an empty list if at least one target is not matched.
-/// </summary>
-/// <param name="targetRatios"></param>
-/// <param name="scale"></param>
-/// <param name="toleranceInCents"></param>
-/// <returns></returns>
+    /// <summary>
+    /// Verify if all target ratios are present inside the scale considering the tolerance. It returns an empty list if at least one target is not matched.
+    /// </summary>
+    /// <param name="targetRatios"></param>
+    /// <param name="scale"></param>
+    /// <param name="toleranceInCents"></param>
+    /// <returns></returns>
     public static List<ClosestRationFromScaleResult> FullMatchTargetRatiosToScale(float[] targetRatios, float[] scale, float toleranceInCents)
     {
         var closestData = new List<ClosestRationFromScaleResult>();
@@ -111,12 +112,37 @@ public static class Operations
                 closestCount++;
                 closestData.Add(targetResult);
             }
-            else{
+            else
+            {
                 return new List<ClosestRationFromScaleResult>();
             }
         }
 
         return closestData;
+    }
+
+    public static float Reduce(float value, float period)
+    {
+        if (period == 1)
+        {
+            return value;
+        }
+
+        if (value >= period)
+        {
+            while (value >= period)
+            {
+                value = value / period;
+            }
+        }
+        else if (value > 0 && value < 1)
+        {
+            while (value < 1)
+            {
+                value = value * period;
+            }
+        }
+        return value;
     }
 }
 

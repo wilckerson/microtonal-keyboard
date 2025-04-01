@@ -1,4 +1,5 @@
 ﻿using MicrotonalExplorer;
 
 Console.WriteLine("======= Microtonal Explorer =======");
-NotesExplorer.MainComputation();
+//NotesExplorer.MainComputation();
+FretsSectionExplorer.MainComputation();
