@@ -1,6 +1,8 @@
+using Microsoft.VisualBasic;
 using MicrotonalExplorer;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Numerics;
 
 public class FretsSectionExplorer
 {
@@ -15,10 +17,39 @@ public class FretsSectionExplorer
         int fretSpan = 5;
 
         int stringsNumber = 6;
-        float[] targetNotes = [1.25f, 1.5f];
+        float toleranceInCents = 30;
+        //float[] targetNotes = [1.2f, 8 / 7f];
+        var targetNotesList = new List<float>();
+        targetNotesList.AddRange(Chord.Overtone7Limit_Inversion0);
+        // targetNotesList.AddRange(Chord.Overtone7Limit_Inversion1);
+        // targetNotesList.AddRange(Chord.Overtone7Limit_Inversion2);
+        // targetNotesList.AddRange(Chord.Overtone7Limit_Inversion3);
+        float[] targetNotes = targetNotesList.ToArray();
 
         float[,] notes = GetFretSectionNotes(stringsNumber, fretSpan, stringStep, baseValue, eqt);
-        DisplayArray2D(notes);
+        DisplayArray2D(notes, baseRefValue);
+
+        var iterationZero = GetIteration(stringsNumber, fretSpan, stringStep, baseRefValue, toleranceInCents, targetNotes, notes);
+        Console.WriteLine(iterationZero);
+    }
+
+    private static IterationResult GetIteration(int stringsNumber, int fretSpan, float stringStep, float baseRefValue, float toleranceInCents, float[] targetNotes, float[,] notes)
+    {
+        //For each string, find the closest notes to the target notes
+        var closestNotes = new List<StringResult>();
+        for (int i = 0; i < stringsNumber; i++)
+        {
+            var stringScale = Enumerable.Range(0, notes.GetLength(1))
+                .Select(x => Operations.Reduce(notes[i, x], baseRefValue))
+                .ToArray();
+            var result = Operations.MatchTargetRatiosToScale(targetNotes, stringScale, toleranceInCents);
+            closestNotes.AddRange(result.Select((s) => new StringResult(i, s.ScaleIndex - fretSpan + 1, s.ClosestScaleRatio, s.TargetScaleRatio)));
+        }
+        var filteredResult = closestNotes.GroupBy(x => x.TargetRatio).Select(g => g.OrderBy(o => o.Distance).First());
+        var pointsByTargetCounts = 100 - (100 * filteredResult.Count() / targetNotes.Length);
+        var pointsByDistance = filteredResult.Sum(s => Math.Abs(s.Distance));
+        var points = pointsByTargetCounts + pointsByDistance;
+        return new IterationResult(points, stringStep, filteredResult);
     }
 
     private static float[,] GetFretSectionNotes(int stringsNumber, int fretSpan, float stepsByString, float baseValue, float eqt)
@@ -39,15 +70,41 @@ public class FretsSectionExplorer
         return notes;
     }
 
-    private static void DisplayArray2D(float[,] array2D)
+    private static void DisplayArray2D(float[,] array2D, float? reducePeriod = null)
     {
         for (int i = array2D.GetLength(0) - 1; i >= 0; i--)
         {
             for (int j = 0; j < array2D.GetLength(1); j++)
             {
-                Console.Write("{0:0.00000}, ", array2D[i, j]);
+                var value = array2D[i, j];
+                if (reducePeriod.HasValue)
+                {
+                    value = Operations.Reduce(value, reducePeriod.Value);
+                }
+                var fretIdx = j - array2D.GetLength(1) / 2;
+                Console.Write("({0},{1}) {2:0.00000}, ", i, fretIdx, value);
             }
             Console.WriteLine();
         }
     }
+
+    public record IterationResult(float Points, float StepsByString, IEnumerable<StringResult> ClosestNotes)
+    {
+        public override string ToString()
+        {
+            var notes = string.Join(Environment.NewLine, ClosestNotes.Select(s => s.ToString()));
+            return $"Points: {Points}, StepsByString: {StepsByString}, ClosestNotes: {Environment.NewLine}{notes}{Environment.NewLine}=======";
+        }
+    }
+    public record StringResult(int StringIndex, int FretIndex, float ClosestScaleRatio, float TargetRatio)
+    {
+        public float Distance
+        {
+            get
+            {
+                return Vector2.Distance(Vector2.Zero, new Vector2(StringIndex, FretIndex));
+            }
+        }
+    }
+
 }

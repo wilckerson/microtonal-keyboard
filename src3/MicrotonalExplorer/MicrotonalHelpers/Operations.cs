@@ -98,6 +98,11 @@ public static class Operations
     /// <returns></returns>
     public static List<ClosestRationFromScaleResult> FullMatchTargetRatiosToScale(float[] targetRatios, float[] scale, float toleranceInCents)
     {
+        return MatchTargetRatiosToScale(targetRatios, scale, toleranceInCents, true);
+    }
+
+    public static List<ClosestRationFromScaleResult> MatchTargetRatiosToScale(float[] targetRatios, float[] scale, float toleranceInCents, bool shouldMatchAll = false)
+    {
         var closestData = new List<ClosestRationFromScaleResult>();
         int closestCount = 0;
         for (int targetIndex = 0; targetIndex < targetRatios.Length; targetIndex++)
@@ -112,7 +117,7 @@ public static class Operations
                 closestCount++;
                 closestData.Add(targetResult);
             }
-            else
+            else if (shouldMatchAll)
             {
                 return new List<ClosestRationFromScaleResult>();
             }
