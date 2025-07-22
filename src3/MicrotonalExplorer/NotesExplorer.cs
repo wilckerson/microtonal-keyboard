@@ -8,7 +8,7 @@ public class NotesExplorer
     public static void MainComputation()
     {
         //Parameters:
-        var numberOfNotes = 7;
+        var numberOfNotes = 16;
         var numberOfDivisions = 31;
         var period = 2 / 1;
         float maxToleranceInCents = 9;
