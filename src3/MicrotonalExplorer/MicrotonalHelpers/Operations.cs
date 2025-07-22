@@ -65,6 +65,40 @@ public static class Operations
         return Math.Abs(RatioToCents(ratio1) - RatioToCents(ratio2));
     }
 
+    /// <summary>
+    /// Reduces a value to be within the range [1, period) by dividing or multiplying by the period.
+    /// If period is 1, returns the value unchanged.
+    /// If value >= period, divides by period until value < period.
+    /// If 0 < value < 1, multiplies by period until value >= 1.
+    /// </summary>
+    /// <param name="value">The value to reduce</param>
+    /// <param name="period">The period to use for reduction</param>
+    /// <returns>The reduced value within [1, period)</returns>
+    public static float Reduce(float value, float period)
+    {
+        if (period == 1)
+        {
+            return value;
+        }
+
+        if (value >= period)
+        {
+            while (value >= period)
+            {
+                value = value / period;
+            }
+        }
+        else if (value > 0 && value < 1)
+        {
+            while (value < 1)
+            {
+                value = value * period;
+            }
+        }
+        
+        return value;
+    }
+
     public static ClosestRationFromScaleResult GetClosestRatioFromScale(float targetRatio, float[] scale)
     {
         float minDiff = 1200;

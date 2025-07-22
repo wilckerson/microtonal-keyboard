@@ -153,7 +153,7 @@ public static class EqualTemperament
         return (uint)result;
     }
 
-    public static float GetEqualTemperamentNote(int noteIndex, int numberOfDivisions, float period)
+    public static float GetEqualTemperamentNote(float noteIndex, float numberOfDivisions, float period)
     {
         if (numberOfDivisions <= 1)
         {
@@ -163,7 +163,7 @@ public static class EqualTemperament
         {
             throw new Exception("The period must be positive and greater than 1");
         }
-        return (float)Math.Pow(period, (float)noteIndex / numberOfDivisions);
+        return (float)Math.Pow(period, noteIndex / numberOfDivisions);
     }
 
     public static float[] ConvertSubsetToScale(IEnumerable<int> subset, int numberOfDivisions, float period)
