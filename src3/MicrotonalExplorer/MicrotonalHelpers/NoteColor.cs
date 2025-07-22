@@ -8,7 +8,7 @@ public static class NoteColor{
     public static void WriteRatioWithColor(float ratio)
     {
         SetConsoleColorByRatio(ratio);
-        Console.Write($"{ratio,8:F4} ");
+        Console.Write($"{ratio,6:F4}");
         Console.ResetColor();
     }
     

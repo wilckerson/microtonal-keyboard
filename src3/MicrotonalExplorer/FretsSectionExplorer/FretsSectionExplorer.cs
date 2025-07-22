@@ -53,7 +53,7 @@ public class FretsSectionExplorer
             }
 
             Console.WriteLine($"\nMatrix for StrEdoJump {strEdoJump}:");
-            DisplayMatrix(matrix);
+            DisplayMatrix(matrix, matches);
             Console.WriteLine();
         }
     }
@@ -100,23 +100,53 @@ public class FretsSectionExplorer
     }
 
     /// <summary>
-    /// Helper method to display the matrix in a readable format with color gradients
+    /// Helper method to display the matrix in a readable format with color gradients.
+    /// If a list of ClosestMatchResult is provided, notes that match are rendered with square brackets.
     /// </summary>
     /// <param name="matrix">The matrix to display</param>
-    public static void DisplayMatrix(RelativeNote[,] matrix)
+    /// <param name="matches">Optional: list of ClosestMatchResult to highlight selected notes</param>
+    public static void DisplayMatrix(RelativeNote[,] matrix, List<ClosestMatchResult>? matches = null)
     {
         int rows = matrix.GetLength(0);
         int cols = matrix.GetLength(1);
+
+        // Build a set of matched positions for quick lookup if matches are provided
+        HashSet<string>? matchedPositions = null;
+        if (matches != null)
+        {
+            matchedPositions = new HashSet<string>(
+                matches.SelectMany(m => m.ClosestNotes)
+                       .Select(n => n.Position.ToString())
+            );
+        }
 
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
             {
                 var note = matrix[row, col];
-                Console.Write(note.Position);
-
                 var ratio = note.GetNormalizedRatio();
-                NoteColor.WriteRatioWithColor(ratio);
+                var posStr = note.Position.ToString();
+
+                if ((matchedPositions != null && matchedPositions.Contains(posStr)) || ratio == 1.0f)
+                {
+                    // Highlight matched notes with square brackets
+                    Console.Write("[");
+                    NoteColor.WriteRatioWithColor(ratio);
+                    Console.Write("]");
+                }
+                else if (ratio < 1.0f)
+                {
+                    Console.Write("[");
+                    NoteColor.WriteRatioWithColor(ratio);
+                    Console.Write("]");
+                }
+                else
+                {
+                    Console.Write(" ");
+                    NoteColor.WriteRatioWithColor(ratio);
+                    Console.Write(" ");
+                }
 
                 //var cents = note.GetNormalizedCents();
                 //NoteColor.WriteCentsWithColor(cents);
