@@ -1,11 +1,40 @@
 using System;
+using System.Collections.Generic;
+using MicrotonalExplorer;
+
+public class ClosestMatchResult
+{
+    public float TargetRatio { get; set; }
+    public List<RelativeNote> ClosestNotes { get; set; }
+    public float DiffInCents { get; set; }
+
+    public ClosestMatchResult(float targetRatio, List<RelativeNote> closestNotes, float diffInCents)
+    {
+        TargetRatio = targetRatio;
+        ClosestNotes = closestNotes;
+        DiffInCents = diffInCents;
+    }
+
+    /// <summary>
+    /// Displays the match result to the console with formatted output
+    /// </summary>
+    public void Display()
+    {
+        Console.WriteLine($"Target {TargetRatio:F3} ({DiffInCents:F1} cents difference):");
+        foreach (var note in ClosestNotes)
+        {
+            Console.WriteLine($"  - Position {note.Position}, Ratio: {note.GetNormalizedRatio():F4}");
+        }
+        Console.WriteLine();
+    }
+}
 
 public class FretsSectionExplorer
 {
     public static void MainComputation()
     {
         var matrix = CreateRelativeMatrix(
-            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 13 },
+            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 9, SkipFreting = 2 },
             upperBoundCount: 5,
             downBoundCount: 0,
             leftBoundCount: 3,
@@ -14,6 +43,14 @@ public class FretsSectionExplorer
         // Display the matrix
         Console.WriteLine("Relative Position Matrix:");
         DisplayMatrix(matrix);
+
+        float[] targets = { 1.125f, 1.25f, 1.5f }; // 9/8, 5/4, 3/2
+        var matches = FindClosestMatches(matrix, targets);
+
+        foreach (var match in matches)
+        {
+            match.Display();
+        }
     }
 
     /// <summary>
@@ -79,5 +116,60 @@ public class FretsSectionExplorer
             }
             Console.WriteLine();
         }
+    }
+
+    /// <summary>
+    /// Finds the closest RelativeNote matches for a list of target ratios within the matrix
+    /// Includes all positions that have the same closest ratio for each target
+    /// </summary>
+    /// <param name="matrix">The matrix to search through</param>
+    /// <param name="targetRatios">Array of target ratios to find</param>
+    /// <returns>List of ClosestMatchResult objects containing target ratio, list of closest RelativeNotes, and difference in cents</returns>
+    public static List<ClosestMatchResult> FindClosestMatches(RelativeNote[,] matrix, float[] targetRatios)
+    {
+        var results = new List<ClosestMatchResult>();
+
+        foreach (var targetRatio in targetRatios)
+        {
+            var closestNotes = new List<RelativeNote>();
+            float minDiffInCents = float.MaxValue;
+
+            // Search through the entire matrix
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    var note = matrix[row, col];
+                    var noteRatio = note.GetNormalizedRatio();
+
+                    // Calculate difference in cents
+                    float diffInCents = Operations.RatiosDiffInCents(targetRatio, noteRatio);
+
+                    if (diffInCents < minDiffInCents)
+                    {
+                        // Found a better match, clear previous matches and start new list
+                        minDiffInCents = diffInCents;
+                        closestNotes.Clear();
+                        closestNotes.Add(note);
+                    }
+                    else if (Math.Abs(diffInCents - minDiffInCents) < 0.001f) // Same difference (within tolerance)
+                    {
+                        // Same quality match, add to the list
+                        closestNotes.Add(note);
+                    }
+                }
+            }
+
+            // Add results if we found any matches
+            if (closestNotes.Count > 0)
+            {
+                results.Add(new ClosestMatchResult(targetRatio, closestNotes, minDiffInCents));
+            }
+        }
+
+        return results;
     }
 }
