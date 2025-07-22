@@ -13,13 +13,14 @@ public class FretsSectionExplorer
         for (int strEdoJump = 1; strEdoJump <= 31; strEdoJump++)
         {
             var matrix = CreateRelativeMatrix(
-                tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = strEdoJump, SkipFreting = 2 },
+                tunningInfo: new TunningInfo { Edo = 43, Period = 2, StrEdoJump = strEdoJump, SkipFreting = 3 },
                 upperBoundCount: 5,
                 downBoundCount: 0,
                 leftBoundCount: 3,
                 rightBoundCount: 3);
+            var maxCentsDiff = 20f;
 
-            var matches = FindClosestMatches(matrix, targets, 16f);
+            var matches = FindClosestMatches(matrix, targets, maxCentsDiff);
             float totalMinDistance = CalculateTotalMinimumDistance(matches);
             
             results.Add((strEdoJump, totalMinDistance, matches, matrix));
@@ -36,9 +37,11 @@ public class FretsSectionExplorer
             .ThenBy(r => r.totalMinDistance)
             .ToList();
 
-        Console.WriteLine("=== TOP 3 BEST CONFIGURATIONS (Most Matches, Then Lowest Total Distance) ===\n");
+        var topResults = 5;
 
-        for (int i = 0; i < Math.Min(3, sortedResults.Count); i++)
+        Console.WriteLine($"=== TOP {topResults} BEST CONFIGURATIONS (Most Matches, Then Lowest Total Distance) ===\n");
+
+        for (int i = 0; i < Math.Min(topResults, sortedResults.Count); i++)
         {
             var (strEdoJump, totalMinDistance, matches, matrix) = sortedResults[i];
 
