@@ -7,28 +7,55 @@ public class FretsSectionExplorer
 {
     public static void MainComputation()
     {
-        var matrix = CreateRelativeMatrix(
-            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 13, SkipFreting = 2 },
-            upperBoundCount: 5,
-            downBoundCount: 0,
-            leftBoundCount: 3,
-            rightBoundCount: 3);
+        Console.WriteLine("Testing different StrEdoJump values from 1 to 31...\n");
 
-        // Display the matrix
-        Console.WriteLine("Relative Position Matrix:");
-        DisplayMatrix(matrix);
-
-        float[] targets = { 1.125f, 1.25f, 1.5f }; // 9/8, 5/4, 3/2
-        var matches = FindClosestMatches(matrix, targets);
-
-        foreach (var match in matches)
+        float[] targets = { 9/8f, 5/4f, 4/3f, 3/2f, 5/3f, 15/8f, 2f }; 
+        var results = new List<(int strEdoJump, float totalMinDistance, List<ClosestMatchResult> matches, RelativeNote[,] matrix)>();
+        
+        // Test each StrEdoJump value from 1 to 31
+        for (int strEdoJump = 1; strEdoJump <= 31; strEdoJump++)
         {
-            match.Display();
-        }
+            var matrix = CreateRelativeMatrix(
+                tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = strEdoJump, SkipFreting = 2 },
+                upperBoundCount: 5,
+                downBoundCount: 0,
+                leftBoundCount: 3,
+                rightBoundCount: 3);
 
-        // Calculate and display the total minimum distance
-        float totalMinDistance = CalculateTotalMinimumDistance(matches);
-        Console.WriteLine($"Total minimum distance for all targets: {totalMinDistance:F2}");
+            var matches = FindClosestMatches(matrix, targets, 16f);
+            float totalMinDistance = CalculateTotalMinimumDistance(matches);
+            
+            results.Add((strEdoJump, totalMinDistance, matches, matrix));
+            
+            Console.Write($"StrEdoJump {strEdoJump,2}: {totalMinDistance:F2}  ");
+            if (strEdoJump % 5 == 0) Console.WriteLine(); // New line every 5 results
+        }
+        
+        Console.WriteLine("\n");
+        
+        // Sort results by total minimum distance (best = lowest distance)
+        var sortedResults = results.OrderBy(r => r.totalMinDistance).ToList();
+        
+        Console.WriteLine("=== TOP 5 BEST CONFIGURATIONS (Lowest Total Distance) ===\n");
+        
+        for (int i = 0; i < Math.Min(5, sortedResults.Count); i++)
+        {
+            var (strEdoJump, totalMinDistance, matches, matrix) = sortedResults[i];
+            
+            Console.WriteLine($"#{i + 1} - StrEdoJump: {strEdoJump}, Total Distance: {totalMinDistance:F3}");
+            Console.WriteLine("Target approximations:");
+            
+            foreach (var match in matches)
+            {
+                var bestNote = match.ClosestNotes.OrderBy(n => n.Position.GetDistanceFromOrigin()).First();
+                Console.WriteLine($"  {match.TargetRatio:F3} → Position {bestNote.Position} " +
+                                $"(±{match.DiffInCents:F1}¢, dist: {bestNote.Position.GetDistanceFromOrigin():F2})");
+            }
+            
+            Console.WriteLine($"\nMatrix for StrEdoJump {strEdoJump}:");
+            DisplayMatrix(matrix);
+            Console.WriteLine();
+        }
     }
 
     /// <summary>
@@ -105,7 +132,7 @@ public class FretsSectionExplorer
     /// <param name="matrix">The matrix to search through</param>
     /// <param name="targetRatios">Array of target ratios to find</param>
     /// <returns>List of ClosestMatchResult objects containing target ratio, list of closest RelativeNotes, and difference in cents</returns>
-    public static List<ClosestMatchResult> FindClosestMatches(RelativeNote[,] matrix, float[] targetRatios)
+      public static List<ClosestMatchResult> FindClosestMatches(RelativeNote[,] matrix, float[] targetRatios, float maxCentsDiff = 30.0f)
     {
         var results = new List<ClosestMatchResult>();
 
@@ -130,21 +157,19 @@ public class FretsSectionExplorer
 
                     if (diffInCents < minDiffInCents)
                     {
-                        // Found a better match, clear previous matches and start new list
                         minDiffInCents = diffInCents;
                         closestNotes.Clear();
                         closestNotes.Add(note);
                     }
-                    else if (Math.Abs(diffInCents - minDiffInCents) < 0.001f) // Same difference (within tolerance)
+                    else if (Math.Abs(diffInCents - minDiffInCents) < 0.001f)
                     {
-                        // Same quality match, add to the list
                         closestNotes.Add(note);
                     }
                 }
             }
 
-            // Add results if we found any matches
-            if (closestNotes.Count > 0)
+            // Only add if the best match is below the maxCents threshold
+            if (closestNotes.Count > 0 && minDiffInCents <= maxCentsDiff)
             {
                 results.Add(new ClosestMatchResult(targetRatio, closestNotes, minDiffInCents));
             }
