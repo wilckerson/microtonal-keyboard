@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using MicrotonalExplorer;
 
 public class FretsSectionExplorer
@@ -27,31 +24,34 @@ public class FretsSectionExplorer
             
             results.Add((strEdoJump, totalMinDistance, matches, matrix));
             
-            Console.Write($"StrEdoJump {strEdoJump,2}: {totalMinDistance:F2}  ");
-            if (strEdoJump % 5 == 0) Console.WriteLine(); // New line every 5 results
+            //Console.Write($"StrEdoJump {strEdoJump,2}: {totalMinDistance:F2}  ");
+            //if (strEdoJump % 5 == 0) Console.WriteLine(); // New line every 5 results
         }
         
         Console.WriteLine("\n");
         
-        // Sort results by total minimum distance (best = lowest distance)
-        var sortedResults = results.OrderBy(r => r.totalMinDistance).ToList();
-        
-        Console.WriteLine("=== TOP 5 BEST CONFIGURATIONS (Lowest Total Distance) ===\n");
-        
-        for (int i = 0; i < Math.Min(5, sortedResults.Count); i++)
+        // Sort results by number of matches (descending), then by total minimum distance (ascending)
+        var sortedResults = results
+            .OrderByDescending(r => r.matches.Count)
+            .ThenBy(r => r.totalMinDistance)
+            .ToList();
+
+        Console.WriteLine("=== TOP 3 BEST CONFIGURATIONS (Most Matches, Then Lowest Total Distance) ===\n");
+
+        for (int i = 0; i < Math.Min(3, sortedResults.Count); i++)
         {
             var (strEdoJump, totalMinDistance, matches, matrix) = sortedResults[i];
-            
-            Console.WriteLine($"#{i + 1} - StrEdoJump: {strEdoJump}, Total Distance: {totalMinDistance:F3}");
+
+            Console.WriteLine($"#{i + 1} - StrEdoJump: {strEdoJump}, Matches: {matches.Count}, Total Distance: {totalMinDistance:F3}");
             Console.WriteLine("Target approximations:");
-            
+
             foreach (var match in matches)
             {
                 var bestNote = match.ClosestNotes.OrderBy(n => n.Position.GetDistanceFromOrigin()).First();
                 Console.WriteLine($"  {match.TargetRatio:F3} → Position {bestNote.Position} " +
                                 $"(±{match.DiffInCents:F1}¢, dist: {bestNote.Position.GetDistanceFromOrigin():F2})");
             }
-            
+
             Console.WriteLine($"\nMatrix for StrEdoJump {strEdoJump}:");
             DisplayMatrix(matrix);
             Console.WriteLine();
