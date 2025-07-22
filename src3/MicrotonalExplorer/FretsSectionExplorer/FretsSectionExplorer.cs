@@ -1,65 +1,11 @@
 using System;
-using MicrotonalExplorer;
-
-public class Position
-{
-    public int x { get; set; }
-    public int y { get; set; }
-
-    public Position(int x, int y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-
-    public override string ToString()
-    {
-        return $"({x,2},{y,2})";
-    }
-}
-
-public class RelativeNote
-{
-    public Position Position { get; set; }
-    public TunningInfo TunningInfo { get; set; }
-
-    public RelativeNote(Position position, TunningInfo tunningInfo)
-    {
-        Position = position;
-        TunningInfo = tunningInfo;
-    }
-
-    public float GetRatio()
-    {
-        var noteRatio = EqualTemperament.GetEqualTemperamentNote(Position.x, TunningInfo.Edo, TunningInfo.Period);
-        var stringRatio = EqualTemperament.GetEqualTemperamentNote(Position.y * TunningInfo.StrEdoJump, TunningInfo.Edo, TunningInfo.Period);
-        return stringRatio * noteRatio;
-    }
-
-    public float GetNormalizedRatio()
-    {
-        var ratio = GetRatio();
-        return Operations.Reduce(ratio, TunningInfo.Period);
-    }
-}
-
-public class TunningInfo
-{
-    public int Edo { get; set; }
-    /// <summary>
-    /// Default period is 2 (octave)
-    /// </summary>
-    public float Period { get; set; } = 2;
-    public float StrEdoJump { get; set; } = 1;
-
-}
 
 public class FretsSectionExplorer
 {
     public static void MainComputation()
     {
         var matrix = CreateRelativeMatrix(
-            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 9 },
+            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 13 },
             upperBoundCount: 5,
             downBoundCount: 0,
             leftBoundCount: 3,
@@ -112,7 +58,7 @@ public class FretsSectionExplorer
     }
 
     /// <summary>
-    /// Helper method to display the matrix in a readable format
+    /// Helper method to display the matrix in a readable format with color gradients
     /// </summary>
     /// <param name="matrix">The matrix to display</param>
     public static void DisplayMatrix(RelativeNote[,] matrix)
@@ -124,10 +70,12 @@ public class FretsSectionExplorer
         {
             for (int col = 0; col < cols; col++)
             {
-                //Console.Write($"{matrix[row, col].Position} ");
                 var note = matrix[row, col];
                 var ratio = note.GetNormalizedRatio();
-                Console.Write($"{ratio:N5} ");
+                NoteColor.WriteRatioWithColor(ratio);
+
+                //var cents = note.GetNormalizedCents();
+                //NoteColor.WriteCentsWithColor(cents);
             }
             Console.WriteLine();
         }
