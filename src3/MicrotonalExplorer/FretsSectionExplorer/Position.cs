@@ -1,3 +1,5 @@
+using System;
+
 public class Position
 {
     public int x { get; set; }
@@ -12,5 +14,14 @@ public class Position
     public override string ToString()
     {
         return $"({x,2},{y,2})";
+    }
+
+    /// <summary>
+    /// Calculates the Euclidean distance from this position to the origin (0, 0)
+    /// </summary>
+    /// <returns>The distance as a float</returns>
+    public float GetDistanceFromOrigin()
+    {
+        return (float)Math.Sqrt(x * x + y * y);
     }
 }

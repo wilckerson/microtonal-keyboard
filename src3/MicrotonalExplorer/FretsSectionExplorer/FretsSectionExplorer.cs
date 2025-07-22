@@ -1,40 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MicrotonalExplorer;
-
-public class ClosestMatchResult
-{
-    public float TargetRatio { get; set; }
-    public List<RelativeNote> ClosestNotes { get; set; }
-    public float DiffInCents { get; set; }
-
-    public ClosestMatchResult(float targetRatio, List<RelativeNote> closestNotes, float diffInCents)
-    {
-        TargetRatio = targetRatio;
-        ClosestNotes = closestNotes;
-        DiffInCents = diffInCents;
-    }
-
-    /// <summary>
-    /// Displays the match result to the console with formatted output
-    /// </summary>
-    public void Display()
-    {
-        Console.WriteLine($"Target {TargetRatio:F3} ({DiffInCents:F1} cents difference):");
-        foreach (var note in ClosestNotes)
-        {
-            Console.WriteLine($"  - Position {note.Position}, Ratio: {note.GetNormalizedRatio():F4}");
-        }
-        Console.WriteLine();
-    }
-}
 
 public class FretsSectionExplorer
 {
     public static void MainComputation()
     {
         var matrix = CreateRelativeMatrix(
-            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 9, SkipFreting = 2 },
+            tunningInfo: new TunningInfo { Edo = 31, Period = 2, StrEdoJump = 13, SkipFreting = 2 },
             upperBoundCount: 5,
             downBoundCount: 0,
             leftBoundCount: 3,
@@ -51,6 +25,10 @@ public class FretsSectionExplorer
         {
             match.Display();
         }
+
+        // Calculate and display the total minimum distance
+        float totalMinDistance = CalculateTotalMinimumDistance(matches);
+        Console.WriteLine($"Total minimum distance for all targets: {totalMinDistance:F2}");
     }
 
     /// <summary>
@@ -77,11 +55,11 @@ public class FretsSectionExplorer
         {
             for (int col = 0; col < totalCols; col++)
             {
-                // Calculate relative X coordinate (0 at center column)
-                int relativeX = col - leftBoundCount;
-
                 // Calculate relative Y coordinate (0 at center row, positive upward)
-                int relativeY = upperBoundCount - row;
+                int relativeY = col - leftBoundCount;
+
+                // Calculate relative X coordinate (0 at center column)
+                int relativeX = upperBoundCount - row;
 
                 var relativeNote = new RelativeNote(
                     new Position(relativeX, relativeY),
@@ -108,6 +86,8 @@ public class FretsSectionExplorer
             for (int col = 0; col < cols; col++)
             {
                 var note = matrix[row, col];
+                Console.Write(note.Position);
+
                 var ratio = note.GetNormalizedRatio();
                 NoteColor.WriteRatioWithColor(ratio);
 
@@ -171,5 +151,17 @@ public class FretsSectionExplorer
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Calculates the sum of minimum distances for all closest notes in the match results
+    /// For each match result, finds the closest note to origin and adds its distance to the sum
+    /// </summary>
+    /// <param name="matchResults">List of ClosestMatchResult objects</param>
+    /// <returns>Sum of all minimum distances</returns>
+    public static float CalculateTotalMinimumDistance(List<ClosestMatchResult> matchResults)
+    {
+        return matchResults.Sum(matchResult =>
+            matchResult.ClosestNotes.Min(note => note.Position.GetDistanceFromOrigin()));
     }
 }
