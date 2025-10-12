@@ -2,53 +2,54 @@ Function Analysis Summary
 Core Mathematical Functions (7 functions, 41 lines total)
 These are fundamental utility functions used throughout the code:
 
-round(x) - 3 lines
+ok round(x) - 3 lines
 
 Dependencies: None
 Purpose: Rounds toward infinity
-roundDown(x) - 3 lines
+ok roundDown(x) - 3 lines
 
 Dependencies: None
 Purpose: Rounds toward negative infinity
-roundOut(x) - 3 lines
+ok roundOut(x) - 3 lines
 
 Dependencies: None
 Purpose: Rounds away from zero
-ceiling(x) - 3 lines
+ok ceiling(x) - 3 lines
 
 Dependencies: None
 Purpose: Ceiling function
-mod(num, base) - 3 lines
+ok mod(num, base) - 3 lines
 
 Dependencies: None
 Purpose: Proper modulo operation
-mod2(i, j) - 5 lines
+ok mod2(i, j) - 5 lines
 
 Dependencies: mod()
 Purpose: Returns smaller of i or its inverse
-GCD(a, b) - 10 lines
+ok GCD(a, b) - 10 lines
 
 Dependencies: mod()
 Purpose: Greatest common divisor
+
 EDO/Scale Functions (3 functions, 15 lines total)
 Functions for equal division of octave calculations:
 
-edosteps(a, b) - 5 lines
+ok edosteps(a, b) - 5 lines
 
 Dependencies: Global variables (edo, Twelfth)
 Purpose: Convert monzo to EDO steps
-edosteps2(a, b) - 3 lines
+ok edosteps2(a, b) - 3 lines
 
 Dependencies: Global variables (edo2, Twelfth)
 Purpose: Convert monzo to second EDO steps
-findBezout(a, b) - 17 lines
+ok findBezout(a, b) - 17 lines
 
 Dependencies: None (but modifies global Bezout array)
 Purpose: Extended Euclidean algorithm for Bezout coefficients
 Core Pergen Analysis Functions (3 functions, 168 lines total)
 These are the mathematical heart of the program:
 
-optimizeEnharmonic(Ek, Es, n) - 17 lines
+ok optimizeEnharmonic(Ek, Es, n) - 17 lines
 
 Dependencies: GCD(), roundOut()
 Purpose: Find better enharmonic intervals

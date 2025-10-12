@@ -14,12 +14,24 @@ function init() {
 
 const expensiveUpdate = debounce(uiData => {
   //Those operations are debounced a few milliseconds to avoid excessive calls on every UI control change.
-  const data = makeList(
-    uiData.slider1Value,
-    uiData.slider2Value,
-    uiData.slider3Value,
-    uiData.slider4Value
-  );
+
+  let edo = uiData.slider3Value;
+  let edo2 = uiData.slider4Value;
+  if (edo == 1) {
+    edo = 13;
+    if (edo2 == 1) edo2 = 13; // EDO #1 = 13b, EDO #2 = 18b
+  }
+  if (edo == 2) {
+    edo = 18;
+    if (edo2 == 2) edo2 = 18;
+  }
+  findBezout(edo, edo2); // e.g. (12,13)-->(1,1) and (12,19)-->(8,5)
+  const maxFraction = edo == 0 ? 10 : maxEDOfraction;
+
+  makeList(maxFraction, edo, edo2);
+
+  //const data = [];
+  const data = getData(uiData.slider1Value);
   updateTableList(data);
 }, 300);
 
@@ -43,10 +55,19 @@ function updateTableList(data) {
   const tbody = document.querySelector("#table-list tbody");
   const newTbodyHtml = data
     .map(
-      (item, index) =>
-        `<tr>
-      <td>${index + 1}</td>
-      <td>${item.pergen}</td>
+      item =>
+        `<tr class="${
+          item.blockEndType == 2
+            ? "t-bb-gray"
+            : item.blockEndType == 1
+            ? "t-bb"
+            : ""
+        }">
+      <td>${item.index}</td>
+        <td><pre>(${(item.pergenName.period + ", ").padEnd(6)}<span class="${
+          item.pergenName.isImperfect ? "imperfect" : ""
+        }">${item.pergenName.gen}</span>)</pre>
+      </td>
       <td>${item.per}</td>
       <td class="t-br">${item.gen}</td>
       <td></td>

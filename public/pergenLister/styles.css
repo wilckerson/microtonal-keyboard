@@ -56,6 +56,10 @@ table {
   min-width: 1280px;
 }
 
+table pre {
+  font-size: 1.25em;
+}
+
 .t-bb {
   border-bottom: 2px solid black;
 }
@@ -73,4 +77,8 @@ table {
   .no-print * {
     display: none !important;
   }
+}
+
+.imperfect {
+  color: green;
 }
