@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Pergen Lister - alt-pergenLister: find all rank-2 pergens (Tall Kite
+      Software)
+    </title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 24px;
+        background-color: #f0f0f0;
+      }
+
+      .card {
+        background: white;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        margin-top: 12px;
+      }
+
+      /* .info {
+        background: #e8f4fd;
+      } */
+
+      .slider-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 12px 0;
+      }
+
+      .slider-group label {
+        font-weight: bold;
+        min-width: 200px;
+      }
+
+      .slider-controls {
+        flex-grow: 5;
+        display: flex;
+      }
+
+      input[type="range"] {
+        flex: 1;
+      }
+
+      .value-display {
+        min-width: 60px;
+        font-weight: bold;
+        color: #333;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      #canvas {
+        border: 2px solid #333;
+        background: white;
+        display: block;
+        margin: 0 auto;
+      }
+
+      table {
+        margin-bottom: 64px;
+      }
+
+      .t-bb {
+        border-bottom: 2px solid black;
+      }
+
+      .t-bb-gray {
+        border-bottom: 2px solid lightgray;
+      }
+
+      .t-br {
+        border-right: 2px solid black;
+      }
+
+      @media print {
+        .no-print,
+        .no-print * {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Pergen Lister</h1>
+    <p>
+      <em
+        >By
+        <a href="https://www.tallkite.com/apps/pergenLister.html"
+          >Tall Kite Software</a
+        >
+        and web conversion by
+        <a href="https://github.com/wilckerson">Wilckerson Ganda</a></em
+      >
+    </p>
+
+    <div class="card controls">
+      <div class="slider-group">
+        <label for="slider1">First pergen displayed:</label>
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider1"
+            min="1"
+            max="3221"
+            value="1"
+            step="20"
+          />
+          <span class="value-display" id="slider1-value">1</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <label for="slider2">Maximum fraction:</label>
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider2"
+            min="1"
+            max="20"
+            value="10"
+            step="1"
+          />
+          <span class="value-display" id="slider2-value">10</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <label for="slider3"
+          >EDO filter: <br /><small>(0 = none, 1 = 13b, 2 = 18b)</small></label
+        >
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider3"
+            min="0"
+            max="72"
+            value="0"
+            step="1"
+          />
+          <span class="value-display" id="slider3-value">0</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <label for="slider4"
+          >2nd EDO filter: <br /><small
+            >(0 = none, 1 = 13b, 2 = 18b)</small
+          ></label
+        >
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider4"
+            min="0"
+            max="72"
+            value="0"
+            step="1"
+          />
+          <span class="value-display" id="slider4-value">0</span>
+        </div>
+      </div>
+    </div>
+
+    <table cellpadding="5" cellspacing="0" style="border-collapse: collapse">
+      <thead>
+        <tr class="t-bb">
+          <th></th>
+          <th>PERGEN</th>
+          <th>Per <small>(Cents)</small></th>
+          <th class="t-br">Gen <small>(Cents)</small></th>
+          <th>Per</th>
+          <th>Enhar1</th>
+          <th class="t-br">^1 cents</th>
+          <th>Gen</th>
+          <th>Enhar2</th>
+          <th class="t-br">^1 cents</th>
+          <th>Unreduced Pergen</th>
+          <th>Per</th>
+          <th>Gen</th>
+          <th>altGen</th>
+          <th>Enhar3</th>
+          <th class="t-br">^1 cents</th>
+          <th>Mapping</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="t-bb">
+          <td>1</td>
+          <td>(P8, P5)</td>
+          <td>1200</td>
+          <td class="t-br">700</td>
+          <td>P8</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>P5</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>(P8, P4)</td>
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td class="t-br"></td>
+
+          <td>1 1 1</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>(P8, P5)</td>
+          <td>1200</td>
+          <td class="t-br">700</td>
+          <td>P8</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>P5</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>(P8, P4)</td>
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td class="t-br"></td>
+
+          <td>1 1 1</td>
+        </tr>
+        <tr class="t-bb-gray">
+          <td>3</td>
+          <td>(P8, P5)</td>
+          <td>1200</td>
+          <td class="t-br">700</td>
+          <td>P8</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>P5</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>(P8, P4)</td>
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td class="t-br"></td>
+
+          <td>1 1 1</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>(P8, P5)</td>
+          <td>1200</td>
+          <td class="t-br">700</td>
+          <td>P8</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>P5</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>(P8, P4)</td>
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td class="t-br"></td>
+
+          <td>1 1 1</td>
+        </tr>
+        <tr class="t-bb">
+          <td>5</td>
+          <td>(P8, P5)</td>
+          <td>1200</td>
+          <td class="t-br">700</td>
+          <td>P8</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>P5</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>(P8, P4)</td>
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td class="t-br"></td>
+
+          <td>1 1 1</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>(P8, P5)</td>
+          <td>1200</td>
+          <td class="t-br">700</td>
+          <td>P8</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>P5</td>
+          <td></td>
+          <td class="t-br"></td>
+          <td>(P8, P4)</td>
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td></td>
+
+          <td class="t-br"></td>
+
+          <td>1 1 1</td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- 
+    <canvas id="canvas" width="1200" height="800"></canvas> -->
+
+    <div class="card info no-print">
+      <h3>About this program</h3>
+      <p>
+        Categorically lists every single rank-2 temperament imaginable (except
+        the non-octave and non-5th ones). Also suggests notation options. It can
+        also list only those pergens supported by a specific edo or edo pair.
+      </p>
+      <p>
+        The first section (PERGEN and Per/Gen cents) describes each pergen
+        without regard to notational issues. The period and generator's cents
+        are given, assuming a 5th of 700¢ + c. The generator is reduced, e.g.
+        (P8/2, P5) has a generator of 100¢ + c, not 700¢ + c. The next two
+        sections show a possible notation for P and G. The last section shows
+        the unreduced pergen, and for false doubles, a possible single-pair
+        notation. Horizontal lines group the pergens into blocks (half-splits,
+        third-splits, etc). Red indicates problems. Generators of 50¢ or less
+        are in red. Enharmonics of a 3rd or more are in red.
+      </p>
+
+      <p>
+        <strong>Color coding:</strong>
+        Generators < 50¢ and enharmonics with degree > 2 or < 0 are in
+        <span style="color: red">red</span>, imperfect multigens are in
+        <span style="color: green">green</span>.
+      </p>
+      <p>
+        Pergens only partially supported by the edo are marked with a red
+        asterisk.
+      </p>
+
+      <h3>Additional information</h3>
+      <p>
+        See also
+        <a
+          href="http://tallkite.com/misc_files/notation%20guide%20for%20rank-2%20pergens.pdf"
+          >Notation Guide for Rank-2 Pergens</a
+        >
+        (33-page pdf, covers 53 pergens)
+      </p>
+
+      <p>
+        Pergens are fully explained in this
+        <a href="https://en.xen.wiki/w/Pergen">XenWiki article</a>.
+      </p>
+    </div>
+
+    <script>
+      // Global variables matching the JSFX script
+      let canvas, ctx;
+      let slider1 = 1,
+        slider2 = 10,
+        slider3 = 0,
+        slider4 = 0;
+      let oldslider3 = 0,
+        oldslider4 = 0;
+      let maxFraction = 10;
+      let excludePartialSupport = 1;
+      let maxEDO = 1200;
+      let maxEDOfraction = 50;
+      let edo = 0,
+        edo2 = 0;
+      let numPergens = 0,
+        numImperfect = 0,
+        numSmallGens = 0;
+
+      // Constants
+      const w12cents = (1200 * Math.log(3)) / Math.log(2); // 1902¢
+      const twoTo52 = Math.pow(2, 52);
+      const KeyspansLength = 8;
+      const Keyspans = [0, 1.5, 3.5, 5, 7, 8.5, 10.5, 12];
+
+      // Arrays
+      let Twelfth = new Array(maxEDO + 1);
+      let Bezout = new Array(2);
+      let Pergens = [];
+      const PergensRowLength = 30;
+
+      // Initialize
+      function init() {
+        canvas = document.getElementById("canvas");
+        ctx = canvas.getContext("2d");
+
+        // Initialize Twelfth array
+        for (let i = 0; i < Twelfth.length; i++) {
+          Twelfth[i] = Math.round((i * w12cents) / 1200);
+        }
+        Twelfth[1] = 20; // EDO #1 = 13b
+        Twelfth[2] = 28; // EDO #2 = 18b
+
+        // Setup event listeners
+        setupSliders();
+
+        // Initial calculation
+        makeList();
+        writeList();
+      }
+
+      // Utility functions (translated from JSFX)
+      function round(x) {
+        return Math.floor(x + 0.5);
+      }
+
+      function roundDown(x) {
+        return -Math.floor(-x + 0.5);
+      }
+
+      function roundOut(x) {
+        return Math.sign(x) * Math.floor(Math.abs(x) + 0.5);
+      }
+
+      function ceiling(x) {
+        return -Math.floor(-x);
+      }
+
+      function mod(num, base) {
+        return num - base * Math.floor(num / base);
+      }
+
+      function mod2(i, j) {
+        i = mod(i, j);
+        if (i > j / 2) i = j - i;
+        return i;
+      }
+
+      function GCD(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        if (a === 0) return b;
+        if (b === 0) return a;
+
+        while (a > 0) {
+          if (a < b) {
+            let c = a;
+            a = b;
+            b = c;
+          }
+          a = mod(a, b);
+        }
+        return Math.max(a, b) || 1; // Ensure we never return 0
+      }
+
+      function edosteps(a, b) {
+        if (edo === 0) {
+          return 12 * a + 19 * b;
+        }
+        return edo * a + Twelfth[slider3] * b;
+      }
+
+      function edosteps2(a, b) {
+        return edo2 * a + Twelfth[slider4] * b;
+      }
+
+      function findBezout(a, b) {
+        let i = Math.abs(b),
+          oldI = Math.abs(a);
+        let j = 0,
+          oldJ = 1;
+        let k = 1,
+          oldK = 0;
+        let m, n;
+
+        while (i !== 0) {
+          n = Math.floor(oldI / i);
+          m = i;
+          i = oldI - n * i;
+          oldI = m;
+          m = j;
+          j = oldJ - n * j;
+          oldJ = m;
+          m = k;
+          k = oldK - n * k;
+          oldK = m;
+        }
+
+        if (Math.abs(oldJ) > Math.abs(b / 2)) {
+          oldJ += Math.sign(a) * b;
+          oldK -= Math.sign(b) * a;
+        }
+        if (Math.abs(a) === Math.abs(b)) {
+          oldJ = 1;
+          oldK = 0;
+        }
+
+        Bezout[0] = Math.abs(oldJ);
+        Bezout[1] = Math.abs(oldK);
+        return oldI;
+      }
+
+      function optimizeEnharmonic(Ek, Es, n) {
+        let bestI = 0;
+        let bestGCD = GCD(Ek, Es);
+        let s = Math.sign(Es);
+        let bestK = Math.abs(s * Ek - 0.7) / bestGCD;
+        let i = roundOut(Es / 2);
+
+        for (let loop = 0; loop <= Math.abs(Es); loop++) {
+          let j = GCD(Ek + i * n, Es);
+          let k = Math.abs(s * (Ek + i * n) - 0.7) / j;
+          if (j > bestGCD || (j === bestGCD && k < bestK)) {
+            bestI = i;
+            bestK = k;
+            bestGCD = j;
+          }
+          i -= s;
+        }
+        return bestI;
+      }
+
+      function findPeriodsAndGens() {
+        let A = [];
+        let baseIndex = numPergens * PergensRowLength;
+
+        // Initialize A array from existing Pergens data
+        for (let i = 0; i < PergensRowLength; i++) {
+          A[i] = Pergens[baseIndex + i] || 0;
+        }
+
+        // PERIOD AND E
+        let m = A[0];
+        let k = roundDown(12 / m);
+        let s = roundDown(7 / m);
+        let Ek = 12 - m * k;
+        let Es = 7 - m * s;
+        let c = optimizeEnharmonic(Ek, Es, m);
+        k -= c;
+        Ek += c * m;
+
+        if (c === 0) {
+          c = optimizeEnharmonic(Es, Ek, m);
+          let x = Math.abs(Es + c * m);
+          x /= GCD(Ek, x);
+          if (x <= Math.abs(Es) / GCD(Ek, Es) && x < 7) {
+            s -= c;
+            Es += c * m;
+          }
+        }
+
+        c = Es !== 0 ? Math.sign(Es) : Math.sign(Ek);
+        c *= GCD(Ek, Es);
+        if (c !== 0) {
+          Ek /= c;
+          Es /= c;
+        }
+
+        A[6] = k;
+        A[7] = s;
+        A[8] = Ek;
+        A[9] = Es;
+        A[10] = c;
+
+        // GENERATOR AND E'
+        let n = A[1];
+        let Mk = A[4];
+        let Ms = A[5];
+        k = roundDown(Mk / n);
+        s = roundDown(Ms / n);
+        Ek = Mk - n * k;
+        Es = Ms - n * s;
+        c = optimizeEnharmonic(Ek, Es, n);
+        k -= c;
+        Ek += c * n;
+
+        if (c === 0) {
+          c = optimizeEnharmonic(Es, Ek, n);
+          let x = Math.abs(Es + c * n);
+          x /= GCD(Ek, x);
+          if (x < Math.abs(Es) / GCD(Ek, Es)) {
+            s -= c;
+            Es += c * n;
+          }
+        }
+
+        c = Es !== 0 ? Math.sign(Es) : Math.sign(Ek);
+        c *= GCD(Ek, Es);
+        if (c !== 0) {
+          Ek /= c;
+          Es /= c;
+        }
+
+        A[11] = k;
+        A[12] = s;
+        A[13] = Ek;
+        A[14] = Es;
+        A[15] = c;
+
+        // Initialize remaining values to avoid undefined
+        for (let i = 16; i < PergensRowLength; i++) {
+          if (A[i] === undefined) A[i] = 0;
+        }
+
+        // Update the Pergens array
+        for (let i = 0; i < PergensRowLength; i++) {
+          Pergens[baseIndex + i] = A[i];
+        }
+      }
+
+      function findPergen(x, y, z) {
+        let bestI = 0;
+        let j = GCD(y, x);
+        let bestFraction = Math.abs(x * z) / j;
+        let bestCents = (-y * 1200 + x * w12cents) / j;
+
+        for (let i = -x; i <= x; i++) {
+          j = GCD(i * z - y, x);
+          let k = Math.abs(x * z) / j;
+          if (k <= bestFraction) {
+            let c = ((i * z - y) / j) * 1200 + (x / j) * w12cents;
+            if (k < bestFraction || Math.abs(c) < Math.abs(bestCents)) {
+              bestI = i;
+              bestFraction = k;
+              bestCents = c;
+            }
+          }
+        }
+
+        y -= bestI * z;
+        j = GCD(y, x);
+        let m = numPergens * PergensRowLength;
+
+        // Expand Pergens array if needed
+        while (Pergens.length <= m + PergensRowLength) {
+          Pergens.push(0);
+        }
+
+        Pergens[m] = x;
+        Pergens[m + 1] = bestFraction;
+        Pergens[m + 2] = (-Math.sign(bestCents) * y) / j;
+        Pergens[m + 3] = (Math.sign(bestCents) * x) / j;
+
+        if (
+          Pergens[m + 2] === 2 &&
+          Pergens[m + 3] === -1 &&
+          bestFraction === 1
+        ) {
+          Pergens[m + 2] = -1;
+          Pergens[m + 3] = 1;
+        }
+
+        Pergens[m + 4] = 12 * Pergens[m + 2] + 19 * Pergens[m + 3];
+        Pergens[m + 5] = 7 * Pergens[m + 2] + 11 * Pergens[m + 3];
+
+        let c = bestFraction <= maxFraction;
+
+        if (edo > 0) {
+          c = c && (x < edo || (edo2 > 1 && edo2 !== edo));
+          c = c && GCD(edo, x) === x;
+          let i = edosteps(Pergens[m + 2], Pergens[m + 3]);
+          c = c && GCD(i, bestFraction) === bestFraction;
+          if (excludePartialSupport) {
+            let divisor1 = edo / x;
+            let divisor2 = i / bestFraction;
+            if (divisor1 > 0 && divisor2 > 0) {
+              c = c && GCD(divisor1, divisor2) === 1;
+            }
+          }
+        }
+
+        if (c) {
+          findPeriodsAndGens();
+          numPergens += 1;
+          if (Math.abs(Pergens[m + 3]) > 1) numImperfect += 1;
+
+          let j = 12 / (Pergens[m] || 1);
+          let k = (Pergens[m + 4] || 0) / (Pergens[m + 1] || 1);
+          while (k > j / 2) k -= j;
+          if (k < 0) k = -k;
+          if (k < 0.5) numSmallGens += 1;
+        }
+      }
+
+      function makeMapping(x, z) {
+        let minY = Math.ceil(x / 2 - (x * z) / 2);
+        let maxY = Math.floor((x * 2) / 3);
+
+        for (let y = minY; y <= maxY; y++) {
+          findPergen(x, x + y, z);
+        }
+
+        z = -z;
+        minY = Math.ceil(x / 2);
+        maxY = Math.floor((x * 2) / 3 - (x * z) / 2);
+
+        for (let y = minY; y <= maxY; y++) {
+          findPergen(x, x + y, z);
+        }
+      }
+
+      function makeList() {
+        numPergens = numImperfect = numSmallGens = 0;
+        Pergens = [];
+
+        console.log(
+          "Starting makeList with maxFraction:",
+          maxFraction,
+          "edo:",
+          edo,
+          "edo2:",
+          edo2
+        );
+
+        for (let i = 1; i <= maxFraction; i++) {
+          for (let j = 1; j < i; j++) {
+            if (edo === 0 || GCD(edo, i) === i) makeMapping(i, j);
+            if (edo === 0 || GCD(edo, j) === j) makeMapping(j, i);
+          }
+          if (edo === 0 || GCD(edo, i) === i) makeMapping(i, i);
+        }
+
+        console.log("Found", numPergens, "pergens");
+
+        if (numPergens > 0) {
+          numImperfect = Math.floor((100 * numImperfect) / numPergens);
+          numSmallGens = Math.floor((100 * numSmallGens) / numPergens);
+        }
+
+        if (
+          edo2 > 0 &&
+          Bezout[0] === 2 * edo2 - Twelfth[slider4] &&
+          Bezout[1] === 2 * edo - Twelfth[slider3]
+        ) {
+          Bezout[0] = edo2 - Bezout[0];
+          Bezout[1] = edo - Bezout[1];
+        }
+      }
+
+      // Graphics functions
+      function goto(x, y) {
+        ctx.moveTo(x, y);
+      }
+
+      function moveTo(x, y) {
+        ctx.moveTo(x, y);
+      }
+
+      function writeNum(val, dec, size, x, y) {
+        let mult = Math.pow(10, dec);
+        val = Math.round(val * mult) / mult;
+        val += val / twoTo52;
+
+        let text = val.toFixed(dec);
+        let width = ctx.measureText(text).width;
+
+        if (size > 0) {
+          let expectedWidth = size * 8;
+          x += Math.max(0, expectedWidth - width);
+        }
+
+        ctx.fillText(text, x, y);
+        return x + width;
+      }
+
+      function writeInterval(keyspan, stepspan, height, choice, x, y) {
+        let text = "";
+
+        // Simplified interval notation
+        if (height !== 0) {
+          if (height > 0) {
+            text += "^".repeat(Math.abs(height));
+          } else {
+            text += "v".repeat(Math.abs(height));
+          }
+        }
+
+        // Quality - fix the stepspan indexing
+        let safeStepspan = Math.max(0, Math.min(stepspan, Keyspans.length - 1));
+        let quality = keyspan - Keyspans[safeStepspan];
+
+        if (quality > 0.5) text += "A".repeat(Math.floor(quality));
+        else if (Math.abs(quality - 0.5) < 0.1) text += "M";
+        else if (Math.abs(quality) < 0.1) text += "P";
+        else if (Math.abs(quality + 0.5) < 0.1) text += "m";
+        else if (quality < -0.5) text += "d".repeat(Math.floor(-quality));
+
+        // Degree
+        text += Math.max(1, stepspan + 1).toString();
+
+        ctx.fillText(text, x, y);
+        return x + ctx.measureText(text).width;
+      }
+
+      function writeList() {
+        // Clear canvas
+        ctx.fillStyle = "#ededed";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw headers
+        ctx.fillStyle = "#000000";
+        ctx.font = "12px monospace";
+
+        let y = 20;
+        ctx.fillText(
+          "       PERGEN         Per/Gen " +
+            (edo === 0 ? "cents" : "steps") +
+            "    Per  Enhar1 ^1 " +
+            (edo === 0 ? "cents" : "steps") +
+            "  Gen  Enhar2  ^1 " +
+            (edo === 0 ? "cents" : "steps") +
+            "   Unreduced Pergen     Per    Gen  altGen    Enhar3   ^1 " +
+            (edo === 0 ? "cents" : "steps"),
+          10,
+          y
+        );
+
+        // Draw vertical lines
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(2, 25);
+        ctx.lineTo(2, canvas.height);
+        ctx.moveTo(288, 25);
+        ctx.lineTo(288, canvas.height);
+        ctx.moveTo(472, 25);
+        ctx.lineTo(472, canvas.height);
+        ctx.moveTo(672, 25);
+        ctx.lineTo(672, canvas.height);
+        ctx.moveTo(1164, 25);
+        ctx.lineTo(1164, canvas.height);
+        ctx.stroke();
+
+        // Draw horizontal line
+        ctx.beginPath();
+        ctx.moveTo(2, 25);
+        ctx.lineTo(1164, 25);
+        ctx.stroke();
+
+        // Display pergens
+        let p = slider1 - 1;
+        let maxMN = 0;
+        y = 40;
+
+        // Debug: show if we have any pergens
+        if (numPergens === 0) {
+          ctx.fillStyle = "#ff0000";
+          ctx.fillText("No pergens found. Calculating...", 10, 50);
+          ctx.fillStyle = "#000000";
+          return;
+        }
+
+        for (
+          let i = 0;
+          i < Math.min(numPergens - p, 40) && y < canvas.height - 20;
+          i++
+        ) {
+          let q = p * PergensRowLength;
+
+          if (q >= Pergens.length) break;
+
+          let currentMN = Math.max(Pergens[q] || 0, Pergens[q + 1] || 0);
+          if (currentMN > maxMN) {
+            maxMN = currentMN;
+            // Draw section separator
+            ctx.strokeStyle = "#000000";
+            ctx.beginPath();
+            ctx.moveTo(2, y);
+            ctx.lineTo(1164, y);
+            ctx.stroke();
+            y += 10;
+          } else if (i % 3 === 0) {
+            // Draw guide lines
+            ctx.strokeStyle = "#cccccc";
+            ctx.beginPath();
+            ctx.moveTo(3, y - 5);
+            ctx.lineTo(1163, y - 5);
+            ctx.stroke();
+          }
+
+          ctx.fillStyle = "#000000";
+
+          // Pergen number
+          let x = 10;
+          x = writeNum(p + 1, 0, 4, x, y);
+
+          // Pergen notation
+          x = 48;
+          let text = "(P8";
+          if ((Pergens[q] || 1) !== 1) {
+            text += "/" + (Pergens[q] || 1);
+          }
+          text += ", ";
+          ctx.fillText(text, x, y);
+          x += ctx.measureText(text).width;
+
+          // Multigen in green if imperfect
+          if (Math.abs(Pergens[q + 3] || 0) > 1) {
+            ctx.fillStyle = "#007700";
+          } else {
+            ctx.fillStyle = "#000000";
+          }
+
+          // Show the multigen interval
+          if (Pergens[q + 4] !== undefined && Pergens[q + 5] !== undefined) {
+            x = writeInterval(Pergens[q + 4], Pergens[q + 5], 0, -1, x, y);
+          }
+
+          ctx.fillStyle = "#000000";
+
+          // Generator fraction
+          if ((Pergens[q + 1] || 1) > 1) {
+            let fractionText = "/" + (Pergens[q + 1] || 1);
+            ctx.fillText(fractionText, x, y);
+            x += ctx.measureText(fractionText).width;
+          }
+
+          ctx.fillText(")", x, y);
+
+          // Show partial support with red asterisk
+          if (
+            edo > 0 &&
+            Pergens[q + 2] !== undefined &&
+            Pergens[q + 3] !== undefined
+          ) {
+            let h = edosteps(Pergens[q + 2], Pergens[q + 3]);
+            if (GCD(edo / (Pergens[q] || 1), h / (Pergens[q + 1] || 1)) > 1) {
+              ctx.fillStyle = "#ff0000";
+              ctx.fillText("*", x + 10, y);
+              ctx.fillStyle = "#000000";
+            }
+          }
+
+          // Period/Gen cents or steps
+          x = 200;
+          if (edo === 0) {
+            // Show cents
+            let periodCents = 1200 / (Pergens[q] || 1);
+            writeNum(periodCents, 0, 4, x, y);
+
+            x = 250;
+            if (Pergens[q + 2] !== undefined && Pergens[q + 3] !== undefined) {
+              let genCents =
+                (1200 * Pergens[q + 2] + 1900 * Pergens[q + 3]) /
+                (Pergens[q + 1] || 1);
+              let periodCents = 1200 / (Pergens[q] || 1);
+              while (genCents > periodCents / 2) genCents -= periodCents;
+              if (genCents < 0) genCents = -genCents;
+              if (genCents < 50) ctx.fillStyle = "#ff0000";
+              writeNum(genCents, 0, 4, x, y);
+              ctx.fillStyle = "#000000";
+            }
+          } else {
+            // Show edo steps
+            writeNum(edo / (Pergens[q] || 1), 0, 2, x, y);
+
+            x = 250;
+            if (Pergens[q + 2] !== undefined && Pergens[q + 3] !== undefined) {
+              let genSteps =
+                edosteps(Pergens[q + 2], Pergens[q + 3]) /
+                (Pergens[q + 1] || 1);
+              let periodSteps = edo / (Pergens[q] || 1);
+              while (genSteps > periodSteps / 2) genSteps -= periodSteps;
+              if (genSteps < 0) genSteps = -genSteps;
+              if (24 * genSteps < edo) ctx.fillStyle = "#ff0000";
+              writeNum(genSteps, 0, 2, x, y);
+              ctx.fillText("\\" + edo, x + 20, y);
+              ctx.fillStyle = "#000000";
+            }
+          }
+
+          p++;
+          y += 15;
+
+          if (p >= numPergens) break;
+        }
+
+        // Display statistics
+        y = canvas.height - 20;
+        ctx.fillStyle = "#000000";
+        ctx.fillText(
+          `Pergens found: ${numPergens}, Imperfect: ${numImperfect}%, Small gens: ${numSmallGens}%`,
+          10,
+          y
+        );
+      }
+
+      function setupSliders() {
+        const sliders = ["slider1", "slider2", "slider3", "slider4"];
+
+        sliders.forEach((sliderId) => {
+          const slider = document.getElementById(sliderId);
+          const valueDisplay = document.getElementById(sliderId + "-value");
+
+          slider.addEventListener("input", function () {
+            valueDisplay.textContent = this.value;
+
+            // Update global variables
+            switch (sliderId) {
+              case "slider1":
+                slider1 = parseInt(this.value);
+                break;
+              case "slider2":
+                if (slider2 !== parseInt(this.value)) {
+                  slider2 = parseInt(this.value);
+                  maxFraction = slider2;
+                  makeList();
+                }
+                break;
+              case "slider3":
+                if (
+                  slider3 !== parseInt(this.value) ||
+                  slider4 !== parseInt(document.getElementById("slider4").value)
+                ) {
+                  oldslider3 = slider3;
+                  oldslider4 = slider4;
+                  slider3 = parseInt(this.value);
+                  slider4 = parseInt(document.getElementById("slider4").value);
+
+                  edo = slider3;
+                  edo2 = slider4;
+                  if (edo === 1) edo = 13;
+                  if (edo2 === 1) edo2 = 13;
+                  if (edo === 2) edo = 18;
+                  if (edo2 === 2) edo2 = 18;
+
+                  findBezout(edo, edo2);
+
+                  if (edo === 0) {
+                    document.getElementById("slider2").value = 10;
+                    slider2 = 10;
+                  } else {
+                    document.getElementById("slider2").value = maxEDOfraction;
+                    slider2 = maxEDOfraction;
+                  }
+                  maxFraction = slider2;
+                  document.getElementById("slider2-value").textContent =
+                    slider2;
+
+                  makeList();
+                }
+                break;
+              case "slider4":
+                if (
+                  slider3 !==
+                    parseInt(document.getElementById("slider3").value) ||
+                  slider4 !== parseInt(this.value)
+                ) {
+                  oldslider3 = slider3;
+                  oldslider4 = slider4;
+                  slider3 = parseInt(document.getElementById("slider3").value);
+                  slider4 = parseInt(this.value);
+
+                  edo = slider3;
+                  edo2 = slider4;
+                  if (edo === 1) edo = 13;
+                  if (edo2 === 1) edo2 = 13;
+                  if (edo === 2) edo = 18;
+                  if (edo2 === 2) edo2 = 18;
+
+                  findBezout(edo, edo2);
+
+                  if (edo === 0) {
+                    document.getElementById("slider2").value = 10;
+                    slider2 = 10;
+                  } else {
+                    document.getElementById("slider2").value = maxEDOfraction;
+                    slider2 = maxEDOfraction;
+                  }
+                  maxFraction = slider2;
+                  document.getElementById("slider2-value").textContent =
+                    slider2;
+
+                  makeList();
+                }
+                break;
+            }
+
+            writeList();
+          });
+        });
+      }
+
+      // Initialize when page loads
+      window.addEventListener("load", init);
+    </script>
+  </body>
+</html>

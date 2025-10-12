@@ -1,0 +1,143 @@
+Function Analysis Summary
+Core Mathematical Functions (7 functions, 41 lines total)
+These are fundamental utility functions used throughout the code:
+
+round(x) - 3 lines
+
+Dependencies: None
+Purpose: Rounds toward infinity
+roundDown(x) - 3 lines
+
+Dependencies: None
+Purpose: Rounds toward negative infinity
+roundOut(x) - 3 lines
+
+Dependencies: None
+Purpose: Rounds away from zero
+ceiling(x) - 3 lines
+
+Dependencies: None
+Purpose: Ceiling function
+mod(num, base) - 3 lines
+
+Dependencies: None
+Purpose: Proper modulo operation
+mod2(i, j) - 5 lines
+
+Dependencies: mod()
+Purpose: Returns smaller of i or its inverse
+GCD(a, b) - 10 lines
+
+Dependencies: mod()
+Purpose: Greatest common divisor
+EDO/Scale Functions (3 functions, 15 lines total)
+Functions for equal division of octave calculations:
+
+edosteps(a, b) - 5 lines
+
+Dependencies: Global variables (edo, Twelfth)
+Purpose: Convert monzo to EDO steps
+edosteps2(a, b) - 3 lines
+
+Dependencies: Global variables (edo2, Twelfth)
+Purpose: Convert monzo to second EDO steps
+findBezout(a, b) - 17 lines
+
+Dependencies: None (but modifies global Bezout array)
+Purpose: Extended Euclidean algorithm for Bezout coefficients
+Core Pergen Analysis Functions (3 functions, 168 lines total)
+These are the mathematical heart of the program:
+
+optimizeEnharmonic(Ek, Es, n) - 17 lines
+
+Dependencies: GCD(), roundOut()
+Purpose: Find better enharmonic intervals
+findPeriodsAndGens() - 84 lines
+
+Dependencies: optimizeEnharmonic(), roundDown(), GCD(), mod()
+Purpose: Analyze current pergen and calculate all intervals
+findPergen(x, y, z) - 67 lines
+
+Dependencies: GCD(), edosteps(), edosteps2(), mod2(), findPeriodsAndGens(), memcpy()
+Purpose: Create and validate a pergen entry
+List Generation Functions (3 functions, 26 lines total)
+Functions that orchestrate the pergen search:
+
+makeMapping(x, z) - 14 lines
+
+Dependencies: ceiling(), findPergen()
+Purpose: Generate mappings for given parameters
+makeList() - 19 lines
+
+Dependencies: GCD(), makeMapping()
+Purpose: Main pergen list generation
+makeList2() - 5 lines
+
+Dependencies: findPergen()
+Purpose: Debug function for specific pergen
+UI Helper Functions (8 functions, 51 lines total)
+Small utility functions for drawing:
+
+goto(x, y) - 2 lines
+
+Dependencies: None
+Purpose: Set graphics position
+moveby(x, y) - 2 lines
+
+Dependencies: None
+Purpose: Move graphics position relatively
+writeNum(val, dec, size) - 11 lines
+
+Dependencies: round(), built-in graphics functions
+Purpose: Write formatted numbers
+writeChars(v, w) - 7 lines
+
+Dependencies: writeNum(), built-in graphics functions
+Purpose: Write repeated characters with exponents
+drawDown() - 4 lines
+
+Dependencies: Built-in graphics functions
+Purpose: Draw downward arrow symbol
+drawDowns(w) - 8 lines
+
+Dependencies: drawDown(), writeNum()
+Purpose: Draw multiple downward arrows
+numQualityChars(ksp, step, ht) - 8 lines
+
+Dependencies: None
+Purpose: Calculate space needed for quality display
+writeQuality(ksp, step, ht) - 12 lines
+
+Dependencies: writeChars()
+Purpose: Write interval quality (major, minor, etc.)
+Complex UI Functions (2 functions, 90 lines total)
+Main display functions:
+
+writeInterval(keyspan, stepspan, height, choice) - 21 lines
+
+Dependencies: numQualityChars(), writeChars(), drawDowns(), writeQuality(), writeNum()
+Purpose: Write complete interval notation
+writeCents(frac, Ek, Es, dec, size) - 19 lines
+
+Dependencies: writeNum(), edosteps()
+Purpose: Write cents or EDO steps
+Main UI Function (1 function, 250+ lines)
+The massive display function:
+
+writeList() - ~250 lines
+Dependencies: Almost all other functions
+Purpose: Main UI rendering - displays the complete pergen list with all formatting
+Dependency Hierarchy:
+Level 1 (No dependencies): round, roundDown, roundOut, ceiling, mod, goto, moveby, numQualityChars
+
+Level 2: mod2, GCD, writeNum, writeChars, drawDown, edosteps, edosteps2, findBezout
+
+Level 3: optimizeEnharmonic, drawDowns, writeQuality
+
+Level 4: findPeriodsAndGens, writeInterval, writeCents
+
+Level 5: findPergen, makeMapping
+
+Level 6: makeList, makeList2
+
+Level 7: writeList (depends on almost everything)

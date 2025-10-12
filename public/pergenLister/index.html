@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pergen Lister</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="core.js"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1>Pergen Lister</h1>
+    <p>
+      <em
+        >By
+        <a href="https://www.tallkite.com/apps/pergenLister.html"
+          >Tall Kite Software</a
+        >
+        and web conversion by
+        <a href="https://github.com/wilckerson">Wilckerson Ganda</a></em
+      >
+    </p>
+
+    <div class="card controls">
+      <div class="slider-group">
+        <label for="slider1">First pergen displayed:</label>
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider1"
+            min="1"
+            max="3221"
+            value="1"
+            step="20"
+          />
+          <span class="value-display" id="slider1-value">1</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <label for="slider2">Maximum fraction:</label>
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider2"
+            min="1"
+            max="20"
+            value="10"
+            step="1"
+          />
+          <span class="value-display" id="slider2-value">10</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <label for="slider3"
+          >EDO filter: <br /><small>(0 = none, 1 = 13b, 2 = 18b)</small></label
+        >
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider3"
+            min="0"
+            max="72"
+            value="0"
+            step="1"
+          />
+          <span class="value-display" id="slider3-value">0</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <label for="slider4"
+          >2nd EDO filter: <br /><small
+            >(0 = none, 1 = 13b, 2 = 18b)</small
+          ></label
+        >
+        <div class="slider-controls">
+          <input
+            class="no-print"
+            type="range"
+            id="slider4"
+            min="0"
+            max="72"
+            value="0"
+            step="1"
+          />
+          <span class="value-display" id="slider4-value">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table
+        id="table-list"
+        cellpadding="5"
+        cellspacing="0"
+        style="border-collapse: collapse"
+      >
+        <thead>
+          <tr class="t-bb">
+            <th></th>
+            <th>PERGEN</th>
+            <th>Per <small class="data-unit">(Cents)</small></th>
+            <th class="t-br">Gen <small class="data-unit">(Cents)</small></th>
+            <th>Per</th>
+            <th>Enhar1</th>
+            <th class="t-br">^1 cents</th>
+            <th>Gen</th>
+            <th>Enhar2</th>
+            <th class="t-br">^1 cents</th>
+            <th>Unreduced Pergen</th>
+            <th>Per</th>
+            <th>Gen</th>
+            <th>altGen</th>
+            <th>Enhar3</th>
+            <th class="t-br">^1 cents</th>
+            <th>Mapping</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="t-bb">
+            <td>1</td>
+            <td>(P8, P5)</td>
+            <td>1200</td>
+            <td class="t-br">700</td>
+            <td>P8</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>P5</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>(P8, P4)</td>
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td class="t-br"></td>
+
+            <td>1 1 1</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>(P8, P5)</td>
+            <td>1200</td>
+            <td class="t-br">700</td>
+            <td>P8</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>P5</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>(P8, P4)</td>
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td class="t-br"></td>
+
+            <td>1 1 1</td>
+          </tr>
+          <tr class="t-bb-gray">
+            <td>3</td>
+            <td>(P8, P5)</td>
+            <td>1200</td>
+            <td class="t-br">700</td>
+            <td>P8</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>P5</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>(P8, P4)</td>
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td class="t-br"></td>
+
+            <td>1 1 1</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>(P8, P5)</td>
+            <td>1200</td>
+            <td class="t-br">700</td>
+            <td>P8</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>P5</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>(P8, P4)</td>
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td class="t-br"></td>
+
+            <td>1 1 1</td>
+          </tr>
+          <tr class="t-bb">
+            <td>5</td>
+            <td>(P8, P5)</td>
+            <td>1200</td>
+            <td class="t-br">700</td>
+            <td>P8</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>P5</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>(P8, P4)</td>
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td class="t-br"></td>
+
+            <td>1 1 1</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>(P8, P5)</td>
+            <td>1200</td>
+            <td class="t-br">700</td>
+            <td>P8</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>P5</td>
+            <td></td>
+            <td class="t-br"></td>
+            <td>(P8, P4)</td>
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td></td>
+
+            <td class="t-br"></td>
+
+            <td>1 1 1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card info no-print">
+      <h3>About this program</h3>
+      <p>
+        Categorically lists every single rank-2 temperament imaginable (except
+        the non-octave and non-5th ones). Also suggests notation options. It can
+        also list only those pergens supported by a specific edo or edo pair.
+      </p>
+      <p>
+        The first section (PERGEN and Per/Gen cents) describes each pergen
+        without regard to notational issues. The period and generator's cents
+        are given, assuming a 5th of 700¢ + c. The generator is reduced, e.g.
+        (P8/2, P5) has a generator of 100¢ + c, not 700¢ + c. The next two
+        sections show a possible notation for P and G. The last section shows
+        the unreduced pergen, and for false doubles, a possible single-pair
+        notation. Horizontal lines group the pergens into blocks (half-splits,
+        third-splits, etc). Red indicates problems. Generators of 50¢ or less
+        are in red. Enharmonics of a 3rd or more are in red.
+      </p>
+
+      <p>
+        <strong>Color coding:</strong>
+        Generators < 50¢ and enharmonics with degree > 2 or < 0 are in
+        <span style="color: red">red</span>, imperfect multigens are in
+        <span style="color: green">green</span>.
+      </p>
+      <p>
+        Pergens only partially supported by the edo are marked with a red
+        asterisk.
+      </p>
+
+      <h3>Additional information</h3>
+      <p>
+        See also
+        <a
+          href="http://tallkite.com/misc_files/notation%20guide%20for%20rank-2%20pergens.pdf"
+          >Notation Guide for Rank-2 Pergens</a
+        >
+        (33-page pdf, covers 53 pergens)
+      </p>
+
+      <p>
+        Pergens are fully explained in this
+        <a href="https://en.xen.wiki/w/Pergen">XenWiki article</a>.
+      </p>
+    </div>
+  </body>
+</html>
