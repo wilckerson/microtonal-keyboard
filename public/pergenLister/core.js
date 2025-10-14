@@ -299,16 +299,12 @@ function optimizeEnharmonic(Ek, Es, n) {
  */
 function findPeriodsAndGens() {
   // A = alias for Pergens [m]
-  let A = [];
-
-  // Initialize A array from existing Pergens data
+  //Since JS can't point memory to an array segment, the baseIndex is used instead
+  let A = Pergens;
   let baseIndex = numPergens * PergensRowLength;
-  for (let i = 0; i < PergensRowLength; i++) {
-    A[i] = Pergens[baseIndex + i] || 0;
-  }
 
   // PERIOD AND E, m = octave's fraction
-  let m = A[0];
+  let m = A[baseIndex + 0];
 
   // [k,s] = period = fractions of 8ve
   let k = roundDown(12 / m);
@@ -350,18 +346,18 @@ function findPeriodsAndGens() {
   }
 
   // keyspan and stepspan of P
-  A[6] = k;
-  A[7] = s;
+  A[baseIndex + 6] = k;
+  A[baseIndex + 7] = s;
   // keyspan, stepspan and count of E
-  A[8] = Ek;
-  A[9] = Es;
-  A[10] = c;
+  A[baseIndex + 8] = Ek;
+  A[baseIndex + 9] = Es;
+  A[baseIndex + 10] = c;
 
   // MULTI-GEN, GEN, AND ENHARMONIC2 (M, G and E')
   // [Mk,Ms] = M, [k,s] = G, n = multigen's fraction
-  let n = A[1];
-  let Mk = A[4];
-  let Ms = A[5];
+  let n = A[baseIndex + 1];
+  let Mk = A[baseIndex + 4];
+  let Ms = A[baseIndex + 5];
   k = roundDown(Mk / n);
   s = roundDown(Ms / n);
   // [Ek,Es] = E' = enharmonic #2, E' = P1 if n = 1
@@ -397,16 +393,16 @@ function findPeriodsAndGens() {
     Es /= c;
   }
   // keyspan and stepspan of G
-  A[11] = k;
-  A[12] = s;
+  A[baseIndex + 11] = k;
+  A[baseIndex + 12] = s;
   // keyspan, stepspan and count of E'
-  A[13] = Ek;
-  A[14] = Es;
-  A[15] = c;
+  A[baseIndex + 13] = Ek;
+  A[baseIndex + 14] = Es;
+  A[baseIndex + 15] = c;
 
   // x,y = possibly fractional keyspan of period/gen
   x = 12 / m;
-  y = A[4] / n;
+  y = A[baseIndex + 4] / n;
 
   // numP = approximate periods per generator
   let numP = roundDown(y / x);
@@ -422,8 +418,8 @@ function findPeriodsAndGens() {
   // UNREDUCED MULTI-GEN = [Mk,Ms] = M'
   // M' = numP * n * P8 - sign (numP) * m * M
   // G' = M'/mn = numP * P - sign (numP) * G
-  Mk = 12 * numP * n - Math.sign(numP) * m * A[4];
-  Ms = 7 * numP * n - Math.sign(numP) * m * A[5];
+  Mk = 12 * numP * n - Math.sign(numP) * m * A[baseIndex + 4];
+  Ms = 7 * numP * n - Math.sign(numP) * m * A[baseIndex + 5];
 
   // simplify M', invert to avoid neg 2nd or dim 1sn
   c *= GCD(Mk, Ms);
@@ -439,13 +435,13 @@ function findPeriodsAndGens() {
   lcm = (m * n) / GCD(m, n);
 
   // keyspan, stepspan and fraction of M'
-  A[21] = Mk;
-  A[22] = Ms;
-  A[23] = lcm;
+  A[baseIndex + 21] = Mk;
+  A[baseIndex + 22] = Ms;
+  A[baseIndex + 23] = lcm;
 
   // single-split pergen? no alt-gen
   if (m == 1 || n == 1) {
-    A[26] = 0;
+    A[baseIndex + 26] = 0;
   } else {
     // UNREDUCED ALT-GEN = [k,s] = G' = M' / lcm
     k = roundDown(Mk / lcm);
@@ -492,13 +488,13 @@ function findPeriodsAndGens() {
     Es /= c;
 
     // keyspan and stepspan of alt-gen G'
-    A[16] = k;
-    A[17] = s;
+    A[baseIndex + 16] = k;
+    A[baseIndex + 17] = s;
 
     // keyspan, stepspan and count of enharm3 E"
-    A[18] = Ek;
-    A[19] = Es;
-    A[20] = c;
+    A[baseIndex + 18] = Ek;
+    A[baseIndex + 19] = Es;
+    A[baseIndex + 20] = c;
 
     // UNREDUCED PERIOD = P', (x,y) = monzo of E"
     x = -11 * Ek + 19 * Es;
@@ -533,15 +529,15 @@ function findPeriodsAndGens() {
     }
 
     // if it's a true double, c = 0, won't be displayed
-    A[24] = k;
-    A[25] = s;
-    A[26] = c;
+    A[baseIndex + 24] = k;
+    A[baseIndex + 25] = s;
+    A[baseIndex + 26] = c;
 
     // UNREDUCED GEN, adds up to the original multi-gen
-    k = Math.abs(numP) * k - Math.sign(numP) * A[16];
+    k = Math.abs(numP) * k - Math.sign(numP) * A[baseIndex + 16];
 
     // G = |numP| * P - sign(numP) * G'
-    s = Math.abs(numP) * s - Math.sign(numP) * A[17];
+    s = Math.abs(numP) * s - Math.sign(numP) * A[baseIndex + 17];
 
     // avoid negative degrees
     while (s < 0) {
@@ -550,11 +546,11 @@ function findPeriodsAndGens() {
     }
 
     // M = nG + xE, so x = (Ms - n*Gs) / Es
-    c = (A[5] - n * s) / Es;
+    c = (A[baseIndex + 5] - n * s) / Es;
 
     // if stepspan fails, try the keyspan
     if (c == 0) {
-      c = (A[4] - n * k) / Ek;
+      c = (A[baseIndex + 4] - n * k) / Ek;
     }
 
     // minimize |c|,
@@ -572,9 +568,9 @@ function findPeriodsAndGens() {
     }
 
     // keyspan and stepspan of G
-    A[27] = k;
-    A[28] = s;
-    A[29] = c;
+    A[baseIndex + 27] = k;
+    A[baseIndex + 28] = s;
+    A[baseIndex + 29] = c;
   }
 }
 
@@ -666,7 +662,7 @@ function findPergen(x, y, z, maxFraction, edo, edo2) {
     c &= GCD(edo, x) == x;
 
     // i = multi-gen's keyspan in the edo
-    i = edosteps(Pergens[m + 2], Pergens[m + 3]);
+    i = edosteps(Pergens[m + 2], Pergens[m + 3], edo);
 
     // multigen must be divisible by n
     c &= GCD(i, bestFraction) == bestFraction;
@@ -687,7 +683,7 @@ function findPergen(x, y, z, maxFraction, edo, edo2) {
     c &= GCD(edo2, x) == x;
 
     // j = multi-gen's keyspan in the 2nd edo
-    j = edosteps2(Pergens[m + 2], Pergens[m + 3]);
+    j = edosteps2(Pergens[m + 2], Pergens[m + 3], edo2);
 
     // multigen must be divisible by n
     c &= GCD(j, bestFraction) == bestFraction;
@@ -948,66 +944,6 @@ function memcpy(dest, destOffset, source, sourceOffset, length) {
   }
 }
 
-function getData(firstPergenDisplayed) {
-  const data = [];
-
-  // p = number of this pergen
-  let p = firstPergenDisplayed - 1;
-  let q = p * PergensRowLength;
-
-  // max of m and n, identifies the block
-  let maxMN = Math.max(Pergens[q], Pergens[q + 1]);
-
-  // show a screenful of pergens
-  for (let loop = 1; loop <= Math.min(numPergens - p, 50); loop++) {
-    // q = index into array
-    q = p * PergensRowLength;
-
-    //TODO: Fix the blockEndType logic
-    // new block of pergens?
-    let blockEndType = 0; // 0 = none, 1 = new block, 2 = gray line
-    if (Math.max(Pergens[q], Pergens[q + 1]) > maxMN) {
-      // remember the new maximum
-      maxMN = Math.max(Pergens[q], Pergens[q + 1]);
-      blockEndType = 1;
-    } else if (p % 3 == 0) {
-      // draw light gray guide lines
-      blockEndType = 2;
-    }
-
-    const item = {
-      index: p + 1,
-      blockEndType: blockEndType,
-      pergenName: getPergenName(q)
-    };
-    data.push(item);
-
-    p += 1;
-  }
-
-  return data;
-}
-
-function getPergenName(q) {
-  let period = "P8";
-  if (Pergens[q] !== 1) {
-    period += "/" + Pergens[q];
-  }
-
-  let isImperfect = false;
-  if (Math.abs(Pergens[q + 3]) > 1) isImperfect = true;
-
-  let gen = writeInterval(Pergens[q + 4], Pergens[q + 5], 0, -1);
-  if (Pergens[q + 1] > 1) {
-    gen += "/" + Pergens[q + 1];
-  }
-  return {
-    period,
-    gen,
-    isImperfect
-  };
-}
-
 function writeNum(val, dec) {
   return val.toFixed(dec);
 }
@@ -1020,7 +956,7 @@ function writeChars(v, w) {
 
   if (w > 2) {
     // Musical notation with proper superscript
-    let result = `${v}<sup>${w}</sup>`;
+    let result = `${v}<sup>${writeNum(w, 0)}</sup>`;
     return result;
   } else if (w > 0) {
     return v.repeat(w);
@@ -1036,7 +972,7 @@ function drawDown() {
 function drawDowns(w) {
   if (w == 1) return drawDown();
   else if (w == 2) return drawDown() + drawDown();
-  else if (w > 2) return drawDown() + "<sup>" + w + "</sup>";
+  else if (w > 2) return drawDown() + "<sup>" + writeNum(w, 0) + "</sup>";
   return "";
 }
 
@@ -1219,7 +1155,7 @@ function writeInterval(keyspan, stepspan, height, choice) {
   }
 
   // degree, can be negative
-  result += Math.abs(stepspan + q);
+  result += writeNum(Math.abs(stepspan + q), 0);
 
   return result;
 }
@@ -1227,7 +1163,7 @@ function writeInterval(keyspan, stepspan, height, choice) {
 /**
  * writeCents function
  */
-function writeCents(frac, Ek, Es, size, edo) {
+function writeCents(frac, Ek, Es, dec, size, edo) {
   let p, q;
 
   if (edo == 0) {
@@ -1245,7 +1181,7 @@ function writeCents(frac, Ek, Es, size, edo) {
 
     // numeric part = 100 * (Ek / frac) cents
     if (Ek != 0) {
-      result += Math.abs((100 * Ek) / frac);
+      result += writeNum(Math.abs((100 * Ek) / frac), 0);
     } else {
       // indent if there is no numeric part
       result += " ".repeat(size); // equivalent to moveby(8 * size, 0)
@@ -1280,7 +1216,7 @@ function writeCents(frac, Ek, Es, size, edo) {
     // don't write "0*c" for the period's cents
     else if (q != 0) {
       // dec = decimal places
-      result += q + "*c";
+      result += writeNum(q, dec) + "*c";
     }
 
     return result;
@@ -1294,14 +1230,155 @@ function writeCents(frac, Ek, Es, size, edo) {
     q = 7 * Ek - 12 * Es;
 
     // p = edosteps of E / frac
-    p = edosteps(p, q) / frac;
+    p = edosteps(p, q, edo) / frac;
 
     let result = "";
-    result += Math.abs(p);
+    result += writeNum(Math.abs(p), 0);
 
     // use '\', because "\" causes errors
-    result += "\\" + edo;
+    result += "\\" + writeNum(edo, 0);
 
     return result;
   }
+}
+
+//--------------------------------------------------------------------
+// Function getData replaces the original writeList(), with some adaptation
+// and other helper functions to render the data
+//--------------------------------------------------------------------
+
+function getData(firstPergenDisplayed, edo) {
+  const data = [];
+
+  // p = number of this pergen
+  let p = firstPergenDisplayed - 1;
+  let q = p * PergensRowLength;
+
+  // max of m and n, identifies the block
+  let maxMN = Math.max(Pergens[q], Pergens[q + 1]);
+
+  // show a screenful of pergens
+  for (let loop = 1; loop <= Math.min(numPergens - p, 50); loop++) {
+    // q = index into array
+    q = p * PergensRowLength;
+
+    //TODO: Fix the blockEndType logic
+    // new block of pergens?
+    let blockEndType = 0; // 0 = none, 1 = new block, 2 = gray line
+    // if (Math.max(Pergens[q], Pergens[q + 1]) >= maxMN) {
+    //   // remember the new maximum
+    //   maxMN = Math.max(Pergens[q], Pergens[q + 1]);
+    //   blockEndType = 1;
+    // } else if ((p + 1) % 3 == 0) {
+    //   // draw light gray guide lines
+    //   blockEndType = 2;
+    // }
+
+    const pergenName = getPergenName(q, edo);
+    const per = writeCents(Pergens[q], 12, 7, 0, 4, edo);
+    const gen = getGen(q, edo);
+    const item = {
+      index: p + 1,
+      blockEndType: blockEndType,
+      pergenName,
+      per,
+      gen
+    };
+    data.push(item);
+
+    p += 1;
+  }
+
+  return data;
+}
+
+function getPergenName(q, edo) {
+  let period = "P8";
+
+  // fractional period?
+  if (Pergens[q] !== 1) {
+    period += "/" + Pergens[q]; // "/2"
+  }
+
+  // write imperfect multigens in green
+  let isImperfect = false;
+  if (Math.abs(Pergens[q + 3]) > 1) isImperfect = true;
+
+  let gen = writeInterval(Pergens[q + 4], Pergens[q + 5], 0, -1);
+
+  // fractional generator?
+  let fracGen = "";
+  if (Pergens[q + 1] > 1) {
+    fracGen = "/" + Pergens[q + 1]; // "/3"
+  }
+
+  // h = multi-gen's keyspan in the edo
+  let h = edosteps(Pergens[q + 2], Pergens[q + 3], edo);
+
+  // if period and gen aren't coprime,
+  // show edo's partial support with a red *
+  let partialSupport = false;
+  if (edo > 0 && GCD(edo / Pergens[q], h / Pergens[q + 1]) > 1)
+    partialSupport = true;
+
+  return {
+    period,
+    gen,
+    fracGen,
+    isImperfect,
+    partialSupport
+  };
+}
+
+function getGen(q, edo) {
+  // GENERATOR CENTS
+  let result = "";
+  let isSmallGenerator = false;
+  let h, r;
+  if (edo == 0) {
+    // h = multigen's cents if c = 0
+    // h = gen's cents,
+    h = 1200 * Pergens[q + 2] + 1900 * Pergens[q + 3];
+    h /= Pergens[q + 1];
+    // r = period's cents
+    r = 1200 / Pergens[q];
+    if (Pergens[q] > 1) while (h > r / 2) h -= r; // if m > 1, period-reduce h to minimize it
+    // invert h if negative, set r = 0 as a flag
+    if (h < 0) {
+      h = -h;
+      r = 0;
+    }
+    // show generators < 50° in red
+    if (h < 50) isSmallGenerator = true;
+
+    result = writeNum(h, 0);
+    h = Pergens[q + 1] / Pergens[q + 3]; // h = fraction of c = n/b
+    if (r == 0) h = -h; // if gen was inverted, invert h too
+    if (h > 0) {
+      result += "+c";
+    } else {
+      result += "-c";
+    }
+    if (Math.abs(h) > 1) {
+      result += "/";
+      result += writeNum(Math.abs(h), 0);
+    }
+  } else {
+    // h = edosteps of the multigen
+    // h = gen's edosteps,
+    h = edosteps(Pergens[q + 2], Pergens[q + 3], edo);
+    h /= Pergens[q + 1];
+    r = edo / Pergens[q]; // r = period's edosteps
+    if (Pergens[q] > 1) while (h > r / 2) h -= r; // if m > 1, period-reduce h to minimize it
+    if (h < 0) h = -h; // invert h if negative
+    if (24 * h < edo) isSmallGenerator = true; // show generators < 50° in red
+    result = writeNum(h, 0);
+    result += "\\"; // use "\\" instead of $'\'
+    result += writeNum(edo, 0);
+  }
+
+  return {
+    result,
+    isSmallGenerator
+  };
 }

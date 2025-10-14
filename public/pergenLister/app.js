@@ -26,22 +26,33 @@ const expensiveUpdate = debounce(uiData => {
     if (edo2 == 2) edo2 = 18;
   }
   findBezout(edo, edo2); // e.g. (12,13)-->(1,1) and (12,19)-->(8,5)
-  const maxFraction = edo == 0 ? 10 : maxEDOfraction;
+  const newSlider2Value = edo == 0 ? 10 : maxEDOfraction;
+  updateSlider2(newSlider2Value);
+  maxFraction = newSlider2Value;
 
   makeList(maxFraction, edo, edo2);
 
   //const data = [];
-  const data = getData(uiData.slider1Value);
+  const data = getData(uiData.slider1Value, edo);
   updateTableList(data);
 }, 300);
 
 function update() {
-  const isEdo = false;
-  updateUnits(isEdo);
-
   const uiData = getUiData();
   updateSliderValues(uiData);
   expensiveUpdate(uiData);
+
+  const isEdo = uiData.slider3Value > 0 || uiData.slider4Value > 0;
+  updateUnits(isEdo);
+}
+
+function updateSlider2(newValue) {
+  const slider2 = document.getElementById("slider2");
+  const currentMax = parseInt(slider2.max);
+  slider2.max = Math.max(currentMax, newValue);
+  slider2.value = newValue;
+
+  document.getElementById("slider2-value").textContent = newValue;
 }
 
 function updateSliderValues(uiData) {
@@ -66,10 +77,14 @@ function updateTableList(data) {
       <td>${item.index}</td>
         <td><pre>(${(item.pergenName.period + ", ").padEnd(6)}<span class="${
           item.pergenName.isImperfect ? "imperfect" : ""
-        }">${item.pergenName.gen}</span>)</pre>
+        }">${item.pergenName.gen}</span>${item.pergenName.fracGen})${
+          item.partialSupport ? '<span class="partial-support">*</span>' : ""
+        }</pre>
       </td>
-      <td>${item.per}</td>
-      <td class="t-br">${item.gen}</td>
+      <td class="ta-r">${item.per}</td>
+      <td class="t-br ta-r ${
+        item.gen.isSmallGenerator ? "small-generator" : ""
+      }">${item.gen.result}</td>
       <td></td>
       <td></td>
       <td class="t-br"></td>

@@ -58,6 +58,7 @@ table {
 
 table pre {
   font-size: 1.25em;
+  margin: 0;
 }
 
 .t-bb {
@@ -81,4 +82,15 @@ table pre {
 
 .imperfect {
   color: green;
+  font-weight: bold;
+}
+
+.partial-support,
+.small-generator {
+  color: red;
+  font-weight: bold;
+}
+
+.ta-r {
+  text-align: right;
 }
