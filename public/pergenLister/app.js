@@ -26,9 +26,10 @@ const expensiveUpdate = debounce(uiData => {
     if (edo2 == 2) edo2 = 18;
   }
   findBezout(edo, edo2); // e.g. (12,13)-->(1,1) and (12,19)-->(8,5)
-  const newSlider2Value = edo == 0 ? 10 : maxEDOfraction;
-  updateSlider2(newSlider2Value);
-  maxFraction = newSlider2Value;
+  //const newSlider2Value = edo == 0 ? 10 : maxEDOfraction;
+  //updateSlider2(newSlider2Value);
+  //maxFraction = newSlider2Value;
+  maxFraction = uiData.slider2Value;
 
   makeList(maxFraction, edo, edo2);
 
@@ -91,13 +92,13 @@ function updateTableList(data) {
       <td></td>
       <td></td>
       <td class="t-br"></td>
-      <td>${item.unreducedPergen}</td>
+      <td>${item.unreducedPergen || ""}</td>
       <td></td>
       <td></td>
       <td></td>
       <td></td>
       <td class="t-br"></td>
-      <td>${item.mapping}</td>
+      <td>${item.mapping || ""}</td>
     </tr>`
     )
     .join("");
