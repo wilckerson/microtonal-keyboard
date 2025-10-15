@@ -13,8 +13,9 @@ public class RelativeNote
 
     public float GetRatio()
     {
-        var noteRatio = EqualTemperament.GetEqualTemperamentNote(Position.y * TunningInfo.SkipFreting, TunningInfo.Edo, TunningInfo.Period);
-        var stringRatio = EqualTemperament.GetEqualTemperamentNote(Position.x * TunningInfo.StrEdoJump, TunningInfo.Edo, TunningInfo.Period);
+        var skipFretingMod = TunningInfo.SkipFreting[Position.x % TunningInfo.SkipFreting.Length];
+        var noteRatio = EqualTemperament.GetEqualTemperamentNote(Position.x * skipFretingMod, TunningInfo.Edo, TunningInfo.Period);
+        var stringRatio = EqualTemperament.GetEqualTemperamentNote(Position.y * TunningInfo.StrEdoJump, TunningInfo.Edo, TunningInfo.Period);
         return stringRatio * noteRatio;
     }
 

@@ -4,21 +4,26 @@ public class FretsSectionExplorer
 {
     public static void MainComputation()
     {
-        Console.WriteLine("Testing different StrEdoJump values from 1 to 31...\n");
+        Console.WriteLine("Testing different string tuning values\n");
 
-        float[] targets = { 9/8f, 5/4f, 4/3f, 3/2f, 5/3f, 15/8f, 2f }; 
+        float[] targets = //{ 9/8f, 5/4f, 4/3f, 3/2f, 5/3f, 15/8f, 2f }; 
+                          //Diamond.Diamond5Limit;
+                          //Diamond.Diamond7LimitNo5;
+                          Diamond.Diamond7Limit;
+            //Diamond.Diamond9Limit;
+
         var results = new List<(int strEdoJump, float totalMinDistance, List<ClosestMatchResult> matches, RelativeNote[,] matrix)>();
-        
-        // Test each StrEdoJump value from 1 to 31
-        for (int strEdoJump = 1; strEdoJump <= 31; strEdoJump++)
+
+        var edo = 31;
+        for (int strEdoJump = 1; strEdoJump <= edo; strEdoJump++)
         {
             var matrix = CreateRelativeMatrix(
-                tunningInfo: new TunningInfo { Edo = 43, Period = 2, StrEdoJump = strEdoJump, SkipFreting = 3 },
+                tunningInfo: new TunningInfo { Edo = edo, Period = 2, StrEdoJump = strEdoJump, SkipFreting = [5] },
                 upperBoundCount: 5,
                 downBoundCount: 0,
-                leftBoundCount: 3,
-                rightBoundCount: 3);
-            var maxCentsDiff = 20f;
+                leftBoundCount: 4,
+                rightBoundCount: 4);
+            var maxCentsDiff = 16f;
 
             var matches = FindClosestMatches(matrix, targets, maxCentsDiff);
             float totalMinDistance = CalculateTotalMinimumDistance(matches);
@@ -86,10 +91,10 @@ public class FretsSectionExplorer
             for (int col = 0; col < totalCols; col++)
             {
                 // Calculate relative Y coordinate (0 at center row, positive upward)
-                int relativeY = col - leftBoundCount;
+                int relativeY = upperBoundCount - row;
 
                 // Calculate relative X coordinate (0 at center column)
-                int relativeX = upperBoundCount - row;
+                int relativeX = col - leftBoundCount;
 
                 var relativeNote = new RelativeNote(
                     new Position(relativeX, relativeY),
