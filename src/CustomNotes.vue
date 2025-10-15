@@ -37,7 +37,9 @@ export default {
           keepSelectedTemplate: true,
           baseFreq: templateData.baseFreq,
           stringsTuningIdx: templateData.stringsTuningIdx,
-          selectedTemplate: value
+          selectedTemplate: value,
+          fullFrets: !!templateData.fullFrets,
+          skipFretting: templateData.skipFretting || []
         });
       }
     }
@@ -56,7 +58,9 @@ export default {
         result.texts,
         ev.baseFreq,
         ev.stringsTuningIdx,
-        ev.selectedTemplate
+        ev.selectedTemplate,
+        ev.fullFrets,
+        ev.skipFretting
       );
     }
   }

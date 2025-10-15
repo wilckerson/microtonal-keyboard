@@ -64,7 +64,7 @@
         <div>
           <label>Subset enabled notes:</label>
           <note-selection-list :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
-            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate" />
+            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate" :skipFretting="skipFretting" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
@@ -140,7 +140,8 @@ export default {
       stringLength: 650,
       selectedTemplate: undefined,
       fullFrets: false,
-      displayUniqueNotes: false
+      displayUniqueNotes: false,
+      skipFretting: [],
     };
   },
   mounted() { },
@@ -208,7 +209,9 @@ export default {
       noteTexts,
       baseFreq,
       stringsTuningIdx,
-      selectedTemplate
+      selectedTemplate,
+      fullFrets,
+      skipFretting
     ) {
       if (baseFreq) this.baseFreq = baseFreq;
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
@@ -216,6 +219,8 @@ export default {
       this.noteNames = noteNames;
       this.noteTexts = noteTexts;
       this.selectedTemplate = selectedTemplate;
+      this.fullFrets = fullFrets;
+      this.skipFretting = skipFretting;
     },
     onChangeSubset(selectedNotes, selectedNotesIdx) {
       this.subsetEnabled = selectedNotes;

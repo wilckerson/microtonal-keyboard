@@ -25,7 +25,6 @@
 </template>
 <script>
 import ScaleOptions from "./ScaleOptions.vue"
-
 export default {
   components: { ScaleOptions },
   props: {
@@ -35,6 +34,7 @@ export default {
     initialSelectedNotesIdx: Array,
     useScaleOptions: Boolean,
     selectedTemplate: String,
+    skipFretting: Array,
   },
   data() {
     return {
@@ -61,7 +61,16 @@ export default {
       this.emitChange();
     },
     populateNotes() {
-      if (this.initialSelectedNotesIdx) {
+
+      const skipFretting = this.skipFretting || [];
+      if (skipFretting.length > 0) {
+        const skipValue = skipFretting[0]; //TODO: Handle multi-skipping later
+        const selectedNotesArray = Array(this.noteTexts.length);
+        for (let i = 0; i < selectedNotesArray.length; i++) {
+          selectedNotesArray[i] = (i + 1) % skipValue === 0;
+        }
+        this.selectedNotes = selectedNotesArray;
+      } else if (this.initialSelectedNotesIdx) {
         const selectedNotesArray = Array(this.noteTexts.length).fill(false);
         this.initialSelectedNotesIdx.forEach(idx => {
           selectedNotesArray[idx] = true;
