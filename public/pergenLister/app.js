@@ -87,11 +87,15 @@ function updateTableList(data) {
         item.gen.isSmallGenerator ? "small-generator" : ""
       }">${item.gen.result}</td>
       <td>${item.periodDetails.period}</td>
-      <td class="${item.periodDetails.isRedEnharmonic ? "lower-enharmonic-degree" : ""}">${item.periodDetails.enharmonic}</td>
+      <td class="${
+        item.periodDetails.isRedEnharmonic ? "lower-enharmonic-degree" : ""
+      }">${item.periodDetails.enharmonic}</td>
       <td class="t-br">${item.periodDetails.cents}</td>
-      <td></td>
-      <td></td>
-      <td class="t-br"></td>
+     <td>${item.generatorDetails.generator}</td>
+      <td class="${
+        item.generatorDetails.isRedEnharmonic ? "lower-enharmonic-degree" : ""
+      }">${item.generatorDetails.enharmonic}</td>
+      <td class="t-br">${item.generatorDetails.cents}</td>
       <td>${item.unreducedPergen || ""}</td>
       <td></td>
       <td></td>

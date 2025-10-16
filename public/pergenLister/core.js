@@ -1268,7 +1268,7 @@ function getData(firstPergenDisplayed, edo) {
       // remember the new maximum
       maxMN = Math.max(Pergens[q], Pergens[q + 1]);
       blockStartType = 1;
-    } else if ((p) % 3 == 0) {
+    } else if (p % 3 == 0) {
       // draw light gray guide lines
       blockStartType = 2;
     }
@@ -1277,6 +1277,7 @@ function getData(firstPergenDisplayed, edo) {
     const per = writeCents(Pergens[q], 12, 7, 0, 4, edo);
     const gen = getGen(q, edo);
     const periodDetails = getPeriodDetails(q, edo);
+    const generatorDetails = getGeneratorDetails(q, edo);
 
     const item = {
       index: p + 1,
@@ -1284,7 +1285,8 @@ function getData(firstPergenDisplayed, edo) {
       pergenName,
       per,
       gen,
-      periodDetails
+      periodDetails,
+      generatorDetails
     };
     data.push(item);
 
@@ -1385,51 +1387,105 @@ function getGen(q, edo) {
   };
 }
 
+function getPeriodDetails(q, edo) {
+  let h;
 
-function getPeriodDetails(q, edo){
-    let h;
-    
-    // PERIOD, h = height = count of E = x
-    h = Pergens[q + 10];
-    
-    // is E upped? flip the height
-    if (Pergens[q + 8] <= 0) {
-        h = -h;
-    }
-    
-    // write the period, indent if it's "P8"
-    let period = writeInterval(Pergens[q + 6], Pergens[q + 7], h, 0);
-    let isRedEnharmonic = false;
-    let enharmonic = "";
-    let cents = "";
+  // PERIOD, h = height = count of E = x
+  h = Pergens[q + 10];
 
-    // ENHARMONIC, is it something not P1?
-    if (!(Pergens[q + 8] === 0 && Pergens[q + 9] === 0)) {
-        // A1, m2, M2 downed, d2, dd2, etc. upped
-        if (Pergens[q + 8] > 0) {
-            h = -Pergens[q];
-        } else {
-            h = Pergens[q];
-        }
-        
-        // show enharmonic 3rds & 4ths in red
-        if (Pergens[q + 9] > 1) {
-            isRedEnharmonic = true;
-        }
-        
-        // write the enharmonic
-        enharmonic = writeInterval(Pergens[q + 8], Pergens[q + 9], h, 0);
-               
-        
-        // CENTS OF ^1, derived from E
-        // c-factor is always an integer
-        cents = writeCents(Pergens[q], Pergens[q + 8], Pergens[q + 9], 0, 2, edo);
+  // is E upped? flip the height
+  if (Pergens[q + 8] <= 0) {
+    h = -h;
+  }
+
+  // write the period, indent if it's "P8"
+  let period = writeInterval(Pergens[q + 6], Pergens[q + 7], h, 0);
+  let isRedEnharmonic = false;
+  let enharmonic = "";
+  let cents = "";
+
+  // ENHARMONIC, is it something not P1?
+  if (!(Pergens[q + 8] === 0 && Pergens[q + 9] === 0)) {
+    // A1, m2, M2 downed, d2, dd2, etc. upped
+    if (Pergens[q + 8] > 0) {
+      h = -Pergens[q];
+    } else {
+      h = Pergens[q];
     }
 
-    return {
-      period,
-      enharmonic,
-      isRedEnharmonic,
-      cents
+    // show enharmonic 3rds & 4ths in red
+    if (Pergens[q + 9] > 1) {
+      isRedEnharmonic = true;
     }
+
+    // write the enharmonic
+    enharmonic = writeInterval(Pergens[q + 8], Pergens[q + 9], h, 0);
+
+    // CENTS OF ^1, derived from E
+    // c-factor is always an integer
+    cents = writeCents(Pergens[q], Pergens[q + 8], Pergens[q + 9], 0, 2, edo);
+  }
+
+  return {
+    period,
+    enharmonic,
+    isRedEnharmonic,
+    cents
+  };
+}
+
+function getGeneratorDetails(q, edo) {
+  let h, r;
+
+  // GENERATOR, h = height of G = count of E'
+  h = Pergens[q + 15];
+
+  // is E' upped? flip the height
+  if (Pergens[q + 13] <= 0) {
+    h = -h;
+  }
+
+  r = Pergens[q] > 1;
+
+  // write the generator, use /\ not ^v
+  let generator = writeInterval(Pergens[q + 11], Pergens[q + 12], h, r);
+  let isRedEnharmonic = false;
+  let enharmonic = "";
+  let cents = "";
+
+  // is the E' count != 0?
+  if (Pergens[q + 15] !== 0) {
+    // ENHARMONIC, upped if keyspan <= 0
+    h = Pergens[q + 1];
+
+    // is Ek' > 0, E' downed? flip the height
+    if (Pergens[q + 13] > 0) {
+      h = -h;
+    }
+
+    // show enharmonic 3rds & 4ths in red
+    if (Pergens[q + 14] > 1) {
+      isRedEnharmonic = true;
+    }
+
+    // write the enharmonic E'
+    enharmonic = writeInterval(Pergens[q + 13], Pergens[q + 14], h, r);
+
+    // CENTS OF ^1, derived from E'
+    // c-factor is never an integer
+    cents = writeCents(
+      Pergens[q + 1],
+      Pergens[q + 13],
+      Pergens[q + 14],
+      2,
+      2,
+      edo
+    );
+  }
+  return {
+    generator,
+    enharmonic,
+    isRedEnharmonic,
+    cents
+  };
 }
