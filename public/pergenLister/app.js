@@ -69,10 +69,10 @@ function updateTableList(data) {
     .map(
       item =>
         `<tr class="${
-          item.blockEndType == 2
-            ? "t-bb-gray"
-            : item.blockEndType == 1
-            ? "t-bb"
+          item.blockStartType == 2
+            ? "t-bt-gray"
+            : item.blockStartType == 1
+            ? "t-bt"
             : ""
         }">
       <td>${item.index}</td>
@@ -86,9 +86,9 @@ function updateTableList(data) {
       <td class="t-br ta-r ${
         item.gen.isSmallGenerator ? "small-generator" : ""
       }">${item.gen.result}</td>
-      <td></td>
-      <td></td>
-      <td class="t-br"></td>
+      <td>${item.periodDetails.period}</td>
+      <td class="${item.periodDetails.isRedEnharmonic ? "lower-enharmonic-degree" : ""}">${item.periodDetails.enharmonic}</td>
+      <td class="t-br">${item.periodDetails.cents}</td>
       <td></td>
       <td></td>
       <td class="t-br"></td>

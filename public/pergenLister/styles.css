@@ -65,8 +65,12 @@ table pre {
   border-bottom: 2px solid black;
 }
 
-.t-bb-gray {
-  border-bottom: 2px solid lightgray;
+.t-bt {
+  border-top: 2px solid black;
+}
+
+.t-bt-gray {
+  border-top: 2px solid lightgray;
 }
 
 .t-br {
@@ -86,7 +90,8 @@ table pre {
 }
 
 .partial-support,
-.small-generator {
+.small-generator,
+.lower-enharmonic-degree {
   color: red;
   font-weight: bold;
 }

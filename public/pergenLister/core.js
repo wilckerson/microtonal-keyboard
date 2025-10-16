@@ -945,7 +945,7 @@ function memcpy(dest, destOffset, source, sourceOffset, length) {
 }
 
 function writeNum(val, dec) {
-  return val.toFixed(dec);
+  return val?.toFixed(dec) || "";
 }
 
 /**
@@ -1262,27 +1262,29 @@ function getData(firstPergenDisplayed, edo) {
     // q = index into array
     q = p * PergensRowLength;
 
-    //TODO: Fix the blockEndType logic
     // new block of pergens?
-    let blockEndType = 0; // 0 = none, 1 = new block, 2 = gray line
-    // if (Math.max(Pergens[q], Pergens[q + 1]) >= maxMN) {
-    //   // remember the new maximum
-    //   maxMN = Math.max(Pergens[q], Pergens[q + 1]);
-    //   blockEndType = 1;
-    // } else if ((p + 1) % 3 == 0) {
-    //   // draw light gray guide lines
-    //   blockEndType = 2;
-    // }
+    let blockStartType = 0; // 0 = none, 1 = new block, 2 = gray line
+    if (Math.max(Pergens[q], Pergens[q + 1]) > maxMN) {
+      // remember the new maximum
+      maxMN = Math.max(Pergens[q], Pergens[q + 1]);
+      blockStartType = 1;
+    } else if ((p) % 3 == 0) {
+      // draw light gray guide lines
+      blockStartType = 2;
+    }
 
     const pergenName = getPergenName(q, edo);
     const per = writeCents(Pergens[q], 12, 7, 0, 4, edo);
     const gen = getGen(q, edo);
+    const periodDetails = getPeriodDetails(q, edo);
+
     const item = {
       index: p + 1,
-      blockEndType: blockEndType,
+      blockStartType,
       pergenName,
       per,
-      gen
+      gen,
+      periodDetails
     };
     data.push(item);
 
@@ -1381,4 +1383,53 @@ function getGen(q, edo) {
     result,
     isSmallGenerator
   };
+}
+
+
+function getPeriodDetails(q, edo){
+    let h;
+    
+    // PERIOD, h = height = count of E = x
+    h = Pergens[q + 10];
+    
+    // is E upped? flip the height
+    if (Pergens[q + 8] <= 0) {
+        h = -h;
+    }
+    
+    // write the period, indent if it's "P8"
+    let period = writeInterval(Pergens[q + 6], Pergens[q + 7], h, 0);
+    let isRedEnharmonic = false;
+    let enharmonic = "";
+    let cents = "";
+
+    // ENHARMONIC, is it something not P1?
+    if (!(Pergens[q + 8] === 0 && Pergens[q + 9] === 0)) {
+        // A1, m2, M2 downed, d2, dd2, etc. upped
+        if (Pergens[q + 8] > 0) {
+            h = -Pergens[q];
+        } else {
+            h = Pergens[q];
+        }
+        
+        // show enharmonic 3rds & 4ths in red
+        if (Pergens[q + 9] > 1) {
+            isRedEnharmonic = true;
+        }
+        
+        // write the enharmonic
+        enharmonic = writeInterval(Pergens[q + 8], Pergens[q + 9], h, 0);
+               
+        
+        // CENTS OF ^1, derived from E
+        // c-factor is always an integer
+        cents = writeCents(Pergens[q], Pergens[q + 8], Pergens[q + 9], 0, 2, edo);
+    }
+
+    return {
+      period,
+      enharmonic,
+      isRedEnharmonic,
+      cents
+    }
 }
