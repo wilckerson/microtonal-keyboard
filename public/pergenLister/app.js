@@ -96,12 +96,18 @@ function updateTableList(data) {
         item.generatorDetails.isRedEnharmonic ? "lower-enharmonic-degree" : ""
       }">${item.generatorDetails.enharmonic}</td>
       <td class="t-br">${item.generatorDetails.cents}</td>
-      <td>${item.unreducedPergen || ""}</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td class="t-br"></td>
+      <td><pre>${item.unPergenDetails.pergenName}</pre></td>
+      ${
+        item.unPergenDetails.isTrueDouble
+          ? '<td class="t-br" colspan="5">(true double)</td>'
+          : `<td class="${
+              item.unPergenDetails.isFailedSearch ? "failed-search" : ""
+            }">${item.unPergenDetails.period}</td>
+        <td>${item.unPergenDetails.generator}</td>
+        <td></td>
+        <td></td>
+        <td class="t-br"></td>`
+      }
       <td>${item.mapping || ""}</td>
     </tr>`
     )

@@ -1278,7 +1278,7 @@ function getData(firstPergenDisplayed, edo) {
     const gen = getGen(q, edo);
     const periodDetails = getPeriodDetails(q, edo);
     const generatorDetails = getGeneratorDetails(q, edo);
-
+    const unPergenDetails = getUnreducedPergenDetails(q, edo);
     const item = {
       index: p + 1,
       blockStartType,
@@ -1286,7 +1286,8 @@ function getData(firstPergenDisplayed, edo) {
       per,
       gen,
       periodDetails,
-      generatorDetails
+      generatorDetails,
+      unPergenDetails
     };
     data.push(item);
 
@@ -1488,4 +1489,74 @@ function getGeneratorDetails(q, edo) {
     isRedEnharmonic,
     cents
   };
+}
+
+function getUnreducedPergenDetails(q, edo) {
+  //TODO: Troubleshoot this because it looks like the output is not correct.
+  let h;
+  let isTrueDouble = false;
+  const pergenName = getUnreducedPergenName(q);
+
+  let period = "";
+  let generator = "";
+  let isFailedSearch = false;
+  if (Pergens[q + 26] != 0) {
+    // UNREDUCED PERIOD = P', h = height of P'
+    // h = count of E' = x' * n' / m
+    h = (Pergens[q + 26] * Pergens[q + 23]) / Pergens[q];
+    // in case of failed search
+    if (Pergens[q + 26] == 0) {
+      h = 0;
+      isFailedSearch = true;
+    }
+    period = writeInterval(Pergens[q + 24], Pergens[q + 25], h, 0);
+
+    // UNREDUCED GEN, height = lcm (m,n) / n
+    h = Pergens[q + 23] / Pergens[q + 1];
+    h *= Pergens[q + 29];
+
+    // direction depends on the keyspan of E"
+    if (Pergens[q + 18] <= 0) {
+      h = -h;
+    }
+    // write the unreduced generator
+    generator = writeInterval(Pergens[q + 27], Pergens[q + 28], h, 0);
+  } else {
+    isTrueDouble = true;
+  }
+
+  return {
+    pergenName,
+    period,
+    isTrueDouble,
+    period, 
+    generator,
+    isFailedSearch
+  };
+}
+
+function getUnreducedPergenName(q) {
+  // UNREDUCED PERGEN
+  let result = "(P8";
+
+  // fractional period?
+  if (Pergens[q] === 1) {
+    result += ",  ";
+  } else {
+    result += "/";
+    result += writeNum(Pergens[q], 0, 1); // "/2"
+    result += ", ";
+  }
+
+  // write the alt-multi-gen
+  result += writeInterval(Pergens[q + 21], Pergens[q + 22], 0, -1);
+
+  // not (P8, P4)?
+  if (Pergens[q + 23] > 1) {
+    result += "/";
+    result += writeNum(Pergens[q + 23], 0, 1); // alt-multi-gen's fraction = LCM (m,n)
+  }
+
+  result += ")";
+  return result;
 }

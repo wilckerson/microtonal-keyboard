@@ -91,7 +91,8 @@ table pre {
 
 .partial-support,
 .small-generator,
-.lower-enharmonic-degree {
+.lower-enharmonic-degree,
+.failed-search {
   color: red;
   font-weight: bold;
 }
