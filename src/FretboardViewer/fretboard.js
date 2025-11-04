@@ -158,22 +158,59 @@ export function buildFretboardData(
   noteTexts,
   displayMode,
   stringLength,
-  fullFrets
+  fullFrets,
+  baseIndex
 ) {
   if (!scale || scale.length === 0) {
     scale = [2];
   }
 
   const data = stringsTuningIdx.map(stringTuningIdx => {
-    const relativeRatio = getRelativeRatioByIndex(scale, stringTuningIdx);
-    const relativeScale = rotateScale(scale, fullFrets ? 0 : stringTuningIdx);
+    const normalizedIdx = stringTuningIdx + baseIndex;
+    const relativeRatio = getRelativeRatioByIndex(scale, normalizedIdx);
+    const relativeScale = rotateScale(
+      scale,
+      fullFrets ? baseIndex : normalizedIdx
+    );
     return buildFretsData(
       relativeScale,
       baseFreq,
       relativeRatio,
       noteNames,
       noteTexts,
-      stringTuningIdx,
+      normalizedIdx,
+      displayMode,
+      parseFloat(stringLength) || 650
+    );
+  });
+  return applyKeyMapping(data);
+}
+
+export function buildFretboardDataByRatios(
+  baseFreq,
+  scale,
+  stringsTuningRatios,
+  noteNames,
+  noteTexts,
+  displayMode,
+  stringLength,
+  fullFrets,
+  baseIndex
+) {
+  if (!scale || scale.length === 0) {
+    scale = [2];
+  }
+
+  const data = stringsTuningRatios.map(stringTuningRatio => {
+    const relativeRatio = stringTuningRatio;
+    const relativeScale = rotateScale(scale, baseIndex);
+    return buildFretsData(
+      relativeScale,
+      baseFreq,
+      relativeRatio,
+      [],
+      [],
+      0,
       displayMode,
       parseFloat(stringLength) || 650
     );

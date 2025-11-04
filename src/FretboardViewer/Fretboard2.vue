@@ -1,10 +1,31 @@
 <template>
   <div class="fretboard-viewer">
+    <div class="toolbar">
+      <div>Strings Tuning mode: <select v-model="stringTuningMode"
+          @change="onChangeStringTuningMode($event.target.value)">
+          <option value="index">By index</option>
+          <option value="ratio">By ratio</option>
+          <!-- <option value="cents">By cents</option> -->
+        </select></div>
+      <div>Scroll position: <input type="number" v-model.number="baseIndex" /></div>
+    </div>
     <div class="fretboard-wrapper">
       <div class="strings-tuning">
-        <div class="string-tuning-row" v-for="(_, idx) in stringsTuningIdx" v-bind:key="'string-tuning-row-' + idx">
+
+        <div v-if="stringTuningMode === 'index'" class="string-tuning-row" v-for="(_, idx) in stringsTuningIdx"
+          v-bind:key="'string-tuningByIdx-row-' + idx">
           <input type="number" v-model.number="stringsTuningIdx[idx]" />
         </div>
+
+        <div v-if="stringTuningMode === 'ratio'" class="string-tuning-row" v-for="(_, idx) in stringsTuningRatio"
+          v-bind:key="'string-tuningByRatio-row-' + idx">
+          <input type="number" step="0.001" v-model.number="stringsTuningRatio[idx]" />
+        </div>
+
+        <!-- <div v-if="stringTuningMode === 'cents'" class="string-tuning-row" v-for="(_, idx) in stringsTuningCents"
+          v-bind:key="'string-tuningByCents-row-' + idx">
+          <input type="number" v-model.number="stringsTuningCents[idx]" />
+        </div> -->
       </div>
       <div class="fretboard-scroller">
         <div class="fretboard">
@@ -64,7 +85,8 @@
         <div>
           <label>Subset enabled notes:</label>
           <note-selection-list :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
-            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate" :skipFretting="skipFretting" />
+            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate"
+            :skipFretting="skipFretting" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
@@ -104,6 +126,7 @@ TODOs:
 - [] Display active interval
 - [x] Full frets mode based on string zero
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
+- [] Input number to control the base index position (like capo)
 - [] Display number of common frets between strings
 - [] Fix play bug on touch
 - [] Play with drag
@@ -121,7 +144,7 @@ import NoteGroup from "./NoteGroup.vue";
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
-import { buildFretboardData, DISPLAY_MODES } from "./fretboard";
+import { buildFretboardData, buildFretboardDataByRatios, DISPLAY_MODES } from "./fretboard";
 import { unique, getKeyName, rotateScale } from "../core/core.js";
 
 export default {
@@ -135,6 +158,8 @@ export default {
       noteGroups: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
+      stringsTuningRatio: [1, 1, 1, 1, 1, 1],
+      stringsTuningCents: [0, 0, 0, 0, 0, 0],
       displayMode: DISPLAY_MODES.DEFAULT,
       DISPLAY_MODES,
       stringLength: 650,
@@ -142,33 +167,17 @@ export default {
       fullFrets: false,
       displayUniqueNotes: false,
       skipFretting: [],
+      baseIndex: 0,
+      stringTuningMode: 'index',
     };
   },
   mounted() { },
   computed: {
     fretboardData() {
-      return buildFretboardData(
-        this.baseFreq,
-        this.scale,
-        this.stringsTuningIdx,
-        this.noteNames,
-        this.noteTexts,
-        this.displayMode,
-        this.stringLength,
-        this.fullFrets,
-      );
+      return this.buildFretboardDataByStringTuningMode();
     },
     getUniqueNotes() {
-      const data = buildFretboardData(
-        this.baseFreq,
-        this.scale,
-        this.stringsTuningIdx,
-        this.noteNames,
-        this.noteTexts,
-        DISPLAY_MODES.RATIO_REDUCED,
-        this.stringLength,
-        this.fullFrets,
-      );
+      const data = this.buildFretboardDataByStringTuningMode(DISPLAY_MODES.RATIO_REDUCED);
       const ratios = data.map(stringNotes => stringNotes.filter((fretData, fretIdx) => !this.isFretDisabled(fretIdx, fretData.scaleIdx)))
         .flat().map(item => parseFloat(item.text)).sort();
       const result = unique(ratios);
@@ -180,6 +189,37 @@ export default {
 
   },
   methods: {
+    buildFretboardDataByStringTuningMode(overrideDisplayMode = undefined) {
+      if (this.stringTuningMode === 'index') {
+        return buildFretboardData(
+          this.baseFreq,
+          this.scale,
+          this.stringsTuningIdx,
+          this.noteNames,
+          this.noteTexts,
+          overrideDisplayMode || this.displayMode,
+          this.stringLength,
+          this.fullFrets,
+          this.baseIndex
+        );
+      }
+      else if (this.stringTuningMode === 'ratio') {
+        return buildFretboardDataByRatios(
+          this.baseFreq,
+          this.scale,
+          this.stringsTuningRatio,
+          this.noteNames,
+          this.noteTexts,
+          overrideDisplayMode || this.displayMode,
+          this.stringLength,
+          this.fullFrets,
+          this.baseIndex
+        );
+      }
+      else if (this.stringTuningMode === 'cents') {
+        return [];
+      }
+    },
     getKeyNameForEnabledFret(rowIdx, fretIdx, fretScaleIdx) {
       const startFrom = this.fullFrets ? 0 : fretScaleIdx - fretIdx;
       const enabledRotated = [
@@ -232,6 +272,11 @@ export default {
       return this.noteGroups.filter(noteGroup =>
         noteGroup.enabled && noteGroup.selectedNotesIdx.includes(scaleIdx)
       ).map(noteGroup => noteGroup.color);
+    },
+    onChangeStringTuningMode(newMode) {
+      if (newMode === 'ratio') {
+        this.displayMode = DISPLAY_MODES.RATIO;
+      }
     },
   }
 };
@@ -325,5 +370,12 @@ export default {
   font-size: 12px;
   display: inline-block;
   text-align: right;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 </style>
