@@ -36,7 +36,8 @@
               :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx, fretData.scaleIdx)"
               :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
               :style="'width: ' + fretData.width + '%'" :markers="getMarkersFromNoteGroups(fretData.scaleIdx)"
-              hideFreq />
+              :isDragging="isDragging" @key-mousedown="handleKeyMouseDown" @key-mouseenter="handleKeyMouseEnter"
+              @key-mouseup="handleKeyMouseUp" hideFreq />
 
           </div>
         </div>
@@ -169,9 +170,23 @@ export default {
       skipFretting: [],
       baseIndex: 0,
       stringTuningMode: 'index',
+      isDragging: false, // Track global mouse button state for drag-and-play
+      lastTouchedKey: null, // Track the last key touched for touch drag-to-play
     };
   },
-  mounted() { },
+  mounted() {
+    // Add global mouse event listeners for drag-and-play
+    window.addEventListener('mouseup', this.handleGlobalMouseUp);
+    // Add global touch move listener for touch drag-to-play
+    window.addEventListener('touchmove', this.handleGlobalTouchMove, { passive: false });
+    window.addEventListener('touchend', this.handleGlobalTouchEnd);
+  },
+  beforeDestroy() {
+    // Clean up global event listeners
+    window.removeEventListener('mouseup', this.handleGlobalMouseUp);
+    window.removeEventListener('touchmove', this.handleGlobalTouchMove);
+    window.removeEventListener('touchend', this.handleGlobalTouchEnd);
+  },
   computed: {
     fretboardData() {
       return this.buildFretboardDataByStringTuningMode();
@@ -276,6 +291,63 @@ export default {
     onChangeStringTuningMode(newMode) {
       if (newMode === 'ratio') {
         this.displayMode = DISPLAY_MODES.RATIO;
+      }
+    },
+    handleKeyMouseDown() {
+      this.isDragging = true;
+    },
+    handleKeyMouseEnter(keyComponent) {
+      // The key component already handles playing the sound when isDragging is true
+      // This handler is just for any additional parent-level logic if needed
+    },
+    handleKeyMouseUp() {
+      this.isDragging = false;
+    },
+    handleGlobalMouseUp() {
+      // Reset drag state when mouse button is released anywhere
+      this.isDragging = false;
+    },
+    handleGlobalTouchMove(e) {
+      // Handle touch drag-to-play
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (elementAtPoint) {
+          // Find the closest .key element
+          const keyElement = elementAtPoint.closest('.key');
+
+          if (keyElement && keyElement.__vue__) {
+            const keyComponent = keyElement.__vue__;
+
+            // Check if this is a different key than the last one touched
+            if (this.lastTouchedKey !== keyComponent) {
+              // Deactivate the previous key
+              if (this.lastTouchedKey && this.lastTouchedKey.isTouching) {
+                this.lastTouchedKey.isTouching = false;
+                this.lastTouchedKey.active = false;
+                this.lastTouchedKey.stopSoundNote();
+              }
+
+              // Activate the new key if it's not disabled
+              if (!keyComponent.disabled) {
+                keyComponent.isTouching = true;
+                keyComponent.active = true;
+                keyComponent.playSoundNote();
+                this.lastTouchedKey = keyComponent;
+              }
+            }
+          }
+        }
+      }
+    },
+    handleGlobalTouchEnd() {
+      // Clean up when touch ends
+      if (this.lastTouchedKey) {
+        this.lastTouchedKey.isTouching = false;
+        this.lastTouchedKey.active = false;
+        this.lastTouchedKey.stopSoundNote();
+        this.lastTouchedKey = null;
       }
     },
   }

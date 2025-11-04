@@ -1,6 +1,7 @@
 <template>
   <div class="key" :class="{ active: active, disabled: disabled }" @mousedown="mouseDown" @mouseup="mouseUp"
-    @mouseout="mouseUp" @touchstart="mouseDown" @touchend="mouseUp" :style="{ 'background-color': color }">
+    @mouseenter="mouseEnter" @mouseleave="mouseLeave" @touchstart="touchStart" @touchend="touchEnd"
+    @touchmove="touchMove" :style="{ 'background-color': color }">
     <div class="key-label">{{ keyName ? '[' + keyName + ']' : '&nbsp;' }}</div>
     <div class="key-tone">
       <div v-if="text">{{ text }}</div>
@@ -31,6 +32,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    isDragging: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -50,7 +55,9 @@ export default {
       pressed: false,
       clickTimer: 0,
       audioFile: undefined,
-      audioCacheIdx: -1
+      audioCacheIdx: -1,
+      isTouching: false, // Track if this key is being touched
+      currentSoundId: null, // Track the current playing sound ID
     };
   },
   mounted: function () {
@@ -210,17 +217,37 @@ export default {
       }
     },
     stopSoundNote() {
-      if (this.audioCacheIdx != -1) {
-        var sound = window["audioCache"][this.audioCacheIdx].sound;
-        //sound.fade(1, 0, 500);
-        sound.fade(1, 0, 3000);
+      if (this.audioCacheIdx != -1 && this.currentSoundId != null) {
+        const cacheIdx = this.audioCacheIdx; // Capture the index for the callback
+        const soundId = this.currentSoundId; // Capture the sound ID
 
-        window["audioCache"][this.audioCacheIdx].inUse = false;
+        if (window["audioCache"] && window["audioCache"][cacheIdx]) {
+          var sound = window["audioCache"][cacheIdx].sound;
+
+          // Fade out the currently playing sound (don't call play() again!)
+          sound.fade(1, 0, 500, soundId);
+
+          // Release the cache slot after fade completes using Howler's fade event
+          sound.once('fade', () => {
+            if (window["audioCache"] && window["audioCache"][cacheIdx]) {
+              window["audioCache"][cacheIdx].inUse = false;
+            }
+          }, soundId);
+        }
+
+        // Clear the current index and sound ID
+        this.audioCacheIdx = -1;
+        this.currentSoundId = null;
       }
     },
     playSoundNote() {
       if (this.disabled) return;
       this.initAudioCache();
+
+      // If this key is already playing a sound, stop it first
+      if (this.audioCacheIdx != -1) {
+        this.stopSoundNote();
+      }
 
       var rate = parseFloat(this.freq) / this.soundFreq;
 
@@ -236,7 +263,17 @@ export default {
         //Howler
         sound.volume(1);
         sound.rate(rate);
-        sound.play();
+        this.currentSoundId = sound.play(); // Store the sound ID for later fading
+      } else {
+        // All cache slots are in use - force release the oldest one
+        console.warn("Audio cache exhausted, forcing release of slot 0");
+        this.audioCacheIdx = 0;
+        window["audioCache"][0].inUse = true;
+        var sound = window["audioCache"][0].sound;
+        sound.stop(); // Stop any currently playing sound
+        sound.volume(1);
+        sound.rate(rate);
+        this.currentSoundId = sound.play(); // Store the sound ID for later fading
       }
 
       // if (!this.wave) {
@@ -415,11 +452,71 @@ export default {
       this.clickTimer = setTimeout(() => {
         this.active = true;
         this.playSoundNote();
+        this.$emit('key-mousedown', this);
       }, 50);
     },
     mouseUp: function () {
       this.active = false;
       this.stopSoundNote();
+      this.$emit('key-mouseup', this);
+    },
+    mouseEnter: function () {
+      // If dragging (mouse button is pressed), play the note
+      if (this.isDragging && !this.disabled) {
+        this.active = true;
+        this.playSoundNote();
+        this.$emit('key-mouseenter', this);
+      }
+    },
+    mouseLeave: function () {
+      // Only stop the sound if we're not dragging
+      // When dragging, the sound will stop on mouseUp
+      this.active = false;
+      if (!this.isDragging) {
+        this.stopSoundNote();
+      }
+    },
+    touchStart: function (e) {
+      // Prevent the mousedown event from also firing
+      e.preventDefault();
+
+      this.isTouching = true;
+
+      clearTimeout(this.clickTimer);
+      this.clickTimer = setTimeout(() => {
+        this.active = true;
+        this.playSoundNote();
+        this.$emit('key-mousedown', this);
+      }, 50);
+    },
+    touchMove: function (e) {
+      // Prevent scrolling and mouse events
+      e.preventDefault();
+
+      // Get the touch point
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        // Check if we've moved to a different key
+        if (elementAtPoint && !this.$el.contains(elementAtPoint)) {
+          // We've left this key - deactivate it
+          if (this.isTouching) {
+            this.isTouching = false;
+            this.active = false;
+            this.stopSoundNote();
+          }
+        }
+      }
+    },
+    touchEnd: function (e) {
+      // Prevent the mouseup event from also firing
+      e.preventDefault();
+
+      this.isTouching = false;
+      this.active = false;
+      this.stopSoundNote();
+      this.$emit('key-mouseup', this);
     },
     onTap() {
       //this.mouseDown();
