@@ -6,6 +6,7 @@
       <span v-if="!showScaleOptions">Show scale options</span>
       <span v-if="showScaleOptions">Close scale options</span>
     </button>
+    <button @click="rotateSelected">Rotate (modes)</button>
 
     <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
       :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScale" />
@@ -103,6 +104,11 @@ export default {
         newSelectedNotes[idx] = true;
       });
       this.selectedNotes = newSelectedNotes;
+      this.emitChange();
+    },
+    rotateSelected() {
+      const [first, ...rest] = this.selectedNotes;
+      this.selectedNotes = [...rest, first];
       this.emitChange();
     }
   }
