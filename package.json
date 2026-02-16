@@ -7,13 +7,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
-    "build": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start2": "node src2/index.js",
     "test": "jest"
   },
   "dependencies": {
+    "@fission-ai/openspec": "^1.1.1",
     "argument-validator": "^0.1.0",
     "chart.js": "^2.9.4",
     "core-js": "^3.6.5",

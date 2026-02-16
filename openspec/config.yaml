@@ -1,0 +1,52 @@
+schema: spec-driven
+
+context: |
+  ## Project: Microtonal Keyboard
+  A suite of tools for exploring microtonal music theory — tuning systems beyond
+  standard 12-tone equal temperament. Provides interactive keyboards, fretboard
+  visualizers, scale explorers, and mathematical calculators.
+
+  ## Subprojects
+
+  ### src/ — Vue.js Web Application
+  - Vue 2.6 (Options API, SFCs), no vue-router (manual hash routing), no Vuex/Pinia
+  - Audio: Howler.js, Pizzicato (Web Audio)
+  - Charts: chart.js 2.x via hchs-vue-charts
+  - Build: Vue CLI 4.5, Babel, ESLint (plugin:vue/essential + eslint:recommended)
+  - ES Modules ("type": "module" in package.json)
+  - Tests: Jest 29.7, co-located test files (*.test.js)
+  - Key components: Keyboard (equal temperament, harmonics, MOS, custom notes),
+    Keyboard2 (grid-based with charts), KeyboardMos, LambdomaKeyboard, FretboardViewer
+
+  ### src2/ — Node.js Computational Scripts
+  - Pure Node.js ES Modules, no framework
+  - Run via: npm run start2 → node src2/index.js
+  - MOS explorer: finds optimal MOS step ratios for target just-intonation intervals
+  - Notes explorer: brute-force search for best N-note EDO subsets
+  - Shared helpers in src2/MicrotonalHelper/ (equalTemperament, mos, operations, diamond, rank2)
+  - Outputs results to JSON files
+
+  ### src3/ — C# Console Application (.NET 9)
+  - Performance-optimized version of subset exploration + fret-section analysis
+  - Top-level statements, static classes, file-scoped namespaces, records
+  - ImplicitUsings and Nullable enabled
+  - Helpers in src3/MicrotonalExplorer/MicrotonalHelpers/
+
+  ## Conventions
+  - JS: camelCase functions/variables, PascalCase Vue components
+  - C#: PascalCase types/methods, camelCase locals
+  - Feature-based file organization (e.g., FretboardViewer/)
+  - Shared logic in core/ (src) and MicrotonalHelper/ (src2)
+  - Component-local state (no global store)
+  - Co-located unit tests for pure functions
+
+  ## Domain Terminology
+  - EDO: Equal Division of the Octave (N equal parts)
+  - MOS: Moment of Symmetry — scales with exactly two step sizes (L/s)
+  - Rank-2 temperament: tuning from two intervals (generator + period)
+  - Tonality Diamond / Lambdoma: ratio matrix from harmonic/subharmonic series
+  - Just Intonation: tuning based on pure frequency ratios (3/2, 5/4, etc.)
+  - Cents: logarithmic interval measure (1200 cents = 1 octave)
+  - Period: interval of equivalence (usually 2/1 octave)
+  - Generator: repeating interval that generates a rank-2 scale
+  - Normalize/Reduce: bring a ratio within one period (1 to period)
