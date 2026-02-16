@@ -87,7 +87,19 @@
           <label>Subset enabled notes:</label>
           <note-selection-list :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
             @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate"
-            :skipFretting="skipFretting" />
+            :skipFretting="skipFretting" :externalSelectedNotes="subsetEnabled" />
+        </div>
+        <div v-if="useCircleOfFifthViewer">
+          <label>
+            <input type="checkbox" v-model="showCircleOfFifths" />
+            Show Circle of Fifths
+          </label>
+          <circle-of-fifths v-if="showCircleOfFifths"
+            :selectedNotes="subsetEnabled"
+            :noteTexts="noteTexts"
+            :noteNames="noteNames"
+            :edoIdx_Fifth="edoIdx_Fifth"
+            @toggle="onCircleToggle" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
@@ -145,11 +157,12 @@ import NoteGroup from "./NoteGroup.vue";
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
+import CircleOfFifths from "./CircleOfFifths.vue";
 import { buildFretboardData, buildFretboardDataByRatios, DISPLAY_MODES } from "./fretboard";
 import { unique, getKeyName, rotateScale } from "../core/core.js";
 
 export default {
-  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList },
+  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList, CircleOfFifths },
   data() {
     return {
       scale: [],
@@ -172,6 +185,10 @@ export default {
       stringTuningMode: 'index',
       isDragging: false, // Track global mouse button state for drag-and-play
       lastTouchedKey: null, // Track the last key touched for touch drag-to-play
+      isEdo: false,
+      edoIdx_Fifth: undefined,
+      useCircleOfFifthViewer: false,
+      showCircleOfFifths: false,
     };
   },
   mounted() {
@@ -266,7 +283,10 @@ export default {
       stringsTuningIdx,
       selectedTemplate,
       fullFrets,
-      skipFretting
+      skipFretting,
+      isEdo,
+      edoIdx_Fifth,
+      useCircleOfFifthViewer
     ) {
       if (baseFreq) this.baseFreq = baseFreq;
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
@@ -276,9 +296,20 @@ export default {
       this.selectedTemplate = selectedTemplate;
       this.fullFrets = fullFrets;
       this.skipFretting = skipFretting;
+      this.isEdo = !!isEdo;
+      this.edoIdx_Fifth = edoIdx_Fifth;
+      this.useCircleOfFifthViewer = !!useCircleOfFifthViewer;
+      if (!this.useCircleOfFifthViewer) {
+        this.showCircleOfFifths = false;
+      }
     },
     onChangeSubset(selectedNotes, selectedNotesIdx) {
       this.subsetEnabled = selectedNotes;
+    },
+    onCircleToggle(chromaticIndex) {
+      const updated = [...this.subsetEnabled];
+      updated[chromaticIndex] = !updated[chromaticIndex];
+      this.subsetEnabled = updated;
     },
     onChangeNoteGroup(noteGroups) {
       this.noteGroups = noteGroups;

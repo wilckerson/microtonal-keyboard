@@ -36,6 +36,7 @@ export default {
     useScaleOptions: Boolean,
     selectedTemplate: String,
     skipFretting: Array,
+    externalSelectedNotes: Array,
   },
   data() {
     return {
@@ -52,6 +53,12 @@ export default {
       if (!newValue || newValue.toString() === oldValue.toString()) return;
       this.populateNotes();
       this.emitChange();
+    },
+    externalSelectedNotes: function (newValue) {
+      if (!newValue) return;
+      if (newValue.toString() !== this.selectedNotes.toString()) {
+        this.selectedNotes = [...newValue];
+      }
     },
   },
   methods: {

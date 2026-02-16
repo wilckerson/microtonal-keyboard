@@ -39,7 +39,10 @@ export default {
           stringsTuningIdx: templateData.stringsTuningIdx,
           selectedTemplate: value,
           fullFrets: !!templateData.fullFrets,
-          skipFretting: templateData.skipFretting || []
+          skipFretting: templateData.skipFretting || [],
+          isEdo: !!templateData.isEdo,
+          edoIdx_Fifth: templateData.edoIdx_Fifth,
+          useCircleOfFifthViewer: !!templateData.useCircleOfFifthViewer
         });
       }
     }
@@ -60,7 +63,10 @@ export default {
         ev.stringsTuningIdx,
         ev.selectedTemplate,
         ev.fullFrets,
-        ev.skipFretting
+        ev.skipFretting,
+        ev.isEdo,
+        ev.edoIdx_Fifth,
+        ev.useCircleOfFifthViewer
       );
     }
   }
