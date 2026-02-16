@@ -27,19 +27,26 @@ The `CustomNotes` component SHALL forward these properties through its `@change`
 
 ### Requirement: Circle-of-fifths toggle appears only for eligible templates
 
-The middle control panel of `Fretboard2.vue` SHALL display a "Show Circle of Fifths" checkbox below the "Subset enabled notes" section. This checkbox SHALL only be visible when the active template has `useCircleOfFifthViewer: true`.
+The circle-of-fifths component visibility SHALL be controlled by the view-mode selector within the "Subset enabled notes" section, instead of a standalone "Show Circle of Fifths" checkbox. The standalone checkbox and its surrounding `<div>` SHALL be removed from `Fretboard2.vue`. The circle-of-fifths component SHALL be rendered inside the "Subset enabled notes" section and shown only when the view mode is set to "Circle of Fifths". The component SHALL only be available when the active template has `useCircleOfFifthViewer: true`.
 
-#### Scenario: Toggle visible for 31edo template
+#### Scenario: Circle shown via view-mode selector
 - **WHEN** the user selects a template with `useCircleOfFifthViewer: true`
-- **THEN** a "Show Circle of Fifths" checkbox SHALL appear below the subset notes list
+- **AND** the user selects the "Circle of Fifths" view mode
+- **THEN** the `CircleOfFifths` component SHALL be visible within the "Subset enabled notes" section
 
-#### Scenario: Toggle hidden for non-eligible template
-- **WHEN** the user selects a template without `useCircleOfFifthViewer: true`
-- **THEN** no "Show Circle of Fifths" checkbox SHALL be displayed
+#### Scenario: Circle hidden in list mode
+- **WHEN** the user selects a template with `useCircleOfFifthViewer: true`
+- **AND** the view mode is set to "List"
+- **THEN** the `CircleOfFifths` component SHALL be hidden
 
-#### Scenario: Toggle hidden when switching away from eligible template
-- **WHEN** the user switches from a 31edo template to a 12edo template
-- **THEN** the "Show Circle of Fifths" checkbox SHALL disappear and the circle component SHALL be hidden
+#### Scenario: Standalone checkbox removed
+- **WHEN** the Fretboard2 panel is rendered
+- **THEN** no standalone "Show Circle of Fifths" checkbox SHALL exist outside the "Subset enabled notes" section
+
+#### Scenario: Circle hidden when switching away from eligible template
+- **WHEN** the user switches from a template with `useCircleOfFifthViewer: true` to one without
+- **THEN** the `CircleOfFifths` component SHALL be hidden
+- **AND** the view mode SHALL reset to "List"
 
 ### Requirement: Circle-of-fifths component renders notes in circular layout
 

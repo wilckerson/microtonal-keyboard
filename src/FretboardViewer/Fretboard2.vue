@@ -85,16 +85,32 @@
         </div>
         <div>
           <label>Subset enabled notes:</label>
-          <note-selection-list :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
+          <div style="margin: 4px 0;">
+            <button @click="selectAllNotes">Select All</button>
+            <button @click="selectNoneNotes">Select None</button>
+            <button @click="toggleScaleOptions">
+              <span v-if="!showScaleOptions">Show scale options</span>
+              <span v-if="showScaleOptions">Close scale options</span>
+            </button>
+            <button @click="rotateSelectedNotes">Rotate (modes)</button>
+          </div>
+          <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
+            :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScaleToSubset" />
+          <div v-if="useCircleOfFifthViewer" style="margin: 4px 0;">
+            <label style="margin-right: 8px;">
+              <input type="radio" value="list" v-model="noteSelectionViewMode" />
+              List
+            </label>
+            <label>
+              <input type="radio" value="circle" v-model="noteSelectionViewMode" />
+              Circle of Fifths
+            </label>
+          </div>
+          <note-selection-list v-show="noteSelectionViewMode === 'list'"
+            :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
             @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate"
-            :skipFretting="skipFretting" :externalSelectedNotes="subsetEnabled" />
-        </div>
-        <div v-if="useCircleOfFifthViewer">
-          <label>
-            <input type="checkbox" v-model="showCircleOfFifths" />
-            Show Circle of Fifths
-          </label>
-          <circle-of-fifths v-if="showCircleOfFifths"
+            :skipFretting="skipFretting" :externalSelectedNotes="subsetEnabled" :hideActions="true" />
+          <circle-of-fifths v-show="noteSelectionViewMode === 'circle'"
             :selectedNotes="subsetEnabled"
             :noteTexts="noteTexts"
             :noteNames="noteNames"
@@ -158,11 +174,12 @@ import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
 import CircleOfFifths from "./CircleOfFifths.vue";
+import ScaleOptions from "./ScaleOptions.vue";
 import { buildFretboardData, buildFretboardDataByRatios, DISPLAY_MODES } from "./fretboard";
 import { unique, getKeyName, rotateScale } from "../core/core.js";
 
 export default {
-  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList, CircleOfFifths },
+  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList, CircleOfFifths, ScaleOptions },
   data() {
     return {
       scale: [],
@@ -188,7 +205,8 @@ export default {
       isEdo: false,
       edoIdx_Fifth: undefined,
       useCircleOfFifthViewer: false,
-      showCircleOfFifths: false,
+      noteSelectionViewMode: 'list',
+      showScaleOptions: false,
     };
   },
   mounted() {
@@ -300,7 +318,7 @@ export default {
       this.edoIdx_Fifth = edoIdx_Fifth;
       this.useCircleOfFifthViewer = !!useCircleOfFifthViewer;
       if (!this.useCircleOfFifthViewer) {
-        this.showCircleOfFifths = false;
+        this.noteSelectionViewMode = 'list';
       }
     },
     onChangeSubset(selectedNotes, selectedNotesIdx) {
@@ -310,6 +328,24 @@ export default {
       const updated = [...this.subsetEnabled];
       updated[chromaticIndex] = !updated[chromaticIndex];
       this.subsetEnabled = updated;
+    },
+    selectAllNotes() {
+      this.subsetEnabled = this.subsetEnabled.map(() => true);
+    },
+    selectNoneNotes() {
+      this.subsetEnabled = this.subsetEnabled.map(() => false);
+    },
+    rotateSelectedNotes() {
+      const [first, ...rest] = this.subsetEnabled;
+      this.subsetEnabled = [...rest, first];
+    },
+    toggleScaleOptions() {
+      this.showScaleOptions = !this.showScaleOptions;
+    },
+    onApplyScaleToSubset(scaleDegrees, clearOnApply) {
+      const newSelected = this.subsetEnabled.map(v => clearOnApply ? false : v);
+      scaleDegrees.forEach(idx => { newSelected[idx] = true; });
+      this.subsetEnabled = newSelected;
     },
     onChangeNoteGroup(noteGroups) {
       this.noteGroups = noteGroups;
