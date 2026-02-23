@@ -10,7 +10,7 @@
         @click="navigate('#lambdoma')">Lambdoma</button>
       <button :class="['nav-link', { 'nav-link-active': route === '#calc2' }]"
         @click="navigate('#calc2')">Calculator</button>
-      <a href="/sw3.html" :class="['nav-link']">Scale Workshop 3</a>
+      <a href="/sw3.html" :class="['nav-link']">SW3</a>
     </div>
 
     <!-- <Calc v-if="route == '#calc'"/> -->
