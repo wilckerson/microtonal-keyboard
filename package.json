@@ -9,7 +9,7 @@
   "scripts": {
     "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "postbuild": "shx cp -r sw3 dist/sw3",
+    "postbuild": "shx cp -r sw3/* dist",
     "serve": "npx -y serve dist -l 4173",
     "lint": "vue-cli-service lint",
     "start2": "node src2/index.js",
