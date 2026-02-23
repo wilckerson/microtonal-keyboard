@@ -1,10 +1,31 @@
 <template>
   <div class="fretboard-viewer">
+    <div class="toolbar">
+      <div>Strings Tuning mode: <select v-model="stringTuningMode"
+          @change="onChangeStringTuningMode($event.target.value)">
+          <option value="index">By index</option>
+          <option value="ratio">By ratio</option>
+          <!-- <option value="cents">By cents</option> -->
+        </select></div>
+      <div>Scroll position: <input type="number" v-model.number="baseIndex" /></div>
+    </div>
     <div class="fretboard-wrapper">
       <div class="strings-tuning">
-        <div class="string-tuning-row" v-for="(_, idx) in stringsTuningIdx" v-bind:key="'string-tuning-row-' + idx">
+
+        <div v-if="stringTuningMode === 'index'" class="string-tuning-row" v-for="(_, idx) in stringsTuningIdx"
+          v-bind:key="'string-tuningByIdx-row-' + idx">
           <input type="number" v-model.number="stringsTuningIdx[idx]" />
         </div>
+
+        <div v-if="stringTuningMode === 'ratio'" class="string-tuning-row" v-for="(_, idx) in stringsTuningRatio"
+          v-bind:key="'string-tuningByRatio-row-' + idx">
+          <input type="number" step="0.001" v-model.number="stringsTuningRatio[idx]" />
+        </div>
+
+        <!-- <div v-if="stringTuningMode === 'cents'" class="string-tuning-row" v-for="(_, idx) in stringsTuningCents"
+          v-bind:key="'string-tuningByCents-row-' + idx">
+          <input type="number" v-model.number="stringsTuningCents[idx]" />
+        </div> -->
       </div>
       <div class="fretboard-scroller">
         <div class="fretboard">
@@ -15,7 +36,8 @@
               :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx, fretData.scaleIdx)"
               :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
               :style="'width: ' + fretData.width + '%'" :markers="getMarkersFromNoteGroups(fretData.scaleIdx)"
-              hideFreq />
+              :isDragging="isDragging" @key-mousedown="handleKeyMouseDown" @key-mouseenter="handleKeyMouseEnter"
+              @key-mouseup="handleKeyMouseUp" hideFreq />
 
           </div>
         </div>
@@ -63,8 +85,37 @@
         </div>
         <div>
           <label>Subset enabled notes:</label>
-          <note-selection-list :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
-            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate" :skipFretting="skipFretting" />
+          <div style="margin: 4px 0;">
+            <button @click="selectAllNotes">Select All</button>
+            <button @click="selectNoneNotes">Select None</button>
+            <button @click="toggleScaleOptions">
+              <span v-if="!showScaleOptions">Show scale options</span>
+              <span v-if="showScaleOptions">Close scale options</span>
+            </button>
+            <button @click="rotateSelectedNotes">Rotate (modes)</button>
+          </div>
+          <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
+            :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScaleToSubset" />
+          <div v-if="useCircleOfFifthViewer" style="margin: 4px 0;">
+            <label style="margin-right: 8px;">
+              <input type="radio" value="list" v-model="noteSelectionViewMode" />
+              List
+            </label>
+            <label>
+              <input type="radio" value="circle" v-model="noteSelectionViewMode" />
+              Circle of Fifths
+            </label>
+          </div>
+          <note-selection-list v-show="noteSelectionViewMode === 'list'"
+            :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
+            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate"
+            :skipFretting="skipFretting" :externalSelectedNotes="subsetEnabled" :hideActions="true" />
+          <circle-of-fifths v-show="noteSelectionViewMode === 'circle'"
+            :selectedNotes="subsetEnabled"
+            :noteTexts="noteTexts"
+            :noteNames="noteNames"
+            :edoIdx_Fifth="edoIdx_Fifth"
+            @toggle="onCircleToggle" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
@@ -104,6 +155,7 @@ TODOs:
 - [] Display active interval
 - [x] Full frets mode based on string zero
 - [] Dropdown to change strings tuning input mode (index, customNoteInput) 
+- [] Input number to control the base index position (like capo)
 - [] Display number of common frets between strings
 - [] Fix play bug on touch
 - [] Play with drag
@@ -121,11 +173,13 @@ import NoteGroup from "./NoteGroup.vue";
 import AudioKey from "../AudioKey.vue";
 import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
-import { buildFretboardData, DISPLAY_MODES } from "./fretboard";
+import CircleOfFifths from "./CircleOfFifths.vue";
+import ScaleOptions from "./ScaleOptions.vue";
+import { buildFretboardData, buildFretboardDataByRatios, DISPLAY_MODES } from "./fretboard";
 import { unique, getKeyName, rotateScale } from "../core/core.js";
 
 export default {
-  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList },
+  components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList, CircleOfFifths, ScaleOptions },
   data() {
     return {
       scale: [],
@@ -135,6 +189,8 @@ export default {
       noteGroups: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
+      stringsTuningRatio: [1, 1, 1, 1, 1, 1],
+      stringsTuningCents: [0, 0, 0, 0, 0, 0],
       displayMode: DISPLAY_MODES.DEFAULT,
       DISPLAY_MODES,
       stringLength: 650,
@@ -142,33 +198,36 @@ export default {
       fullFrets: false,
       displayUniqueNotes: false,
       skipFretting: [],
+      baseIndex: 0,
+      stringTuningMode: 'index',
+      isDragging: false, // Track global mouse button state for drag-and-play
+      lastTouchedKey: null, // Track the last key touched for touch drag-to-play
+      isEdo: false,
+      edoIdx_Fifth: undefined,
+      useCircleOfFifthViewer: false,
+      noteSelectionViewMode: 'list',
+      showScaleOptions: false,
     };
   },
-  mounted() { },
+  mounted() {
+    // Add global mouse event listeners for drag-and-play
+    window.addEventListener('mouseup', this.handleGlobalMouseUp);
+    // Add global touch move listener for touch drag-to-play
+    window.addEventListener('touchmove', this.handleGlobalTouchMove, { passive: false });
+    window.addEventListener('touchend', this.handleGlobalTouchEnd);
+  },
+  beforeDestroy() {
+    // Clean up global event listeners
+    window.removeEventListener('mouseup', this.handleGlobalMouseUp);
+    window.removeEventListener('touchmove', this.handleGlobalTouchMove);
+    window.removeEventListener('touchend', this.handleGlobalTouchEnd);
+  },
   computed: {
     fretboardData() {
-      return buildFretboardData(
-        this.baseFreq,
-        this.scale,
-        this.stringsTuningIdx,
-        this.noteNames,
-        this.noteTexts,
-        this.displayMode,
-        this.stringLength,
-        this.fullFrets,
-      );
+      return this.buildFretboardDataByStringTuningMode();
     },
     getUniqueNotes() {
-      const data = buildFretboardData(
-        this.baseFreq,
-        this.scale,
-        this.stringsTuningIdx,
-        this.noteNames,
-        this.noteTexts,
-        DISPLAY_MODES.RATIO_REDUCED,
-        this.stringLength,
-        this.fullFrets,
-      );
+      const data = this.buildFretboardDataByStringTuningMode(DISPLAY_MODES.RATIO_REDUCED);
       const ratios = data.map(stringNotes => stringNotes.filter((fretData, fretIdx) => !this.isFretDisabled(fretIdx, fretData.scaleIdx)))
         .flat().map(item => parseFloat(item.text)).sort();
       const result = unique(ratios);
@@ -180,6 +239,37 @@ export default {
 
   },
   methods: {
+    buildFretboardDataByStringTuningMode(overrideDisplayMode = undefined) {
+      if (this.stringTuningMode === 'index') {
+        return buildFretboardData(
+          this.baseFreq,
+          this.scale,
+          this.stringsTuningIdx,
+          this.noteNames,
+          this.noteTexts,
+          overrideDisplayMode || this.displayMode,
+          this.stringLength,
+          this.fullFrets,
+          this.baseIndex
+        );
+      }
+      else if (this.stringTuningMode === 'ratio') {
+        return buildFretboardDataByRatios(
+          this.baseFreq,
+          this.scale,
+          this.stringsTuningRatio,
+          this.noteNames,
+          this.noteTexts,
+          overrideDisplayMode || this.displayMode,
+          this.stringLength,
+          this.fullFrets,
+          this.baseIndex
+        );
+      }
+      else if (this.stringTuningMode === 'cents') {
+        return [];
+      }
+    },
     getKeyNameForEnabledFret(rowIdx, fretIdx, fretScaleIdx) {
       const startFrom = this.fullFrets ? 0 : fretScaleIdx - fretIdx;
       const enabledRotated = [
@@ -211,7 +301,10 @@ export default {
       stringsTuningIdx,
       selectedTemplate,
       fullFrets,
-      skipFretting
+      skipFretting,
+      isEdo,
+      edoIdx_Fifth,
+      useCircleOfFifthViewer
     ) {
       if (baseFreq) this.baseFreq = baseFreq;
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
@@ -221,9 +314,38 @@ export default {
       this.selectedTemplate = selectedTemplate;
       this.fullFrets = fullFrets;
       this.skipFretting = skipFretting;
+      this.isEdo = !!isEdo;
+      this.edoIdx_Fifth = edoIdx_Fifth;
+      this.useCircleOfFifthViewer = !!useCircleOfFifthViewer;
+      if (!this.useCircleOfFifthViewer) {
+        this.noteSelectionViewMode = 'list';
+      }
     },
     onChangeSubset(selectedNotes, selectedNotesIdx) {
       this.subsetEnabled = selectedNotes;
+    },
+    onCircleToggle(chromaticIndex) {
+      const updated = [...this.subsetEnabled];
+      updated[chromaticIndex] = !updated[chromaticIndex];
+      this.subsetEnabled = updated;
+    },
+    selectAllNotes() {
+      this.subsetEnabled = this.subsetEnabled.map(() => true);
+    },
+    selectNoneNotes() {
+      this.subsetEnabled = this.subsetEnabled.map(() => false);
+    },
+    rotateSelectedNotes() {
+      const [first, ...rest] = this.subsetEnabled;
+      this.subsetEnabled = [...rest, first];
+    },
+    toggleScaleOptions() {
+      this.showScaleOptions = !this.showScaleOptions;
+    },
+    onApplyScaleToSubset(scaleDegrees, clearOnApply) {
+      const newSelected = this.subsetEnabled.map(v => clearOnApply ? false : v);
+      scaleDegrees.forEach(idx => { newSelected[idx] = true; });
+      this.subsetEnabled = newSelected;
     },
     onChangeNoteGroup(noteGroups) {
       this.noteGroups = noteGroups;
@@ -232,6 +354,68 @@ export default {
       return this.noteGroups.filter(noteGroup =>
         noteGroup.enabled && noteGroup.selectedNotesIdx.includes(scaleIdx)
       ).map(noteGroup => noteGroup.color);
+    },
+    onChangeStringTuningMode(newMode) {
+      if (newMode === 'ratio') {
+        this.displayMode = DISPLAY_MODES.RATIO;
+      }
+    },
+    handleKeyMouseDown() {
+      this.isDragging = true;
+    },
+    handleKeyMouseEnter(keyComponent) {
+      // The key component already handles playing the sound when isDragging is true
+      // This handler is just for any additional parent-level logic if needed
+    },
+    handleKeyMouseUp() {
+      this.isDragging = false;
+    },
+    handleGlobalMouseUp() {
+      // Reset drag state when mouse button is released anywhere
+      this.isDragging = false;
+    },
+    handleGlobalTouchMove(e) {
+      // Handle touch drag-to-play
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (elementAtPoint) {
+          // Find the closest .key element
+          const keyElement = elementAtPoint.closest('.key');
+
+          if (keyElement && keyElement.__vue__) {
+            const keyComponent = keyElement.__vue__;
+
+            // Check if this is a different key than the last one touched
+            if (this.lastTouchedKey !== keyComponent) {
+              // Deactivate the previous key
+              if (this.lastTouchedKey && this.lastTouchedKey.isTouching) {
+                this.lastTouchedKey.isTouching = false;
+                this.lastTouchedKey.active = false;
+                this.lastTouchedKey.stopSoundNote();
+              }
+
+              // Activate the new key if it's not disabled
+              if (!keyComponent.disabled) {
+                keyComponent.isTouching = true;
+                keyComponent.active = true;
+                keyComponent.playSoundNote();
+                this.lastTouchedKey = keyComponent;
+              }
+            }
+          }
+        }
+      }
+    },
+    handleGlobalTouchEnd() {
+      // Clean up when touch ends
+      if (this.lastTouchedKey) {
+        this.lastTouchedKey.isTouching = false;
+        this.lastTouchedKey.active = false;
+        this.lastTouchedKey.stopSoundNote();
+        this.lastTouchedKey = null;
+      }
     },
   }
 };
@@ -325,5 +509,12 @@ export default {
   font-size: 12px;
   display: inline-block;
   text-align: right;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 </style>

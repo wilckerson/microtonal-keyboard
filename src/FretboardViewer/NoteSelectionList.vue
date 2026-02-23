@@ -1,14 +1,17 @@
 <template>
   <div>
-    <button @click="selectAll">Select All</button>
-    <button @click="selectNone">Select None</button>
-    <button v-if="useScaleOptions" @click="toggleShowScaleOptions">
-      <span v-if="!showScaleOptions">Show scale options</span>
-      <span v-if="showScaleOptions">Close scale options</span>
-    </button>
+    <template v-if="!hideActions">
+      <button @click="selectAll">Select All</button>
+      <button @click="selectNone">Select None</button>
+      <button v-if="useScaleOptions" @click="toggleShowScaleOptions">
+        <span v-if="!showScaleOptions">Show scale options</span>
+        <span v-if="showScaleOptions">Close scale options</span>
+      </button>
+      <button @click="rotateSelected">Rotate (modes)</button>
 
-    <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
-      :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScale" />
+      <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
+        :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScale" />
+    </template>
 
     <table>
       <tr v-for="(noteText, idx) in noteTexts" v-bind:key="'note-selection-' + idx">
@@ -35,6 +38,8 @@ export default {
     useScaleOptions: Boolean,
     selectedTemplate: String,
     skipFretting: Array,
+    externalSelectedNotes: Array,
+    hideActions: Boolean,
   },
   data() {
     return {
@@ -51,6 +56,12 @@ export default {
       if (!newValue || newValue.toString() === oldValue.toString()) return;
       this.populateNotes();
       this.emitChange();
+    },
+    externalSelectedNotes: function (newValue) {
+      if (!newValue) return;
+      if (newValue.toString() !== this.selectedNotes.toString()) {
+        this.selectedNotes = [...newValue];
+      }
     },
   },
   methods: {
@@ -103,6 +114,11 @@ export default {
         newSelectedNotes[idx] = true;
       });
       this.selectedNotes = newSelectedNotes;
+      this.emitChange();
+    },
+    rotateSelected() {
+      const [first, ...rest] = this.selectedNotes;
+      this.selectedNotes = [...rest, first];
       this.emitChange();
     }
   }

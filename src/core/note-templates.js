@@ -141,13 +141,19 @@ export default {
     notes: notes31edo,
     baseFreq: 110,
     stringsTuningIdx: [49, 36, 26, 13, 0, -13],
-    scales: scales31edo
+    scales: scales31edo,
+    isEdo: true,
+    edoIdx_Fifth: 18,
+    useCircleOfFifthViewer: true
   },
   "31edo - Bass - Standard Tuning": {
     notes: notes31edo,
     baseFreq: 55,
     stringsTuningIdx: [26, 13, 0, -13],
-    scales: scales31edo
+    scales: scales31edo,
+    isEdo: true,
+    edoIdx_Fifth: 18,
+    useCircleOfFifthViewer: true
   },
   "41edo - Kite Guitar - Downmajor tuning": {
     notes: notes41edo,
