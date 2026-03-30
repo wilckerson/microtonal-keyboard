@@ -14,7 +14,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 | `Fretboard.vue` | **Legacy/simple fretboard** — renders N `InstrumentString` components. Not actively used (replaced by `Fretboard2`). |
 | `Fretboard2.vue` | **Main fretboard component** — full-featured fretboard with tuning, display modes, note selection, drag-to-play, note groups, and more. |
 | `fretboard.js` | **Core business logic** — builds fretboard data (fret widths, frequencies, display text) from scale ratios and tuning parameters. |
-| `fretboard.test.js` | Unit tests for `getRelativeRatioByIndex` and `getNoteNameByStringTuningIdx`. |
+| `fretboard.test.js` | Unit tests for `getRelativeRatioByIndex`, `getNoteNameByStringTuningIdx`, `buildFretboardData`, `buildFretboardDataByRatios`, `DISPLAY_MODES`, and all display mode logic. |
 | `CircleOfFifths.vue` | Circular note selector arranged by fifths; only shown for EDO tunings that provide a fifth index. |
 | `Fret.vue` | Minimal visual fret bar (2px black rectangle). Used by legacy `Fretboard.vue`. |
 | `InstrumentString.vue` | A single string with N `Fret` components. Used by legacy `Fretboard.vue`. |

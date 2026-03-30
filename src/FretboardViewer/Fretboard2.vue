@@ -41,14 +41,13 @@
           <div v-for="(rowData, rowIdx) in fretboardData" v-bind:key="'fretboard-row-' + rowIdx" class="fretboard-row">
             <div class="string-indicator"></div>
             <div v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
-              class="fret-wrapper" :class="fretData.overrideClass"
-              :style="'width: ' + fretData.width + '%'" @click="handleFretClick(rowIdx, fretIdx, fretData.disabled)">
-              <audio-key
-                :class="{ 'fret-zero': fretIdx === 0 }" :disabled="fretData.disabled"
-                :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx)"
-                :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
-                style="width: 100%" :markers="getMarkersFromNoteGroups(fretData.scaleIdx)"
-                :isDragging="manualEditMode ? false : isDragging" @key-mousedown="handleKeyMouseDown" @key-mouseenter="handleKeyMouseEnter"
+              class="fret-wrapper" :class="fretData.overrideClass" :style="'width: ' + fretData.width + '%'"
+              @click="handleFretClick(rowIdx, fretIdx, fretData.disabled)">
+              <audio-key :class="{ 'fret-zero': fretIdx === 0 }" :disabled="fretData.disabled"
+                :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx)" :idx="'fret-' + rowIdx + '-' + fretIdx"
+                :freq="fretData.freq" :text="fretData.text" style="width: 100%"
+                :markers="getMarkersFromNoteGroups(fretData.scaleIdx)" :isDragging="manualEditMode ? false : isDragging"
+                @key-mousedown="handleKeyMouseDown" @key-mouseenter="handleKeyMouseEnter"
                 @key-mouseup="handleKeyMouseUp" hideFreq />
             </div>
 
@@ -110,35 +109,38 @@
           <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
             :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScaleToSubset" />
           <div v-if="useCircleOfFifthViewer" style="margin: 4px 0; display: flex; gap: 12px; align-items: center;">
-            <label >
+            <label>
               <input type="radio" value="list" v-model="noteSelectionViewMode" />
               List
             </label>
-            <label >
+            <label>
               <input type="radio" value="circle" v-model="noteSelectionViewMode" />
               Circle of Fifths
             </label>
           </div>
-          <note-selection-list v-show="noteSelectionViewMode === 'list'"
-            :noteTexts="noteTexts" :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true"
-            @change="onChangeSubset" :useScaleOptions="true" :selectedTemplate="selectedTemplate"
-            :skipFretting="skipFretting" :externalSelectedNotes="subsetEnabled" :hideActions="true" />
-          <circle-of-fifths v-show="noteSelectionViewMode === 'circle'"
-            :selectedNotes="subsetEnabled"
-            :noteTexts="noteTexts"
-            :noteNames="noteNames"
-            :edoIdx_Fifth="edoIdx_Fifth"
-            @toggle="onCircleToggle" />
+          <note-selection-list v-show="noteSelectionViewMode === 'list'" :noteTexts="noteTexts"
+            :noteNames="fullFrets ? [] : noteNames" :defaultChecked="true" @change="onChangeSubset"
+            :useScaleOptions="true" :selectedTemplate="selectedTemplate" :skipFretting="skipFretting"
+            :externalSelectedNotes="subsetEnabled" :hideActions="true" />
+          <circle-of-fifths v-show="noteSelectionViewMode === 'circle'" :selectedNotes="subsetEnabled"
+            :noteTexts="noteTexts" :noteNames="noteNames" :edoIdx_Fifth="edoIdx_Fifth" @toggle="onCircleToggle" />
         </div>
         <!-- <toggle-switch v-model="normalizeDisplay" /> -->
       </div>
       <div class="control-panel">
         <div>
           <input type="checkbox" v-model="displayUniqueNotes" /> Display unique notes
+          <div v-if="displayUniqueNotes" style="margin: 4px 0;">
+            <label>Show as:
+              <select v-model="uniqueNotesDisplayMode">
+                <option value="name">Note name</option>
+                <option value="ratio">Ratio</option>
+                <option value="cents">Cents (¢)</option>
+              </select>
+            </label>
+          </div>
           <div v-if="displayUniqueNotes">Total: {{ getUniqueNotes.length }}</div>
-          <div v-if="displayUniqueNotes" style="max-width: 350px">Notes: {{
-            getUniqueNotes
-          }}</div>
+          <div v-if="displayUniqueNotes" style="max-width: 350px">Notes: {{ getUniqueNotes.join(', ') }}</div>
         </div>
         <label>Note highlight groups: </label>
         <note-group style="width: 350px" @change="onChangeNoteGroup" :noteTexts="noteTexts" :noteNames="noteNames"
@@ -222,6 +224,7 @@ export default {
       useCircleOfFifthViewer: false,
       noteSelectionViewMode: 'list',
       showScaleOptions: false,
+      uniqueNotesDisplayMode: 'ratio',
     };
   },
   mounted() {
@@ -245,12 +248,29 @@ export default {
       return Object.keys(this.manualFretOverrides).length > 0;
     },
     getUniqueNotes() {
+      if (this.uniqueNotesDisplayMode === 'name') {
+        const data = this.buildFretboardDataByStringTuningMode(DISPLAY_MODES.DEFAULT);
+        const names = data.flatMap(stringNotes => stringNotes.filter(fretData => !fretData.disabled))
+          .map(item => item.text).filter(Boolean);
+        return [...new Set(names)];
+      }
+      if (this.uniqueNotesDisplayMode === 'cents') {
+        const data = this.buildFretboardDataByStringTuningMode(DISPLAY_MODES.CENTS_REDUCED);
+        const cents = data.flatMap(stringNotes => stringNotes.filter(fretData => !fretData.disabled))
+          .map(item => parseFloat(item.text)).sort((a, b) => a - b);
+        const result = unique(cents);
+        if (result[0] === 0 && result[result.length - 1] === 1200) {
+          result.shift();
+        }
+        return result.map(c => c.toFixed(2) + '¢');
+      }
+      // ratio (default)
       const data = this.buildFretboardDataByStringTuningMode(DISPLAY_MODES.RATIO_REDUCED);
-      const ratios = data.map(stringNotes => stringNotes.filter(fretData => !fretData.disabled))
-        .flat().map(item => parseFloat(item.text)).sort();
+      const ratios = data.flatMap(stringNotes => stringNotes.filter(fretData => !fretData.disabled))
+        .map(item => parseFloat(item.text)).sort((a, b) => a - b);
       const result = unique(ratios);
       if (result[0] === 1 && result[result.length - 1] === 2) {
-        result.pop(); //Removing ratio 2 from the end
+        result.shift();
       }
       return result;
     },
