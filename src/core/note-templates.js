@@ -14,12 +14,28 @@ const notes12edo = [
 ];
 const scales12edo = [
   {
-    name: "Major",
+    name: "Major scale",
     degrees: [0, 2, 4, 5, 7, 9, 11]
   },
   {
-    name: "Minor",
+    name: "Minor scale",
     degrees: [0, 2, 3, 5, 7, 8, 10]
+  },
+  {
+    name: "Major chord",
+    degrees: [0, 4, 7]
+  },
+  {
+    name: "Major chord 7M",
+    degrees: [0, 4, 7, 11]  
+  },
+  {
+    name: "Minor chord",
+    degrees: [0, 3, 7]
+  },
+  {
+    name: "Minor chord 7m",
+    degrees: [0, 3, 7, 10]
   }
 ];
 
@@ -59,12 +75,32 @@ const notes31edo = [
 
 const scales31edo = [
   {
-    name: "Major",
+    name: "Major scale",
     degrees: [0, 5, 10, 13, 18, 23, 28]
   },
   {
-    name: "Minor",
+    name: "Minor scale",
     degrees: [0, 5, 8, 13, 18, 21, 26]
+  },
+  {
+    name: "Major chord",
+    degrees: [0, 10, 18]
+  },
+  {
+    name: "Major chord 7M",
+    degrees: [0, 10, 18, 28]
+  },
+  {
+    name: "Major chord 7h",
+    degrees: [0, 10, 18, 25]
+  },
+  {
+    name: "Minor chord",
+    degrees: [0, 8, 18]
+  },
+  {
+    name: "Minor chord 7m",
+    degrees: [0, 8, 18, 26]
   }
 ];
 

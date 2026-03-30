@@ -109,12 +109,12 @@
           </div>
           <scale-options :noteNames="noteNames" :noteTexts="noteTexts" v-show="showScaleOptions"
             :selectedTemplate="selectedTemplate" @onApplyScale="onApplyScaleToSubset" />
-          <div v-if="useCircleOfFifthViewer" style="margin: 4px 0;">
-            <label style="margin-right: 8px;">
+          <div v-if="useCircleOfFifthViewer" style="margin: 4px 0; display: flex; gap: 12px; align-items: center;">
+            <label >
               <input type="radio" value="list" v-model="noteSelectionViewMode" />
               List
             </label>
-            <label>
+            <label >
               <input type="radio" value="circle" v-model="noteSelectionViewMode" />
               Circle of Fifths
             </label>
