@@ -16,6 +16,33 @@ function applyKeyMapping(fretboardData) {
   );
 }
 
+export function applyDisabledState(fretboardData, subsetEnabled, fullFrets, manualFretOverrides = {}) {
+  return fretboardData.map((rowData, rowIdx) =>
+    rowData.map((fretData, fretIdx) => {
+      const overrideKey = rowIdx + '-' + fretIdx;
+      const hasOverride = overrideKey in manualFretOverrides;
+      let baseDisabled;
+      if (fullFrets) {
+        baseDisabled = fretIdx === 0 ? false : !subsetEnabled[fretIdx - 1];
+      } else {
+        baseDisabled = !subsetEnabled[fretData.scaleIdx];
+      }
+
+      let disabled;
+      let overrideClass = '';
+      if (hasOverride) {
+        disabled = !manualFretOverrides[overrideKey];
+        if (baseDisabled && !disabled) overrideClass = 'manual-enabled';
+        if (!baseDisabled && disabled) overrideClass = 'manual-disabled';
+      } else {
+        disabled = baseDisabled;
+      }
+
+      return { ...fretData, disabled, overrideClass };
+    })
+  );
+}
+
 function computeFretPercentageDistance(ratio, periodRatio) {
   const periodDistance = 100 - 100 / periodRatio;
   const ratioDistance = 100 - 100 / ratio;

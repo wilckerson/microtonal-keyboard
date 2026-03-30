@@ -8,6 +8,15 @@
           <!-- <option value="cents">By cents</option> -->
         </select></div>
       <div>Scroll position: <input type="number" v-model.number="baseIndex" /></div>
+      <div>
+        <button :class="{ 'manual-edit-btn-active': manualEditMode }" @click="manualEditMode = !manualEditMode"
+          class="manual-edit-btn">
+          {{ manualEditMode ? 'Manual Edit ON' : 'Manual Edit' }}
+        </button>
+        <button v-if="hasManualOverrides" @click="clearManualOverrides" class="clear-overrides-btn">
+          Clear Overrides
+        </button>
+      </div>
     </div>
     <div class="fretboard-wrapper">
       <div class="strings-tuning">
@@ -28,16 +37,20 @@
         </div> -->
       </div>
       <div class="fretboard-scroller">
-        <div class="fretboard">
+        <div class="fretboard" :class="{ 'fretboard-edit-mode': manualEditMode }">
           <div v-for="(rowData, rowIdx) in fretboardData" v-bind:key="'fretboard-row-' + rowIdx" class="fretboard-row">
             <div class="string-indicator"></div>
-            <audio-key v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
-              :class="{ 'fret-zero': fretIdx === 0 }" :disabled="isFretDisabled(fretIdx, fretData.scaleIdx)"
-              :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx, fretData.scaleIdx)"
-              :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
-              :style="'width: ' + fretData.width + '%'" :markers="getMarkersFromNoteGroups(fretData.scaleIdx)"
-              :isDragging="isDragging" @key-mousedown="handleKeyMouseDown" @key-mouseenter="handleKeyMouseEnter"
-              @key-mouseup="handleKeyMouseUp" hideFreq />
+            <div v-for="(fretData, fretIdx) in rowData" v-bind:key="'fret-' + rowIdx + '-' + fretIdx"
+              class="fret-wrapper" :class="fretData.overrideClass"
+              :style="'width: ' + fretData.width + '%'" @click="handleFretClick(rowIdx, fretIdx, fretData.disabled)">
+              <audio-key
+                :class="{ 'fret-zero': fretIdx === 0 }" :disabled="fretData.disabled"
+                :keyName="getKeyNameForEnabledFret(rowIdx, fretIdx)"
+                :idx="'fret-' + rowIdx + '-' + fretIdx" :freq="fretData.freq" :text="fretData.text"
+                style="width: 100%" :markers="getMarkersFromNoteGroups(fretData.scaleIdx)"
+                :isDragging="manualEditMode ? false : isDragging" @key-mousedown="handleKeyMouseDown" @key-mouseenter="handleKeyMouseEnter"
+                @key-mouseup="handleKeyMouseUp" hideFreq />
+            </div>
 
           </div>
         </div>
@@ -175,7 +188,7 @@ import CustomNotes from "../CustomNotes.vue";
 import ToggleSwitch from "../ToggleSwitch.vue";
 import CircleOfFifths from "./CircleOfFifths.vue";
 import ScaleOptions from "./ScaleOptions.vue";
-import { buildFretboardData, buildFretboardDataByRatios, DISPLAY_MODES } from "./fretboard";
+import { buildFretboardData, buildFretboardDataByRatios, applyDisabledState, DISPLAY_MODES } from "./fretboard";
 import { unique, getKeyName, rotateScale } from "../core/core.js";
 
 export default {
@@ -202,6 +215,8 @@ export default {
       stringTuningMode: 'index',
       isDragging: false, // Track global mouse button state for drag-and-play
       lastTouchedKey: null, // Track the last key touched for touch drag-to-play
+      manualEditMode: false,
+      manualFretOverrides: {},
       isEdo: false,
       edoIdx_Fifth: undefined,
       useCircleOfFifthViewer: false,
@@ -226,9 +241,12 @@ export default {
     fretboardData() {
       return this.buildFretboardDataByStringTuningMode();
     },
+    hasManualOverrides() {
+      return Object.keys(this.manualFretOverrides).length > 0;
+    },
     getUniqueNotes() {
       const data = this.buildFretboardDataByStringTuningMode(DISPLAY_MODES.RATIO_REDUCED);
-      const ratios = data.map(stringNotes => stringNotes.filter((fretData, fretIdx) => !this.isFretDisabled(fretIdx, fretData.scaleIdx)))
+      const ratios = data.map(stringNotes => stringNotes.filter(fretData => !fretData.disabled))
         .flat().map(item => parseFloat(item.text)).sort();
       const result = unique(ratios);
       if (result[0] === 1 && result[result.length - 1] === 2) {
@@ -240,8 +258,9 @@ export default {
   },
   methods: {
     buildFretboardDataByStringTuningMode(overrideDisplayMode = undefined) {
+      let data;
       if (this.stringTuningMode === 'index') {
-        return buildFretboardData(
+        data = buildFretboardData(
           this.baseFreq,
           this.scale,
           this.stringsTuningIdx,
@@ -254,7 +273,7 @@ export default {
         );
       }
       else if (this.stringTuningMode === 'ratio') {
-        return buildFretboardDataByRatios(
+        data = buildFretboardDataByRatios(
           this.baseFreq,
           this.scale,
           this.stringsTuningRatio,
@@ -269,29 +288,21 @@ export default {
       else if (this.stringTuningMode === 'cents') {
         return [];
       }
+      return applyDisabledState(data, this.subsetEnabled, this.fullFrets, this.manualFretOverrides);
     },
-    getKeyNameForEnabledFret(rowIdx, fretIdx, fretScaleIdx) {
-      const startFrom = this.fullFrets ? 0 : fretScaleIdx - fretIdx;
-      const enabledRotated = [
-        ...this.subsetEnabled.slice(startFrom, this.subsetEnabled.length),
-        ...this.subsetEnabled.slice(0, startFrom),
-      ];
-      const isDisabled = this.isFretDisabled(fretIdx, fretScaleIdx);
-      let keyName = '';
-      if (!isDisabled) {
-        const enabledCountsUpToIndex = enabledRotated.slice(0, fretIdx).filter(item => item === true).length;
-        keyName = getKeyName(rowIdx, enabledCountsUpToIndex);
-      }
-      return keyName;
+    getKeyNameForEnabledFret(rowIdx, fretIdx) {
+      const rowData = this.fretboardData[rowIdx];
+      if (!rowData || rowData[fretIdx].disabled) return '';
+      const enabledCountBefore = rowData.slice(0, fretIdx).filter(f => !f.disabled).length;
+      return getKeyName(rowIdx, enabledCountBefore);
     },
-    isFretDisabled(fretIdx, fretScaleIdx) {
-      if (this.fullFrets) {
-        if (fretIdx === 0) return false;
-        return !this.subsetEnabled[fretIdx - 1];
-      }
-      else {
-        return !this.subsetEnabled[fretScaleIdx];
-      }
+    handleFretClick(rowIdx, fretIdx, currentlyDisabled) {
+      if (!this.manualEditMode) return;
+      const key = rowIdx + '-' + fretIdx;
+      this.$set(this.manualFretOverrides, key, currentlyDisabled);
+    },
+    clearManualOverrides() {
+      this.manualFretOverrides = {};
     },
     onChangeCustomNotes(
       notes,
@@ -317,6 +328,7 @@ export default {
       this.isEdo = !!isEdo;
       this.edoIdx_Fifth = edoIdx_Fifth;
       this.useCircleOfFifthViewer = !!useCircleOfFifthViewer;
+      this.manualFretOverrides = {};
       if (!this.useCircleOfFifthViewer) {
         this.noteSelectionViewMode = 'list';
       }
@@ -516,5 +528,59 @@ export default {
   gap: 12px;
   align-items: center;
   margin-bottom: 12px;
+}
+
+/* ======== Manual Edit Mode ======== */
+.manual-edit-btn {
+  padding: 4px 10px;
+  cursor: pointer;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #eee;
+}
+
+.manual-edit-btn-active {
+  background: #ffd54f;
+  border-color: #f9a825;
+  font-weight: bold;
+}
+
+.clear-overrides-btn {
+  margin-left: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #eee;
+}
+
+.fretboard-edit-mode {
+  border: 2px solid #f9a825 !important;
+  background-color: #fffde7 !important;
+}
+
+.fretboard-edit-mode .key {
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.fretboard-edit-mode .fret-wrapper {
+  cursor: pointer;
+}
+
+.fret-wrapper {
+  display: inline-block;
+}
+
+.manual-enabled {
+  border-right: 1px solid #83f586;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+.manual-disabled {
+  border-right: 1px solid #e53935;
+  border-radius: 2px;
+  box-sizing: border-box;
 }
 </style>

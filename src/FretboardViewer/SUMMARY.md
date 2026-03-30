@@ -38,6 +38,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 - **Scroll/capo position** — `baseIndex` shifts the fretboard starting position.
 - **Unique notes display** — Optional panel showing the deduplicated set of ratios across all strings.
 - **Scale options** — Apply named scale patterns (Major, Minor, etc.) with a root-note offset and optional clear-on-apply.
+- **Manual fret edit mode** — A toggleable mode that lets users click individual frets (per string × fret position) to force-enable or force-disable them, layered on top of the scale-degree-based subset selection. Overrides are stored in `manualFretOverrides` and integrated into the fret data via `applyDisabledState()` in `fretboard.js`, so all downstream consumers (unique notes display, keyboard shortcuts, etc.) automatically respect them. Visual indicators (green/red outlines) distinguish overridden frets. Overrides auto-clear on scale change.
 
 ---
 
@@ -50,7 +51,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
    - `buildFretboardData()` — index-based string tuning.
    - `buildFretboardDataByRatios()` — ratio-based string tuning.
    - Both call `buildFretsData()` → `buildFretData()` per fret.
-3. **Fretboard rendering** — `fretboardData` (computed property) returns a 2D array `[string][fret]` of `{ text, freq, width, scaleIdx }`. Each cell is rendered as an `<audio-key>`.
+3. **Fretboard rendering** — `fretboardData` (computed property) returns a 2D array `[string][fret]` of `{ text, freq, width, scaleIdx, disabled, overrideClass }`. Each cell is rendered as an `<audio-key>` wrapped in a `<div class="fret-wrapper">`.
 
 ### Important Functions in `fretboard.js`
 
@@ -64,6 +65,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 | `getNoteNameByStringTuningIdx(stringTuningIdx, noteNames)` | Resolves a note name for a given index offset, wrapping around the note name array. |
 | `computeFretPercentageDistance(ratio, periodRatio)` | Converts a ratio to a percentage position within one period for fret width layout. |
 | `getScaleIdx(index, scaleSize)` | Maps any integer index (positive/negative) to a 0-based scale-degree index. |
+| `applyDisabledState(fretboardData, subsetEnabled, fullFrets, manualFretOverrides)` | Post-processing step that enriches each fret cell with `disabled` (boolean) and `overrideClass` (CSS class string) based on subset selection and manual overrides. |
 
 ### External Dependencies (from parent `src/`)
 
@@ -82,7 +84,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 - `CircleOfFifths` emits `toggle(chromaticIndex)`.
 - `ScaleOptions` emits `onApplyScale(scaleDegrees[], clearOnApply)`.
 - `NoteGroup` emits `change(groups[])`.
-- `Fretboard2` manages `subsetEnabled[]` and `noteGroups[]` as the single source of truth for selection state.
+- `Fretboard2` manages `subsetEnabled[]`, `noteGroups[]`, and `manualFretOverrides{}` as the single source of truth for selection state.
 - `NoteSelectionList` supports external state sync via `externalSelectedNotes` prop (watched).
 
 ### Touch/Drag-to-Play Implementation
