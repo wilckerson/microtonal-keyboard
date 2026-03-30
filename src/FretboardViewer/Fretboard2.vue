@@ -154,11 +154,11 @@ TODOs:
 - [] Display mode "only frets"
 - [] Display active interval
 - [x] Full frets mode based on string zero
-- [] Dropdown to change strings tuning input mode (index, customNoteInput) 
-- [] Input number to control the base index position (like capo)
+- [x] Dropdown to change strings tuning input mode (index, customNoteInput) 
+- [x] Input number to control the base index position (like capo)
 - [] Display number of common frets between strings
-- [] Fix play bug on touch
-- [] Play with drag
+- [x] Fix play bug on touch
+- [x] Play with drag
 - [] Strings count input
 - [] Fix note frequency according to physical tunner
 - [] Support navigate key mappings on active notes
