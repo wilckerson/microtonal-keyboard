@@ -115,4 +115,3 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 - **`Fretboard.vue` is legacy** — `Index.vue` only uses `Fretboard2.vue`. The old `Fretboard.vue`, `Fret.vue`, and `InstrumentString.vue` could be removed if confirmed unused elsewhere.
 - **No state persistence** — The "URL data similar to ScaleWorkshop" TODO suggests intent to support URL-based state sharing, but nothing is implemented.
 - **`ToggleSwitch` is imported but unused** in `Fretboard2.vue` (the `normalizeDisplay` data property is commented out).
-- **Test coverage is minimal** — Only `getRelativeRatioByIndex` and `getNoteNameByStringTuningIdx` are tested. The `buildFretboardData`/`buildFretboardDataByRatios` functions and display mode logic have no tests.
