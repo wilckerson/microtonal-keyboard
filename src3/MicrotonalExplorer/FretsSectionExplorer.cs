@@ -14,8 +14,9 @@ public class FretsSectionExplorer
 
         //Objective: Given a EDO subset, find good combinations of notes for the strings,
         //isomorphic or not, considering the distance of target notes on the surrounding frets
+        bool displayOutput = true;
         float baseRefValue = 2;
-        float baseValue = 8;
+        float baseValue = 4;
         float eqt = 31;
         float stringStep = 1 / (float)(Math.Log(baseValue) / Math.Log(baseRefValue));
         int fretSpan = 5;
@@ -50,7 +51,7 @@ public class FretsSectionExplorer
                     targetNotes,
                     baseValue,
                     eqt,
-                    false);
+                    displayOutput);
                 avgIterations.Add(iteration);
             }
             var iterationAvg = new IterationResult(
@@ -125,10 +126,42 @@ public class FretsSectionExplorer
                     value = Operations.Reduce(value, reducePeriod.Value);
                 }
                 var fretIdx = j - array2D.GetLength(1) / 2;
-                Console.Write("({0},{1}) {2:0.00000}, ", i, fretIdx, value);
+                var color = GetAnsiColor(value, reducePeriod ?? 2f);
+                Console.Write("({0},{1}) {2}{3:0.00000}\x1b[0m, ", i, fretIdx, color, value);
             }
             Console.WriteLine();
         }
+    }
+
+    private static string GetAnsiColor(float value, float equivalence)
+    {
+        if (equivalence <= 1) return "";
+        float normRatio = Operations.Reduce(value, equivalence);
+        float h = (normRatio - 1) / (equivalence - 1);
+        float s = 0.6f;
+        float v = 1f;
+        var (r, g, b) = HSVtoRGB(h, s, v);
+        return $"\x1b[38;2;{r};{g};{b}m";
+    }
+
+    private static (int r, int g, int b) HSVtoRGB(float h, float s, float v)
+    {
+        int i = (int)Math.Floor(h * 6);
+        float f = h * 6 - i;
+        float p = v * (1 - s);
+        float q = v * (1 - f * s);
+        float t = v * (1 - (1 - f) * s);
+        float r, g, b;
+        switch (i % 6)
+        {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            default: r = v; g = p; b = q; break;
+        }
+        return ((int)Math.Round(r * 255), (int)Math.Round(g * 255), (int)Math.Round(b * 255));
     }
 
     public record IterationResult(float Points, float StepsByString, IEnumerable<StringResult> ClosestNotes)
