@@ -2,4 +2,4 @@
 
 Console.WriteLine("======= Microtonal Explorer =======");
 //NotesExplorer.MainComputation();
-FretsSectionExplorer.MainComputation();
+FretsSectionExplorerV2.MainComputation();

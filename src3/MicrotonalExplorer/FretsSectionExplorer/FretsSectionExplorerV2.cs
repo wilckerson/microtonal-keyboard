@@ -1,6 +1,6 @@
 using MicrotonalExplorer;
 
-public class FretsSectionExplorer
+public class FretsSectionExplorerV2
 {
     public static void MainComputation()
     {
@@ -10,32 +10,35 @@ public class FretsSectionExplorer
                           //Diamond.Diamond5Limit;
                           //Diamond.Diamond7LimitNo5;
                           Diamond.Diamond7Limit;
-            //Diamond.Diamond9Limit;
+        //Diamond.Diamond9Limit;
 
         var results = new List<(int strEdoJump, float totalMinDistance, List<ClosestMatchResult> matches, RelativeNote[,] matrix)>();
 
         var edo = 31;
-        for (int strEdoJump = 1; strEdoJump <= edo; strEdoJump++)
+        var skipFreting = new int[] { 2, 1 };
+        var maxJumps = edo;
+        for (int strEdoJump = 1; strEdoJump <= maxJumps; strEdoJump++)
         {
             var matrix = CreateRelativeMatrix(
-                tunningInfo: new TunningInfo { Edo = edo, Period = 2, StrEdoJump = strEdoJump, SkipFreting = [5] },
+                tunningInfo: new TunningInfo { Edo = edo, Period = 2, StrEdoJump = strEdoJump, SkipFreting = skipFreting },
                 upperBoundCount: 5,
                 downBoundCount: 0,
-                leftBoundCount: 4,
-                rightBoundCount: 4);
+                leftBoundCount: 5,
+                rightBoundCount: 5);
             var maxCentsDiff = 16f;
 
             var matches = FindClosestMatches(matrix, targets, maxCentsDiff);
             float totalMinDistance = CalculateTotalMinimumDistance(matches);
-            
+
             results.Add((strEdoJump, totalMinDistance, matches, matrix));
-            
+
+            //DisplayMatrix(matrix, matches);
             //Console.Write($"StrEdoJump {strEdoJump,2}: {totalMinDistance:F2}  ");
             //if (strEdoJump % 5 == 0) Console.WriteLine(); // New line every 5 results
         }
-        
+
         Console.WriteLine("\n");
-        
+
         // Sort results by number of matches (descending), then by total minimum distance (ascending)
         var sortedResults = results
             .OrderByDescending(r => r.matches.Count)
@@ -139,19 +142,19 @@ public class FretsSectionExplorer
                 if ((matchedPositions != null && matchedPositions.Contains(posStr)) || ratio == 1.0f)
                 {
                     // Highlight matched notes with square brackets
-                    Console.Write("[");
+                    Console.Write(" [");
                     NoteColor.WriteRatioWithColor(ratio);
                     Console.Write("]");
                 }
                 else if (ratio < 1.0f)
                 {
-                    Console.Write("[");
+                    Console.Write(" [");
                     NoteColor.WriteRatioWithColor(ratio);
                     Console.Write("]");
                 }
                 else
                 {
-                    Console.Write(" ");
+                    Console.Write("  ");
                     NoteColor.WriteRatioWithColor(ratio);
                     Console.Write(" ");
                 }
@@ -170,7 +173,7 @@ public class FretsSectionExplorer
     /// <param name="matrix">The matrix to search through</param>
     /// <param name="targetRatios">Array of target ratios to find</param>
     /// <returns>List of ClosestMatchResult objects containing target ratio, list of closest RelativeNotes, and difference in cents</returns>
-      public static List<ClosestMatchResult> FindClosestMatches(RelativeNote[,] matrix, float[] targetRatios, float maxCentsDiff = 30.0f)
+    public static List<ClosestMatchResult> FindClosestMatches(RelativeNote[,] matrix, float[] targetRatios, float maxCentsDiff = 30.0f)
     {
         var results = new List<ClosestMatchResult>();
 
