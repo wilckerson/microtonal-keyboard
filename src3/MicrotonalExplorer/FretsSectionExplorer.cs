@@ -14,7 +14,6 @@ public class FretsSectionExplorer
 
         //Objective: Given a EDO subset, find good combinations of notes for the strings,
         //isomorphic or not, considering the distance of target notes on the surrounding frets
-        bool displayOutput = true;
         float baseRefValue = 2;
         float baseValue = 4;
         float eqt = 31;
@@ -50,27 +49,31 @@ public class FretsSectionExplorer
                     toleranceInCents,
                     targetNotes,
                     baseValue,
-                    eqt,
-                    displayOutput);
+                    eqt);
                 avgIterations.Add(iteration);
             }
             var iterationAvg = new IterationResult(
                 avgIterations.Average(s => s.Points),
                 stepsByString,
-                avgIterations.SelectMany(s => s.ClosestNotes)
+                avgIterations.SelectMany(s => s.ClosestNotes),
+                avgIterations.First().notes,
+                avgIterations.First().baseRefValue
             );
             iterationsResult.Add(iterationAvg);
         }
         var sortedResult = iterationsResult.OrderBy(o => o.Points).Take(3);
         //Console.WriteLine($"Best result points: {sortedResult.Points}");
         Console.WriteLine("Best result points:");
-        Console.WriteLine(string.Join(Environment.NewLine, sortedResult));
+        foreach (var result in sortedResult)
+        {
+            Console.WriteLine(result);
+        }
+        //Console.WriteLine(string.Join(Environment.NewLine, sortedResult));
     }
 
-    private static IterationResult GetIteration(int stringsNumber, int fretSpan, float stringStep, float baseRefValue, float toleranceInCents, float[] targetNotes, float baseValue, float eqt, bool displayOutput)
+    private static IterationResult GetIteration(int stringsNumber, int fretSpan, float stringStep, float baseRefValue, float toleranceInCents, float[] targetNotes, float baseValue, float eqt)
     {
         float[,] notes = GetFretSectionNotes(stringsNumber, fretSpan, stringStep, baseValue, eqt);
-        if (displayOutput) DisplayArray2D(notes, baseRefValue);
 
         //For each string, find the closest notes to the target notes
         var closestNotes = new List<StringResult>();
@@ -89,10 +92,7 @@ public class FretsSectionExplorer
         var pointsByDistance = closestNotes.GroupBy(x => x.TargetRatio).Sum(g => g.Sum(s => Math.Abs(s.Distance)) / g.Count());
         var pointsByRepetition = closestNotes.GroupBy(x => x.StringIndex).Where(x => x.Count() >= 2).Count() * 10;
         var points = pointsByUniqueTargetCounts + pointsByDistance + pointsByRepetition;
-        var iterationResult = new IterationResult(points, stringStep, closestNotes);
-
-        if (displayOutput) Console.WriteLine(iterationResult);
-
+        var iterationResult = new IterationResult(points, stringStep, closestNotes, notes, baseRefValue);
         return iterationResult;
     }
 
@@ -164,12 +164,16 @@ public class FretsSectionExplorer
         return ((int)Math.Round(r * 255), (int)Math.Round(g * 255), (int)Math.Round(b * 255));
     }
 
-    public record IterationResult(float Points, float StepsByString, IEnumerable<StringResult> ClosestNotes)
+    public record IterationResult(float Points, float StepsByString, IEnumerable<StringResult> ClosestNotes, float[,]? notes = null, float baseRefValue = 2)
     {
         public override string ToString()
         {
-            var notes = string.Join(Environment.NewLine, ClosestNotes.Select(s => s.ToString()));
-            return $"Points: {Points}, StepsByString: {StepsByString}, ClosestNotes: {Environment.NewLine}{notes}{Environment.NewLine}=======";
+            if (notes != null)
+            {
+                DisplayArray2D(notes, baseRefValue);
+            }
+            var closestNoteInfo = string.Join(Environment.NewLine, ClosestNotes.Select(s => s.ToString()));
+            return $"Points: {Points}, StepsByString: {StepsByString}, ClosestNotes: {Environment.NewLine}{closestNoteInfo}{Environment.NewLine}=======";
         }
     }
     public record StringResult(int StringIndex, int FretIndex, float ClosestScaleRatio, float TargetRatio)
