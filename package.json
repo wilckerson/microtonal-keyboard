@@ -7,12 +7,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
-    "build": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build",
+    "start": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "postbuild": "shx cp -r sw3/* dist",
+    "serve": "npx -y serve dist -l 4173",
     "lint": "vue-cli-service lint",
-    "start2": "node src2/index.js"
+    "start2": "node src2/index.js",
+    "test": "jest"
   },
   "dependencies": {
+    "@fission-ai/openspec": "^1.1.1",
     "argument-validator": "^0.1.0",
     "chart.js": "^2.9.4",
     "core-js": "^3.6.5",
@@ -28,6 +32,8 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "jest": "^29.7.0",
+    "shx": "^0.3.4",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {

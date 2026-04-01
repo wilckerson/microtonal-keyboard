@@ -1,6 +1,17 @@
 <template>
   <div id="app">
-    <h3>🙌🎵 Microtonal Keyboard</h3>
+    <h3 style="margin-bottom: 3px;">🙌🎵 Microtonal Apps</h3>
+
+    <div class="navbar">
+      <button :class="['nav-link', { 'nav-link-active': route === '' }]" @click="navigate('')">Keyboard</button>
+      <button :class="['nav-link', { 'nav-link-active': route === '#fretboard' }]"
+        @click="navigate('#fretboard')">Fretboard</button>
+      <button :class="['nav-link', { 'nav-link-active': route === '#lambdoma' }]"
+        @click="navigate('#lambdoma')">Lambdoma</button>
+      <button :class="['nav-link', { 'nav-link-active': route === '#calc2' }]"
+        @click="navigate('#calc2')">Calculator</button>
+      <a href="/sw3.html" :class="['nav-link']">SW3</a>
+    </div>
 
     <!-- <Calc v-if="route == '#calc'"/> -->
     <Guitar v-if="route == '#guitar'" />
@@ -58,7 +69,12 @@ export default {
   mounted() {
     this.route = window.location.hash.toLowerCase();
   },
-  methods: {},
+  methods: {
+    navigate(pageName) {
+      this.route = pageName;
+      window.location.hash = pageName;
+    }
+  },
 };
 </script>
 
@@ -89,5 +105,26 @@ li {
 
 a {
   color: #42b983;
+}
+
+.navbar {
+  margin-bottom: 12px;
+}
+
+.nav-link {
+  color: blue;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.nav-link-active {
+  font-weight: bold;
+  text-decoration: underline;
 }
 </style>

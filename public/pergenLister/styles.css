@@ -1,0 +1,102 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 24px;
+  background-color: #f3f3f3;
+}
+
+.card {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  margin-top: 12px;
+}
+
+/* .info {
+        background: #e8f4fd;
+      } */
+
+.slider-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.slider-group label {
+  font-weight: bold;
+  min-width: 200px;
+}
+
+.slider-controls {
+  flex-grow: 5;
+  display: flex;
+}
+
+input[type="range"] {
+  flex: 1;
+}
+
+.value-display {
+  min-width: 60px;
+  font-weight: bold;
+  color: #333;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  margin-bottom: 64px;
+  width: 100%;
+  min-width: 1280px;
+}
+
+table pre {
+  font-size: 1.25em;
+  margin: 0;
+}
+
+.t-bb {
+  border-bottom: 2px solid black;
+}
+
+.t-bt {
+  border-top: 2px solid black;
+}
+
+.t-bt-gray {
+  border-top: 2px solid lightgray;
+}
+
+.t-br {
+  border-right: 2px solid black;
+}
+
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+}
+
+.imperfect {
+  color: green;
+  font-weight: bold;
+}
+
+.partial-support,
+.small-generator,
+.lower-enharmonic-degree,
+.failed-search {
+  color: red;
+  font-weight: bold;
+}
+
+.ta-r {
+  text-align: right;
+}

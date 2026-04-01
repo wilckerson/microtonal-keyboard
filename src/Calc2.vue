@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Microtonal Calc</h2>
+    <p>Calculates which tunning has the closest approximation for the ratios entered below.</p>
 
     <select v-model="calcType">
       <option value="eqt">Equal Temperament</option>

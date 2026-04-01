@@ -1,0 +1,852 @@
+fdesc: alt-pergenLister: find all rank-2 pergens (Tall Kite Software)
+// see the xenwiki article on pergens for an explanation of them
+//
+// this program's output is divided into 4 sections by vertical lines
+// the 1st section is simply the pergen and the cents, no notation issues are addressed
+// the 2nd section is the period, 3rd is generator, for double-splits this is double-pair notation
+// up & down are arbitrarily for the period and lift & drop are for the gen, but they can be exchanged
+// the 4th section shows a possible single-pair notation for false doubles
+// gen adds up to the original multigen, altGen adds up to the unreduced multigen
+// the unreduced multigen is shown for single-splits and true doubles for general edification only
+// true doubles are found empirically because the GCD (m,n) = |b| rule hasn't yet been proved mathematically
+// however this app proves the rule works for the first 20 blocks of pergens
+//
+// the enharmonics here are good but not always the best possible ones, double-check them manually
+// some single-splits need double-pair notation, e.g. P11/4 or P4/6, but this program won't do that
+// generators < 50� and enharmonics with degree > 2 or < 0 are in red, imperfect multigens are in green
+//
+// pergens only partially supported by the edo are marked with a red asterisk
+// set excludePartialSupport to 1 below to exclude them
+// the ^1 cents can always be zero edosteps with the proper enharmonic, but E may not be a 2nd
+//
+// set the max fraction slider and examine the JSFX window to read numImperfect and numSmallGens
+// uncomment code in function findPergens to filter out all but certain pergens
+// uncomment code in function writeList to show more data on each pergen, e.g. the square mapping
+//
+// for edo pairs, a full search of all pergens is done, plus the result is also directly calculated
+//
+// abbreviations: P = period, G = generator, E = period's enharmonic or enharmonic unison, E' = gen's EU
+// F = fifth, O = octave, M = multigen, m = octave fraction, n = multigen fraction, k = keyspan, s = stepspan
+
+// graphics-only effect
+in_pin:none
+out_pin:none
+
+slider1: 1 <1, 3221, 20> first pergen displayed
+slider2: 10 <1, 20, 1> maximum fraction
+slider3: 0 <0, 72, 1> EDO filter (0 = none, 1 = 13b, 2 = 18b)
+slider4: 0 <0, 72, 1> 2nd EDO filter (0 = none, 1 = 13b, 2 = 18b)
+
+@init
+
+// change these as desired:
+excludePartialSupport = 1;  // exclude edos with non-coprime period & gen, e.g. unsplit 15edo
+maxEDO = 1200;              // biggest edo the edo-slider can handle (one must type in edos > 72)
+maxEDOfraction = 50;        // max fraction when edo-slider > 0, arbitrary, too big slows the app
+
+function round (x) (        // round (1.5) = 2, round (-1.5) = -1
+  floor (x + 0.5);          // rounds towards infinity
+);
+
+function roundDown (x) (      // roundDown (1.5) = 1, roundDown (-1.5) = -2
+  -floor (-x + 0.5);          // rounds towards negative infinity
+);
+
+function roundOut (x) (                // roundOut (1.5) = 2, roundOut (-1.5) = -2
+  sign (x) * floor (abs (x) + 0.5);    // rounds outwards away from zero
+);
+
+function ceiling (x) (            // ceiling (1.5) = 2, ceiling (-1.5) = -1
+  -floor (-x);                    //   floor (1.5) = 1,   floor (-1.5) = -2
+);
+
+function mod (num, base) (            // -3 modulo 10 is 7, but -3 % 10 = 3
+  num - base * floor (num / base);    // 13.3 modulo 10 = 3.3, but 13.3 % 10 = 3
+);                                    // x mod -y = -(-x mod y)
+
+function mod2 (i, j) (            // returns the smaller of i or its inverse
+  i = mod (i, j);                 // mod2 (7, 10) = 3 not 7
+  i > j / 2 ? i = j - i;
+  i;
+);
+
+function GCD (a, b) local (c) (      // returns the greatest common divisor of a & b
+  a = abs (a); b = abs (b);          // ensures the GCD is always positive
+  b == 0 ? b = a;                    // ensures GCD (a, 0) = a and GCD (0, b) = b
+  while (a > 0) (
+    a < b ? (c = a; a = b; b = c);   // if a is smaller, swap a and b
+    a = mod (a, b);                  // don't use a %= b, screws up for large a and b
+  );
+  max (a, b);                        // GCD (0, 0) = 0
+);
+
+maxFraction = slider2; oldslider3 = slider3;
+w12cents = 1200 * log (3) / log (2);    // 1902�
+twoTo52 = 2 ^ 52;                       // for writeNum
+
+// Keyspans is used to convert a stepspan and a 12-edo keyspan to a quality
+// quality = keyspan - Keyspans [stepspan], see function writeQuality
+// for 12-edo, Keyspans = [0, 1.5, 3.5, 5, 7, 8.5, 10.5, 12] = P1 n2 n3 P4 P5 n6 n7 P8
+Keyspans = 0;         // starting address of the array
+KeyspansLength = 8;   // length of the array
+Keyspans [0] = 0;     // average 1sn = perfect 1sn = 0 semitones
+Keyspans [1] = 1.5;   // average 2nd = neutral 2nd = 1.5 semitones
+Keyspans [2] = 3.5;   // average 3rd = neutral 3rd
+Keyspans [3] = 5;     // average 4th = perfect 4th
+Keyspans [4] = 7;     // average 5th = perfect 5th
+Keyspans [5] = 8.5;   // average 6th = neutral 6th
+Keyspans [6] = 10.5;  // average 7th = neutral 7th
+Keyspans [7] = 12;    // average 8ve = perfect 8ve
+
+// Twelfth is a list of the best 12th = 3/1 for each edo, Twelfth[5] = 8, Twelfth[7] = 11, Twelfth[12] = 19
+Twelfth = Keyspans + KeyspansLength;  // starting address of the array
+TwelfthLength = maxEDO + 1;           // length of the array, Twelfth [0] = 0
+i = 0; loop (TwelfthLength,
+  Twelfth [i] = round (i * w12cents / 1200);
+  i += 1;
+);
+Twelfth [1] = 20; Twelfth [2] = 28;       // EDO #1 = 13b, EDO #2 = 18b
+
+function edosteps (a, b) local (i) (      // (a, b) = a 3-limit monzo
+  edo == 0 ? i = 12 * a + 19 * b          // if no edo, use 12edo
+  : i = edo * a + Twelfth [slider3] * b;  // return monzo's keyspan in the edo
+  i;                                      // slider3 == 1 or 2 ? edo = 13b or 18b
+);
+
+function edosteps2 (a, b) (           // (a, b) = a 3-limit monzo
+  edo2 * a + Twelfth [slider4] * b;   // return monzo's keyspan in the edo
+);                                    // if edo2 = 0, edosteps2 is always 0
+
+// an array to hold the result of the findBezout function
+Bezout = Twelfth + TwelfthLength;     // starting address of the array
+BezoutLength = 2;
+
+function findBezout (a, b)                 // uses the extended Euclidean algorithm,
+local (i, j, k, oldI, oldJ, oldK, m, n) (  // returns the least Bezout coefficient pair,
+  i = abs (b); oldI = abs (a);             // which = the least Stern-Brocot ancestor, reversed,
+  j = 0; oldJ = 1;                         // google "Bezout's identity" or "Bezout's lemma"
+  k = 1; oldK = 0;
+  while (i != 0 ? (      
+    n = floor (oldI / i);                  // n = remainder
+    m = i; i = oldI - n * i; oldI = m;     // m = temporary var
+    m = j; j = oldJ - n * j; oldJ = m;
+    m = k; k = oldK - n * k; oldK = m;
+  1));
+  abs (oldJ) > abs (b / 2) ?                         // ensure we get the smaller pair -- not needed?
+    (oldJ += sign (a) * b; oldK -= sign (b) * a);    // it seems we always get the smaller pair anyway
+  abs (a) == abs (b) ? (oldJ = 1; oldK = 0);         // favor the lower primes over the higher ones
+  Bezout [0] = abs (oldJ);                           // a,0 returns 1,0 and 0,b returns 0,1
+  Bezout [1] = abs (oldK);                           // 0,0 -> 0,0  a,1 -> 0,1  1,b -> 1,0  a,a -> 1,0
+  oldI;                                              // return the GCD too
+);
+
+// Pergens is a list of period-generator names, e.g. (P8/2, cP5/3) or (P8, y3)
+// the period is a fraction of an octave, the generator is a fraction of a "multi-gen" M
+// the multi-gen is usually 3-limit, it uses only the 2-limit rung and the first soft-linked rung
+// assuming prime 3 is soft-linked, if 8ve = xP and 5th = yP + zG, then P = 8ve/x, G = {i*z-y, x} / x*z
+// {i*z-y, x} is an 8ve-reduced monzo on 2.3/2, the usual monzo on 2.3 is {i*z-y-x, x}
+// x is always positive, z is always nonzero, but y can be anything
+// i ranges from -x to x, creates alternate generators by adding/subtracting periods, 5th = (y-iz)P + zG
+// as a 2.3 monzo, G = (iz-y-x, x) / x*z
+// the best multi-gen is one that minimizes the fraction, use minimizing the cents as a tiebreaker
+// except that the 5th is preferred over the 4th (but not the half-5th over the half-4th, or 7/3 over 9/7)
+//
+// format: 0-3  periodFraction, genFraction, multi-gen-2-exp, multi-gen-3-exp (the 3-limit monzo)
+//         4-5  multi-gen:     keyspan and stepspan 
+//        6-10  period:        keyspan and stepspan,    enharmonic #1: keyspan, stepspan and count
+//       11-15  generator:     keyspan and stepspan,    enharmonic #2: keyspan, stepspan and count
+//       16-20  alt generator: keyspan and stepspan,    enharmonic #3: keyspan, stepspan and count
+//       21-23  alt multi-gen: keyspan, stepspan and fraction
+//       24-25  alt period:    keyspan and stepspan (fraction = periodFraction, enharmonic = alt-E')
+//          26  alt-period's count x', mP' + x'E" = 8ve, if the pergen is a true double, x' = 0
+//       27-29  original gen:  keyspan and stepspan and count x"
+//
+Pergens = Bezout + BezoutLength;    // starting address of the array
+PergensRowLength = 30;              // length of each row, the array is endless
+
+// TO FIND THE PERIOD, THE GENERATOR, AND THE ENHARMONIC INTERVALS:
+// re-express all 3-limit monzos (a,b) as a 12-tone keyspan and a heptatonic stepspan: [k,s]
+//    k = 12a + 19b   <-->   a = -11k + 19s  
+//    s =  7a + 11b   <-->   b =   7k - 12s
+// this works because the matrix is unimodular, because 12-edo is on the 4\7 kite in the scale tree
+// [k,s] = k * A1 + s * d2, because A1 increases keyspan but not stepspan, and d2 stepspan but not keyspan
+//
+// mP + xE = 8ve = [12,7], 0 < |x| <= m/2, x is the enharmonic count = # of enharmonics per 8ve
+// the period P = [Pk,Ps], where Pk = roundDown (12/m) and Ps = roundDown (7/m)
+// roundDown (1.5) = 1, round down so that P can also be P+E, not P-E (e.g. P8/2, P+E = vA4 + ^^d2 = ^d5)
+// because it's easier mentally to add than subtract
+// let [a,b] = 8ve - mP = xE, then x = sign (b) * GCD (a, b), and E = [a/x, b/x], Es must be >= 0
+//
+// nG + yE' = M = [Mk,Ms], 0 < |y| <= n/2, y = the 2nd count = # of enharmonics per multi-gen
+// the gen G = [Gk,Gs], where Gk = roundDown (Mk/n) and Gs = roundDown (Ms/n), G' = G + E'
+// let [a,b] = M - nG = yE', then y = sign (b) * GCD (a, b), and E' = [a/y, b/y]
+//
+// this solution will have minimal keyspans and stepspans for xE & yE', but not always for E & E'
+// for other solutions, explore other keyspans/stepspans for the generator: Gk + i, Gs + j
+//
+// To unreduce, change (P,G) to (P,P-G) and simplify, to get the alt-multi-gen M' and the alt-gen G'
+// ALT-MULTIGEN: (P8/m, M/n) --> (P8/m, P8/m - M/n) = (P8/m, (n*P8 - m*M)/mn) = (P8/m, M'/n')
+// if M = (a,b), the 3-exp of M' is m*b/GCD(m,n)
+// n' = LCM (m,n), M' = n'G' + zE", use the new enharmonic with the old multigen: M = nG" + z'E"
+// deduce z' from M and n: (M - z'E") mod n = 0, minimize |z'|, and G" = (M - z'E") / n
+// usually, n' is bigger than n, M' is more complex than M, but G' is simpler than G"
+//
+// search for the best enharmonic E" = the least stepspan Es"
+// M' = n'G' + zE", G' = [k+i,s+j], zE" = [Mk'-n'k-n'i,Ms'-n's-n'j], |z| = GCD (Mk'-n'k-n'i,Ms'-n's-n'j)
+// examples:
+// for (P8/3, P5/5), M'/n' = cccm3/15 = [39,23]/15, Gk' = [3+i,2+j], zE = [-15i-6,-15j-7],
+// the best i,j is 1,0, zE = [-21,-7] = -7[3,1], E = A2. if i,j = -2,-1, zE = [24,8], E = A2
+// (P8/2, P4/3) --> G' = cM9/6 = [26,15]/6, G' = [4+i,2+j], zE" = [2-6i,3-6j] = [{-10,-4,2,8}, {-9,-3,3,9}]
+// zEs" is always threeven, zEk" never is, so the best Es" is 3, either d4 = [4,3] or ddd4 = [2,3]
+// E = v6ddd4  --> P = ^3A3, G" = ^^A1 = v4dd4, C - E#^3=Abbv3 - C, C - C#^^ - Fbvv - F, ^1 = 33� - 3.67c
+// or E = v6d4 --> P = ^3M3, G" = vvm3 = -v4m2, C - E^^^=Abvvv - C, C - Ebvv - D^^ - F,  ^1 = 67� - 1.33c
+//
+// to construct a comma: M' = n'*G', where G' is any 2.3.5 or 2.3.7 interval of appropriate cents
+// if GCD (m,n) = 1, then n' = m*n, and M' = m*n*G'
+// M' = n*P8 - m*M, thus n*P8 = M' + m*M = m*n*G' + m*M = m*I, and I = (n/m)*P8
+// find a bezout pair a,b such that am + bn = 1, then m(a*P8 + b*I) = amP8 + bmI = (1-bn)P8 + bnP8 = P8
+// P8 is split into m parts, and the M'=n'*G' comma creates both splits, thus the pergen is single-comma 
+//
+// the half-step glitch (e.g. P4/6 or P5/8) is better notated with double-pair notation
+// same with when the enharmonic must be a 3rd, e.g. P11/4
+// however this program doesn't do that, you have to solve these pergens manually
+//
+// a good test case for optimizeEnharmonic function is (P8/5, P5/8) --> c^4m9/40 = [61,36]/40
+// 1st  solution is E" = [19,4] = v40(A^12)5, P = v16[10,3], G = v15[8,2], x = -2, y = -3
+// best solution is E" = [-1,4] = ^40(d^8)5, P = ^16ddd4 = ^16[2,3], G = v5A1 = [1,0]
+// x = -2, y = 1, ^1 = 2.5� + 1.375c, crazy chains, double-pair notation is better
+
+function optimizeEnharmonic (Ek, Es, n)     // used for all 3 enharmonics
+// also works with keyspan and stepspan exchanged, but doesn't find any 2nds, and backfires sometimes
+// let x = GCD (Es,n), therefore x = GCD (Ms,n), because Ms = n * Gs + Es
+// in any valid pergen, Mk and Ms are coprime, thus if x > 1, Mk mod x > 0 and GCD (Mk, x) = 1
+// Es mod x = 0, but since Ek = Mk  - n * Gk and n mod x = 0, it follows that Ek mod x > 0
+// can't prove it, but it seems GCD (Es, Ek + i * n) > 1 for some i only if x = 1
+local (i, j, k, s, bestI, bestK, bestGCD) (          // n = the multigen's splitting fraction
+  bestI = 0; bestGCD = GCD (Ek, Es); s = sign (Es);  // default Ek is the smallest xEk
+  bestK = abs (s * Ek - 0.7) / bestGCD;              // k = metric for best keyspan, 1 0 2 -1 3 -2...
+  i = roundOut (Es / 2);                             // i = 1's to subtract from Gk, n's to add to Ek
+  loop (abs (Es) + 1,                                // try different values for Ek
+    j = GCD (Ek + i * n, Es);                        // look around for a bigger GCD = a smaller Es
+    k = abs (s * (Ek + i * n) - 0.7) / j;            // best to worst: m2, d2, M2, dd2, A2, ddd2, AA2...
+    j > bestGCD || (j == bestGCD && k < bestK) ?     // best 3rds: dd3, dddd3, m3, d6 3, A3, d8 3, AAA3
+      (bestI = i; bestK = k; bestGCD = j);           // found a better enharmonic? remember it
+    i -= s;                                          // a better Ek will reduce Es more...
+  );                                                 // seems to be one iff Ms and n are coprime
+  bestI;                                             // return the # of keys to subtract from G
+);
+
+function findPeriodsAndGens ()                     // analyze the current pergen
+local (A, c, m, n, lcm, numP, k, s, x, y, Ek, Es, Mk, Ms) (
+  A = Pergens + PergensRowLength * numPergens;     // A = alias for Pergens [m]
+
+  m = A [0];                                       // PERIOD AND E, m = octave's fraction
+  k = roundDown (12 / m); s = roundDown (7 / m);   // [k,s] = period = fractions of 8ve
+  Ek = 12 - m * k; Es = 7 - m * s;                 // [Ek,Es] = E = enharmonic #1, E = P1 if m = 1
+  c = optimizeEnharmonic (Ek, Es, m);              // look for a better Ek that may reduce Es
+  k -= c; Ek += c * m;                             // update keyspans k and Ek
+  c == 0 ? (                                       // no better Ek? look for better Es that reduces Ek
+    c = optimizeEnharmonic (Es, Ek, m);            // bad example: P8/28, E = (d16)8 not P8
+    x = abs (Es + c * m); x /= GCD (Ek, x);        // x = the new Es, simplified
+    x <= abs (Es) / GCD (Ek, Es) && x < 7 ?        // don't let Es increase, don't bother w large Es
+      (s -= c; Es += c * m);                       // update stepspans s and Es
+  );
+  Es != 0 ? c = sign (Es) : c = sign (Ek);         // c = the count, c = 0 if m = 1, c < 0 if m*P > 8ve
+  c *= GCD (Ek, Es); Ek /= c; Es /= c;             // simplify it, invert to avoid neg 2nd or dim 1sn
+  A [6] = k; A [7] = s;                            // keyspan and stepspan of P
+  A [8] = Ek; A [9] = Es; A [10] = c;              // keyspan, stepspan and count of E
+
+  n = A [1]; Mk = A [4]; Ms = A [5];               // MULTI-GEN, GEN, AND ENHARMONIC2 (M, G and E')
+  k = roundDown (Mk / n); s = roundDown (Ms / n);  // [Mk,Ms] = M, [k,s] = G, n = multigen's fraction
+  Ek = Mk - n * k; Es = Ms - n * s;                // [Ek,Es] = E' = enharmonic #2, E' = P1 if n = 1
+  c = optimizeEnharmonic (Ek, Es, n);              // look for a better Ek that may reduce Es
+  k -= c; Ek += c * n;                             // update keyspans k and Ek
+  c == 0 ? (                                       // no better Ek? look for better Es that reduces Ek
+    c = optimizeEnharmonic (Es, Ek, n);            // good examples: P5/10, P11/12, bad example: c3P5/10
+    x = abs (Es + c * n); x /= GCD (Ek, x);        // x = the new Es, simplified
+    x < abs (Es) / GCD (Ek, Es) ?                  // don't let Es increase, don't bother if unchanged
+      (s -= c; Es += c * n);                       // update stepspans s and Es
+  );
+  Es != 0 ? c = sign (Es) : c = sign (Ek);         // c = the count, c = 0 if n = 1, c < 0 if n*G > M
+  c *= GCD (Ek, Es); Ek /= c; Es /= c;             // simplify it, invert to avoid neg 2nd or dim 1sn
+  A [11] = k; A [12] = s;                          // keyspan and stepspan of G
+  A [13] = Ek; A [14] = Es; A [15] = c;            // keyspan, stepspan and count of E'
+
+  x = 12 / m; y = A [4] / n;                       // x,y = possibly fractional keyspan of period/gen
+  numP = roundDown (y / x);                        // numP = approximate periods per generator
+  numP == 0 ? numP = 1;                            // don't let G' = G, make G' = P - G
+  while (GCD (numP, m) > 1) (numP -= 1);           // avoid multigens that simplify, e.g. #16, 27, 62
+  Mk = 12 * numP * n - sign (numP) * m * A [4];    // UNREDUCED MULTI-GEN = [Mk,Ms] = M'
+  Ms =  7 * numP * n - sign (numP) * m * A [5];    // M' = numP * n * P8 - sign (numP) * m * M
+  Ms != 0 ? c = sign (Ms) : c = sign (Mk);         // G' = M'/mn = numP * P - sign (numP) * G
+  c *= GCD (Mk, Ms); Mk /= c; Ms /= c;             // simplify M', invert to avoid neg 2nd or dim 1sn
+  numP *= sign (c);                                // if inverting M', invert numP too
+  lcm = (m * n) / GCD (m, n);                      // lcm = least common multiple = fraction for M'
+  A [21] = Mk; A [22] = Ms; A [23] = lcm;          // keyspan, stepspan and fraction of M' 
+
+  m == 1 || n == 1 ? A [26] = 0 : (                      // single-split pergen? no alt-gen
+    k = roundDown (Mk / lcm); s = roundDown (Ms / lcm);  // UNREDUCED ALT-GEN = [k,s] = G' = M' / lcm
+    Ek = Mk - lcm * k; Es = Ms - lcm * s;                // UNREDUCED ENHARMONIC = [Ek,Es] = E"
+    c = optimizeEnharmonic (Ek, Es, lcm);                // look for a better Ek that may reduce Es
+    k -= c; Ek += c * lcm;                               // update keyspans k and Ek
+    c == 0 ? (                                           // no better Ek? look for a better Es that reduces Ek
+      c = optimizeEnharmonic (Es, Ek, lcm);              // good examples: (P8/3, P11/5), (P8/5, P5/4)
+      x = abs (Es + c * lcm); x /= GCD (Ek, x);          // x = the new Es, simplified, must be < an 8ve
+      x <= abs (Es) / GCD (Ek, Es) && x < 7 ?            // bad examples: (P8/7, P4/2), (P8/7, P5/3)
+        (s -= c; Es += c * lcm);                         // update stepspans s and Es
+    );
+    Es != 0 ? c = sign (Es) : c = sign (Ek);             // c = the count, c < 0 if n*G' > M'
+    c *= GCD (Ek, Es); Ek /= c; Es /= c;                 // simplify it, invert to avoid neg 2nd or dim 1sn
+    A [16] = k; A [17] = s;                              // keyspan and stepspan of alt-gen G'
+    A [18] = Ek; A [19] = Es; A [20] = c;                // keyspan, stepspan and count of enharm3 E"
+    x = -11 * Ek + 19 * Es; y = 7 * Ek - 12 * Es;        // UNREDUCED PERIOD = P', (x,y) = monzo of E"
+    c = 1;                                               // c = the octave-count of E", mP' + cE" = P8
+    while (mod (c * x, m) != 1 && c < m) (c += 1);       // if the search fails, c = m, which becomes 0
+    c > m/2 ? c -= m;                                    // favor small negative values over large pos ones
+    k = (12 - c * Ek) / m; s = (7 - c * Es) / m;         // [k,s] = the unreduced period P'
+    while (s < 0) (k += Ek; s += Es);                    // avoid periods with negative degrees
+    mod (c * y, m) != 0 ? c = 0;                         // check that the 3-exponent is divisible by m...
+    A [24] = k; A [25] = s; A [26] = c;                  // if it's a true double, c = 0, won't be displayed
+    k = abs (numP) * k - sign (numP) * A [16];           // UNREDUCED GEN, adds up to the original multi-gen
+    s = abs (numP) * s - sign (numP) * A [17];           // G = |numP| * P - sign (numP) * G'
+    while (s < 0) (k += Ek; s += Es);                    // avoid negative degrees
+    c = (A [5] - n * s) / Es;                            // M = nG + xE, so x = (Ms - n*Gs) / Es
+    c == 0 ? c = (A [4] - n * k) / Ek;                   // if stepspan fails, try the keyspan
+    c >  n / 2 ? (k += Ek; s += Es; c -= n);             // minimize |c|,
+    c < -n / 2 && s >= Es ? (k -= Ek; s -= Es; c += n);  // but avoid negative degrees
+    A [27] = k; A [28] = s; A [29] = c;                  // keyspan and stepspan of G
+  );
+);
+
+function findPergen (x, y, z)                             // currently only works for rank-2
+local (c, i, j, k, m, bestI, bestFraction, bestCents) (   // the alt. gen = the gen plus i periods
+  bestI = 0; j = GCD (y, x);                              // if i = 0, the generator = (-y, x) / xz
+  bestFraction = abs (x * z) / j;                         // (-y,x)/j is the multigen that gets split
+  bestCents = (-y * 1200 + x * w12cents) / j;             // the cents of the untempered multigen
+  i = -x; loop (2 * x + 1,                                // loop thru each alt. gen = (i*z-y, x) / xz
+    j = GCD (i * z - y, x);                               // j = the simplifying factor
+    k = abs (x * z) / j;                                  // k = the alt. fraction, be sure to divide last
+    k <= bestFraction ? (                                 // is the splitting fraction the same or smaller?
+      c = ((i * z - y) / j) * 1200 + (x / j) * w12cents;  // c = the alt. multigen's cents
+      k < bestFraction || abs (c) < abs (bestCents) ? (   // is this an improvement?
+        bestI = i; bestFraction = k; bestCents = c;       // remember it
+      );
+    );
+    i += 1;                                               // for each i, the new mapping = [x, y-iz, z]
+  );
+
+  y -= bestI * z; j = GCD (y, x);                 // j = the simplifying factor
+  m = PergensRowLength * numPergens;              // m = index into Pergens
+  Pergens [m] = x;                                // 8ve's splitting fraction
+  Pergens [m + 1] = bestFraction;                 // multi-gen's splitting fraction
+  Pergens [m + 2] = -sign (bestCents) * y / j;    // 2-exp of multi-gen's unreduced monzo
+  Pergens [m + 3] =  sign (bestCents) * x / j;    // 3-exp of multi-gen's unreduced monzo
+  Pergens [m + 2] == 2 && Pergens [m + 3] == -1   // is the multi-gen the 4th?
+  && bestFraction == 1 ? (                        // and not split? invert it to a P5
+    Pergens [m + 2] = -1; Pergens [m + 3] = 1);
+  Pergens [m + 4] = 12 * Pergens [m + 2] + 19 * Pergens [m + 3];  // multi-gen's 12-edo keyspan
+  Pergens [m + 5] =  7 * Pergens [m + 2] + 11 * Pergens [m + 3];  // multi-gen's stepspan
+
+  c = bestFraction <= maxFraction;                    // c = flag to not filter out this pergen
+  edo > 0 ? (                                         // filter out unsupported pergens
+    c &= x < edo || (edo2 > 1 && edo2 != edo);        // period can't be 1 edostep, no room for genchain
+    c &= GCD (edo, x) == x;                           // edo's octave must be divisible by m
+    i = edosteps (Pergens [m + 2], Pergens [m + 3]);  // i = multi-gen's keyspan in the edo
+    c &= GCD (i, bestFraction) == bestFraction;       // multigen must be divisible by n
+    excludePartialSupport ?                           // require that the edo not be multi-ring?
+      c &= GCD (edo / x, i / bestFraction) == 1;      // keyspans of period and gen must be coprime
+  );
+  edo > 0 && edo2 > 1 && edo != edo2 ? (              // EDO PAIR
+    c &= x == GCD (edo, edo2);                        // the edo pair determines m
+    c &= GCD (edo2, x) == x;                          // 2nd edo's octave must be divisible by m
+    j = edosteps2 (Pergens [m + 2], Pergens [m + 3]); // j = multi-gen's keyspan in the 2nd edo
+    c &= GCD (j, bestFraction) == bestFraction;       // multigen must be divisible by n
+    excludePartialSupport ?                           // require that the edo not be multi-ring?
+      c &= GCD (edo2 / x, j / bestFraction) == 1   ;  // keyspans of period and gen must be coprime
+    k = bestFraction * Bezout [1];                    // k = n * (gen's keyspan in the 1st edo)
+    c &= mod2 (i, edo / x) == mod2 (k, edo / x);      // k must equal the multigen's keyspan
+    k = bestFraction * Bezout [0];                    // do the same for the 2nd edo
+    c &= mod2 (j, edo2 / x) == mod2 (k, edo2 / x);
+  );
+
+  i = m - PergensRowLength;                             // i = index into Pergens, start at the end
+  j = max (Pergens [m], Pergens [m + 1]);               // j = max (m,n) = block #
+  k = min (Pergens [m], Pergens [m + 1]);               // k = min (m,n) = section #
+  while (c > 0 && i >= 0) (                             // find the right spot for this pergen
+    c = max (Pergens [i], Pergens [i + 1]) - j;         // find the right block, (4,3) is quarters block 
+    c == 0 ? c = min (Pergens [i], Pergens [i+1]) - k;  // find the right section, (4,3) is 3rd section
+    c == 0 ? c = Pergens [i + 1] - Pergens [m + 1];     // find the right half, (4,3) is the 1st half
+    c == 0 ? c = Pergens [i + 5] - Pergens [m + 5];     // compare stepspans of the multigens
+    c == 0 ? c = Pergens [i + 4] - Pergens [m + 4];     // compare keyspans  of the multigens
+    c > 0 ? i -= PergensRowLength;                      // c > 0 means keep going, c = 0 means dupe found,
+  );                                                    // c < 0 means spot found for insertion
+  c > 0 && i < 0 ? c = -1;                              // in case it needs to go in the 1st spot
+
+  //c=-1;i=m-PergensRowLength;                         // for debugging, returns all pergens, unsorted
+  //Pergens[m]==1&&                                    // for debugging, returns split multigens only
+  //Pergens[m+1]==1&&                                  // for debugging, returns split octaves only
+  //abs(Pergens[m+3])>1&&                              // for debugging, returns imperfect multigens only
+  //Pergens[m]>1&&Pergens[m+1]>1&&                     // for debugging, combined with the next line,
+  //GCD(Pergens[m],Pergens[m+1])==abs(Pergens[m+3])&&  // see previous line, returns false doubles only
+  c < 0 ? (                                            // valid pergen?
+    findPeriodsAndGens ();                             // analyze it
+    k = PergensRowLength; i += k;                      // i = the spot it will go to
+    memcpy (Pergens + i + k, Pergens + i, m - i + k);  // make space for it
+    memcpy (Pergens + i, Pergens + m + k, k);          // move it in
+    numPergens += 1;
+    abs (Pergens [i + 3]) > 1 ? numImperfect += 1;     // count the imperfect multigens
+    j = 12 / Pergens [i];                              // j,k = 12edo keyspans of P,G
+    k = Pergens [i + 4] / Pergens [i + 1];             // j & k may be fractional
+    while (k > j / 2) (k -= j); k < 0 ? k = -k;        // period-reduce & invert j to minimize it
+    k < 0.5 ? numSmallGens += 1;                       // count the generators < 50�
+  );
+);
+
+function makeMapping (x, z)                      // F = 5th = yP + zG, y = F/P - zG/P = xF/O - xz*G/O
+local (y, minY, maxY) (                          // 600� < F < 800�, 0� < G < 600�
+  minY = ceiling (x / 2 - (x * z) / 2);          // since z > 0, minimum is F = 600� and G = 600�
+  maxY = floor ((x * 2) / 3);                    // since z > 0, maximum is F = 800� and G = 0�
+  y = minY; loop (maxY - minY + 1,               // try every possible value of y
+    findPergen (x, x + y, z);                    // convert from 5ths to 12ths for unreduced monzo
+    y += 1;                                      // every x,y,z mapping combo makes a valid pergen,
+  );                                             // but some are duplicates, they get filtered out later
+  z = -z;                                        // explore negative values for z too
+  minY = ceiling (x / 2);                        // since z < 0, minimum is F = 600� and G = 0�
+  maxY = floor ((x * 2) / 3 - (x * z) / 2);      // since z < 0, maximum is F = 800� and G = 600�
+  y = minY; loop (maxY - minY + 1,
+    findPergen (x, x + y, z);                    // x + y, not y, to convert from 5ths to 12ths,
+    y += 1;                                      // because the rest of the code uses unreduced monzos
+  );
+);
+
+function makeList () local (i, j) (              // mapping: octave = xP, fifth = yP + zG
+  numPergens = numImperfect = numSmallGens = 0;  // loop thru all the combinations of x & z
+  i = 1; loop (maxFraction,                      // in such a way that larger values come last:
+    j = 1; loop (i - 1,                          // 1-1, 2-1 1-2 2-2, 3-1 1-3 3-2 2-3 3-3, etc.
+      GCD (edo, i) == i ? makeMapping (i, j);    // then try all valid values of y,
+      GCD (edo, j) == j ? makeMapping (j, i);    // avoiding ones incompatible with the edo
+      j += 1;
+    );
+    GCD (edo, i) == i ? makeMapping (i, i);      // the last one of the set
+   i += 1;
+  );
+  numImperfect *= 100 / numPergens;                  // convert it to a percentage
+  numSmallGens *= 100 / numPergens;                  // convert it to a percentage
+  Bezout [0] == 2 * edo2 - Twelfth [slider4]         // Bezout [0] == the P4 of edo2 and
+  && Bezout [1] == 2 * edo - Twelfth [slider3] ? (   // Bezout [1] == the P4 of edo?
+    Bezout [0] = edo2 - Bezout [0];                  // set Bezout [0] to edo2's P5
+    Bezout [1] = edo  - Bezout [1];                  // set Bezout [1] to edo's P5
+  );                                                 // this makes the pergen display correctly
+);
+
+function makeList2 () local (i,a,b,m,n) (    // for debugging, for loading a specific pergen
+  numPergens = 0;
+  m = 1; n = 2; a = 2; b = -1;               // for (P8/m, (a,b)/n), the mapping = [m, m-am/b, n/b]
+  findPergen (m, -am/b, n/b);
+);
+
+makelist ();
+
+@slider
+
+slider2 != maxFraction ? (
+  maxFraction = slider2;
+  makelist ();
+);
+
+slider3 != oldslider3 || slider4 != oldslider4 ? (
+  oldslider3 = slider3; oldslider4 = slider4;          // detect change from 1 to 13, or 2 to 18
+  edo = slider3; edo2 = slider4;
+  edo == 1 ? edo = 13; edo2 == 1 ? edo2 = 13;          // EDO #1 = 13b, EDO #2 = 18b
+  edo == 2 ? edo = 18; edo2 == 2 ? edo2 = 18;
+  findBezout (edo, edo2);                              // e.g. (12,13)-->(1,1) and (12,19)-->(8,5)
+  edo == 0 ? slider2 = 10 : slider2 = maxEDOfraction;
+  maxFraction = slider2;
+  makelist ();
+);
+
+@gfx
+
+function goto (x, y) (
+  gfx_x = x; gfx_y = y;
+);
+
+function moveby (x, y) (
+  gfx_x += x; gfx_y += y;
+);
+
+function writeNum (val, dec, size)    // size = number of expected digits, 0 or 1 = left-justified
+  local (x, y) (                      // JS quirk, on Windows, gfx_drawNumber rounds off,
+  x = 10 ^ dec;                       // but on OSX, gfx_drawNumber truncates
+  val = round (val * x) / x;          // to avoid truncating, both round off and add a smidge,
+  val += val / twoTo52;               // add smidge *after* rounding to avoid "-0" display
+  y = floor (log10 (abs (val))) + 1;  // y = the number of digits in val
+  val == 0 ? y = 1;                   // just in case log (0) is undefined
+  y < 1 ? y = 1;                      // there's always at least 1 digit
+  val < 0 ? y += 1;                   // add a space for the minus sign
+  y = min (y, size);                  // don't reverse-indent, don't move left
+  moveby (8 * (size - y), 0);         // indent as needed to right-justify it
+  gfx_drawNumber (val, dec);
+);
+
+function writeChars (v, w) (            // writes a char v, w times, using exponents for w > 2
+  w = floor (w);
+  w > 2 ? (                             // long strings have an exponent
+    gfx_drawchar (v); moveby (0, -4);   // write the char
+    writeNum (w, 0, 1); moveby (0, 4);  // write the exponent
+  ) : w > 0 ? 
+    loop (w, gfx_drawchar (v));
+);
+
+function drawDown () (                  // using the letter "v" looks really bad!
+  moveby (1, 3);  gfx_lineto (gfx_x + 2, gfx_y + 2, 0);  gfx_lineto (gfx_x + 2, gfx_y - 2, 0);
+  moveby (1, 0);  gfx_lineto (gfx_x - 3, gfx_y + 3, 0);  gfx_lineto (gfx_x - 3, gfx_y - 3, 0);
+  moveby (8, -3);
+);
+
+function drawDowns (w) (                // writes a down w times, using exponents for w > 2
+  w == 1 ? drawDown ()
+  : w == 2 ? (drawDown (); drawDown ())
+  : w > 2 ? (                           // long strings have an exponent
+    drawDown ();                        // write the down
+    moveby (0, -4);
+    writeNum (w, 0, 1);                 // write the exponent
+    moveby (0, 4);
+  );
+);
+
+function numQualityChars (ksp, step, ht)
+local (q, i) (
+  i = floor (step / 7);
+  ksp -= 12 * i; step -= 7 * i;    // 9th/10th/11th/12th? reduce it
+  q = ksp - Keyspans [step];       // quality = # of keys from average keyspan
+  abs (q) == 0.5 ? q = 1;          // 1 space for M or m
+  q = floor (abs (q));             // q = # of chars in the displayed quality
+  q == 0 && ht == 0 ? q = 1;       // perfect is only included if height is 0
+  q > 9 ? q = 3 : q > 2 ? q = 2;
+  q;
+);
+
+function writeQuality (ksp, step, ht)
+local (quality, i) (
+// quality = the # of keys from that degree's average keyspan
+// average keyspan = Keyspans = [0, 1.5, 3.5, 5, 7, 8.5, 10.5, 12]
+// perfect: -2=dd, -1=d, 0=P, 1=A, 2=AA
+// imperfect: -2.5=dd, -1.5=d, -0.5=m, 0.5=M, 1.5=A, 2.5=AA
+  step < 0 ? (ksp = -ksp; step = -step);
+  i = floor (step / 7);                           // i = octaves in the interval
+  ksp -= 12 * i; step -= 7 * i;                   // 9th/10th/11th/12th? reduce it
+  quality = ksp - Keyspans [step];                // quality = # of keys from average keyspan
+  writeChars ($'A', quality);                     // aug or double-aug if quality >= 1
+  quality == 0.5 ?  gfx_drawchar ($'M');          // major
+  quality == 0 && ht == 0 ? gfx_drawchar ($'P');  // perfect, omit "P" if there are ups or downs
+  quality == -0.5 ? gfx_drawchar ($'m');          // minor
+  writeChars ($'d', -quality);                    // dim or double-dim if quality <= -1
+);
+
+function writeInterval (keyspan, stepspan, height, choice)    // writes right-justified
+local (width, p, q) (                                         // max 11 chars: ^99c99d9912
+  width = floor (stepspan / 7);                               // width = # of 8ves interval is widened by
+  stepspan <= 11 ? width = 0                                  // but c1/c2/c3/c4/c5 are 8/9/10/11/12
+  : stepspan % 7 == 0 && width > 0 ? width -= 1               // and cc1/ccc1/cccc1 is c8/cc8/ccc8
+  : stepspan % 7 == 1 && width > 0 ? width -= 1;              // and cc2/ccc2/cccc2 is c9/cc9/ccc9
+  keyspan -= 12 * width; stepspan -= 7 * width;
+  q = abs (height); p = 0;                                    // p = # of spaces to indent by
+  q == 0 ? p += 3 : q == 1 ? p += 2 : q < 10 ? p += 1;        // height:  ^nn, ^n or ^^, ^, or nothing
+  q = abs (width);
+  q == 0 ? p += 3 : q == 1 ? p += 2 : q < 10 ? p += 1;        // width:   cnn, cn or cc, c, or nothing
+  p += 3 - numQualityChars (keyspan, stepspan, height);       // quality: dnn, dn or dd, P, or nothing
+  abs (stepspan) < 9 && stepspan >= 0 ? p += 1;               // degree:  nn or -n, or n
+  choice >= 0 ? moveby (8 * p, 0);                            // choice = -1 means don't right-justify
+  stepspan < 0 ? (gfx_r = 1; gfx_drawchar ($'-'));            // red to warn of negative degrees
+  choice <= 0 ?                                               // height, -1 or 0 = ^ or v, 1 = / or \
+    (writeChars ($'^', height); drawDowns (-height))          // use ups and downs
+  : (writeChars ($'/', height); writeChars ($'\', -height));  // or else, use lifts and drops
+  writeChars ($'c', width);                                   // width = # of times compounded
+  writeQuality (keyspan, stepspan, height);                   // quality
+  stepspan == 0 ? q = 1 : q = sign (stepspan);                // q converts stepspan to degree
+  writeNum (abs (stepspan + q), 0, 1);                        // degree, can be negative
+  gfx_r = 0;
+);
+
+function writeCents (frac, Ek, Es, dec, size) local (p, q) (
+  edo == 0 ? (                                           // CENTS OF ^1, derived from E
+    q = 7 * Ek - 12 * Es;                                // q = 3-exponent of E = the "c" part
+    abs (q) == frac ? moveby (16, 0);                    // indent if "c" multiplier is 1 or -1
+    Ek != 0 ? writeNum (100 * abs (Ek) / frac, 0, size)  // numeric part = 100 * (Ek / frac) cents
+    : moveby (8 * size, 0);                              // indent if there is no numeric part
+    Ek <= 0 ? q = -q;                                    // flip the "c" part if E is upped
+    q /= frac;                                           // divide it by the splitting fraction
+    q > 0 && Ek != 0 ? gfx_drawstr ("+");                // write "+" if needed
+    q > 0 && Ek == 0 ? moveby (8, 0);                    // indent if needed
+    q == 1 ? gfx_drawstr ("c")                           // write "c", not "1*c"
+    : q == -1 ? gfx_drawstr ("-c")                       // write "-c", not "-1*c"
+    : q != 0 ? (                                         // don't write "0*c" for the period's cents
+      writeNum (q, dec, 1); gfx_drawstr ("*c");          // dec = decimal places
+    );
+  ) : (                                                  // EDOSTEPS OF ^1  
+    p = -11 * Ek + 19 * Es;                              // p = 2-exponent of E
+    q =   7 * Ek - 12 * Es;                              // q = 3-exponent of E
+    p = edosteps (p, q) / frac;                          // p = edosteps of E / frac
+    writeNum (abs (p), 0, size + 2);
+    gfx_drawchar ($'\'); writeNum (edo, 0, 1);           // use $'\', because "\" causes errors
+  );
+);
+
+function writeList () local (p, q, r, s, t, h, w, maxMN) (
+  gfx_r = gfx_g = gfx_b = 0.93;
+  gfx_rect (0, 0, gfx_w, gfx_h);
+  gfx_r = gfx_g = gfx_b = 0;
+  goto (0, 5); gfx_drawstr ("       PERGEN         Per/Gen ");
+  edo == 0 ? gfx_drawstr ("cents") : gfx_drawstr ("steps");
+  gfx_drawstr ("    Per  Enhar1 ^1 ");
+  edo == 0 ? gfx_drawstr ("cents") : gfx_drawstr ("steps");
+  gfx_drawstr ("  Gen  Enhar2  ^1 ");
+  edo == 0 ? gfx_drawstr ("cents") : gfx_drawstr ("steps");
+  gfx_drawstr ("   Unreduced Pergen     Per    Gen  altGen    Enhar3   ^1 ");
+  edo == 0 ? gfx_drawstr ("cents") : gfx_drawstr ("steps");
+  gfx_drawstr ("  mapping:"); //   M2 m2 A1 d2");
+  gfx_line (2, 15, 1164, 15);
+  gfx_line (2, 15, 2, gfx_h);
+  gfx_line (288, 15, 288, gfx_h);
+  gfx_line (472, 15, 472, gfx_h);
+  gfx_line (672, 15, 672, gfx_h);
+  gfx_line (1164, 15, 1164, gfx_h);
+  goto (0, 6); 
+
+  p = slider1 - 1; q = p * PergensRowLength;                     // p = number of this pergen
+  maxMN = max (Pergens [q], Pergens [q + 1]);                    // max of m and n, identifies the block
+  loop (min (numPergens - p, 50),                                // show a screenful of pergens
+    q = p * PergensRowLength;                                    // q = index into array
+    gfx_x = 4; gfx_y += 15;
+    max (Pergens [q], Pergens [q + 1]) > maxMN ? (               // new block of pergens?
+      maxMN = max (Pergens [q], Pergens [q + 1]);                // remember the new maximum
+      gfx_line (2, gfx_y, 1164, gfx_y); gfx_y += 10;             // draw a line, skip a line
+    ) : p % 3 == 0 ? (
+      gfx_r = gfx_g = gfx_b = 0.8;                               // draw light gray guide lines
+      gfx_line (3, gfx_y - 5, 1163, gfx_y - 5);                  // stop 1 pixel short of the borders
+      gfx_r = gfx_g = gfx_b = 0; 
+    );
+
+    writeNum (p + 1, 0, 4);                                      // PERGEN
+    gfx_x = 48; gfx_drawstr ("(P8");                             // "(P8"
+    Pergens [q] == 1 ? gfx_drawstr (",  ") : (                   // fractional period?
+      gfx_drawstr ("/"); writeNum (Pergens [q], 0, 1);           // "/2"
+      gfx_drawstr (","););
+    moveby (4, 0); abs (Pergens [q + 3]) > 1 ? gfx_g = 0.7;      // write imperfect multigens in green
+    writeInterval (Pergens [q + 4], Pergens [q + 5], 0, -1);
+    gfx_g = 0; Pergens [q + 1] > 1 ? (                           // fractional generator?
+      gfx_drawstr ("/"); writeNum (Pergens [q + 1], 0, 1));      // "/3"
+    gfx_drawstr (")"); 
+    h = edosteps (Pergens [q + 2], Pergens [q + 3]);             // h = multi-gen's keyspan in the edo
+    edo > 0 && GCD (edo / Pergens [q], h / Pergens [q+1]) > 1 ?  // if period and gen aren't coprime,
+      (gfx_r = 1; gfx_drawstr ("*"); gfx_r = 0);                 // show edo's partial support with a red *
+    gfx_x = 176; edo > 0 ? moveby (-24, 0);                      // PERIOD CENTS
+    writeCents (Pergens [q], 12, 7, 0, 4);                       // 1200/m or (edo/m)\edo
+    
+    edo == 0 ? (                                                 // GENERATOR CENTS
+      h = 1200 * Pergens [q + 2] + 1900 * Pergens [q + 3];       // h = multigen's cents if c = 0
+      h /= Pergens [q + 1]; r = 1200 / Pergens [q];              // h = gen's cents, r = period's cents
+      Pergens [q] > 1 ? while (h > r / 2) (h -= r);              // if m > 1, period-reduce h to minimize it
+      h < 0 ? (h = -h; r = 0);                                   // invert h if negative, set r = 0 as a flag
+      h < 50 ? gfx_r = 1;                                        // show generators < 50� in red
+      gfx_x = 208; writeNum (h, 0, 5);
+      h = Pergens [q + 1] / Pergens [q + 3];                     // h = fraction of c = n/b
+      r == 0 ? h = -h;                                           // if gen was inverted, invert h too
+      h > 0 ? gfx_drawstr ("+c") : gfx_drawstr ("-c");
+      abs (h) > 1 ? (gfx_drawstr ("/"); writeNum (abs (h), 0, 1));
+    ) : (
+      h = edosteps (Pergens [q + 2], Pergens [q + 3]);           // h = edosteps of the multigen
+      h /= Pergens [q + 1]; r = edo / Pergens [q];               // h = gen's edosteps, r = period's edosteps
+      Pergens [q] > 1 ? while (h > r / 2) (h -= r);              // if m > 1, period-reduce h to minimize it
+      h < 0 ? h = -h;                                            // invert h if negative
+      24 * h < edo ? gfx_r = 1;                                  // show generators < 50� in red
+      gfx_x = 242; writeNum (h, 0, 2);
+      gfx_drawchar ($'\'); writeNum (edo, 0, 1);                 // use $'\', because "\" causes errors
+    );
+
+    gfx_r = 0; gfx_x = 248; h = Pergens [q + 10];                // PERIOD, h = height = count of E = x
+    Pergens [q + 8] <= 0 ? h = -h;                               // is E upped? flip the height
+    writeInterval (Pergens [q + 6], Pergens [q + 7], h, 0);      // write the period, indent if it's "P8"
+    !(Pergens [q + 8] == 0 && Pergens [q + 9] == 0) ? (          // ENHARMONIC, is it something not P1?
+      Pergens [q + 8] > 0 ? h = -Pergens [q] : h = Pergens [q];  // A1, m2, M2 downed, d2, dd2, etc. upped
+      gfx_x = 312; Pergens [q + 9] > 1 ? gfx_r = 1;              // show enharmonic 3rds & 4ths in red
+      writeInterval (Pergens [q + 8], Pergens [q + 9], h, 0);    // write the enharmonic
+      gfx_r = 0; gfx_x = 416; edo > 0 ? moveby (-16, 0);         // CENTS OF ^1, derived from E
+      writeCents (Pergens [q], Pergens [q + 8], Pergens [q + 9], 0, 2);
+    );                                                           // c-factor is always an integer
+
+    h = Pergens [q + 15];                                        // GENERATOR, h = height of G = count of E'
+    Pergens [q + 13] <= 0 ? h = -h;                              // is E' upped? flip the height
+    gfx_x = 424; r = Pergens [q] > 1;                            // 
+    writeInterval (Pergens [q + 11], Pergens [q + 12], h, r);    // write the generator, use /\ not ^v
+    Pergens [q + 15] != 0 ? (                                    // is the E' count != 0? 
+      h = Pergens [q + 1];                                       // ENHARMONIC, upped if keyspan <= 0
+      Pergens [q + 13] > 0 ? h = -h;                             // is Ek' > 0, E' downed? flip the height
+      gfx_x = 488; Pergens [q + 14] > 1 ? gfx_r = 1;             // show enharmonic 3rds & 4ths in red
+      writeInterval (Pergens [q + 13], Pergens [q + 14], h, r);  // write the enharmonic E'
+      gfx_r = 0; gfx_x = 592;                                    // CENTS OF ^1, derived from E'
+      writeCents (Pergens [q + 1], Pergens [q + 13], Pergens [q + 14], 2, 2);
+    );                                                           // c-factor is never an integer
+
+    gfx_x = 680; gfx_drawstr ("(P8");                            // UNREDUCED PERGEN
+    Pergens [q] == 1 ? gfx_drawstr (",  ") : (                   // fractional period?
+      gfx_drawstr ("/"); writeNum (Pergens [q], 0, 1);           // "/2"
+      gfx_drawstr (","););
+    moveby (4, 0);
+    writeInterval (Pergens [q + 21], Pergens [q + 22], 0, -1);   // write the alt-multi-gen
+    Pergens [q + 23] > 1 ? (          // not (P8, P4)?
+      gfx_drawstr ("/"); writeNum (Pergens [q + 23], 0, 1));     // alt-multi-gen's fraction = LCM (m,n)
+    gfx_drawstr (")"); 
+    Pergens [q + 26] != 0 ? (                                    // ******SINGLE-PAIR NOTATION******
+      gfx_x = 824;                                               // UNREDUCED PERIOD = P', h = height of P'
+      h = Pergens [q + 26] * Pergens [q + 23] / Pergens [q];     // h = count of E' = x' * n' / m
+      Pergens [q + 18] <= 0 ? h = -h;                            // is alt-E' upped? flip the height
+      gfx_x = 784; Pergens [q + 26] == 0 ? (h = 0; gfx_r = 1);   // in case of failed search
+      writeInterval (Pergens [q + 24], Pergens [q + 25], h, 0);  // write the unreduced-period
+      gfx_r = 0; gfx_x = 840;                                    // UNREDUCED GEN, height = lcm (m,n) / n
+      h = Pergens [q + 23] / Pergens [q + 1];
+      h *= Pergens [q + 29];
+      Pergens [q + 18] <= 0 ? h = -h;                            // direction depends on the keyspan of E"
+      writeInterval (Pergens [q + 27], Pergens [q + 28], h, 0);  // write the unreduced generator
+      gfx_x = 904;                                               // UNREDUCED ALT-GEN = G'
+      Pergens [q + 18] > 0 ?                                     // direction depends on the keyspan of E"
+        h = Pergens [q + 20] : h = -Pergens [q + 20];            // h = the height of G' = the count of E"
+      writeInterval (Pergens [q + 16], Pergens [q + 17], h, 0);  // write the unreduced alt-generator
+      Pergens [q + 18] > 0 ?                                     // UNREDUCED ENHAR, direction = keyspan of E"
+        h = -Pergens [q + 23] : h = Pergens [q + 23];            // height of E" = the multi-gen fraction
+      gfx_x = 984; Pergens [q + 19] > 1 ? gfx_r = 1;             // show enharmonic 3rds & 4ths in red
+      writeInterval (Pergens [q + 18], Pergens [q + 19], h, 0);  // write the alt-enharmonic
+      gfx_r = 0; gfx_x = 1088;                                   // CENTS OF ^1, derived from alt-E'
+      writeCents (Pergens [q + 23], Pergens [q + 18], Pergens [q + 19], 2, 2); // c-factor is never an integer
+    ) : Pergens [q] > 1 && Pergens [q + 1] > 1 ? (
+      gfx_x = 888; gfx_drawstr ("(true double)");
+    ); 
+
+    gfx_x=1160;                                                  // put extra info on the far right
+    /******* square mapping that makes this pergen */
+    writeNum(Pergens[q],0,3);                                    // for (P8/m, (a,b)/n), mapping = [m, -am/b, n/b]
+    writeNum(-(Pergens[q]*Pergens[q+2])/Pergens[q+3],0,3);
+    writeNum(Pergens[q+1]/Pergens[q+3],0,3);                     // Pergens [0] = m, [1] = n, [2] = a, [3] = b
+    /*********/
+
+    /********* secondary splitting of M2, m2 and A1 
+    x = Pergens[q];                                              // for (P8/m, (a,b)/n), mapping = [m, -am/b, n/b]
+    y = -(Pergens[q]*Pergens[q+2])/Pergens[q+3];
+    z = Pergens[q+1]/Pergens[q+3];                               // Pergens [0] = m, [1] = n, [2] = a, [3] = b
+    writeNum (GCD (-3*x+2*y, 2*z),0,5);                          // M2 = 9/8   = (-3 2) = -3xP + 2yP + 2zG
+    //writeNum (GCD (5*x-3*y, -3*z),0,3);                        // m3 = 32/27 = (5 -3) =  5xP - 3yP - 3zG
+    writeNum (GCD (8*x-5*y, -5*z),0,3);                          // m2 = 256/243 = (8 -5) = 8xP - 5yP - 5zG
+    writeNum (GCD (-11*x+7*y, 7*z),0,3);                         // A1 = (-11 7)   = -11xP +  7yP +  7zG
+    writeNum (GCD (-19*x+12*y, 12*z),0,3);                       // -d2 = (-19 12) = -19xP + 12yP + 12zG
+    /*********/
+
+    /******* cents range of possible generators 
+    h = 1200 * (Pergens [q + 2] + Pergens [q + 3] * 20 / 13);        // h = multi-gen's cents in 13b-edo
+    r = 1200 * (Pergens [q + 2] + Pergens [q + 3] * 8 / 5);          // r = multi-gen's cents in 5-edo
+    // Pergens [q + 2] == -1 && Pergens [q + 3] == 1 && Pergens [q + 1] == 1 ?  // is the gen a 3/2?
+    //   (h = 1200 - h; r = 1200 - r);                               // convert 5ths to 4ths
+    h /= Pergens [q + 1]; r /= Pergens [q + 1];                      // convert multigens to gens
+    h < r ? (writeNum (h, 0, 5); writeNum (r, 0, 5))                 // fifthward: min = 13b-edo, max = 5edo
+          : (writeNum (r, 0, 5); writeNum (h, 0, 5));                // else min = 5edo, max = 13b-edo
+    /*********/
+
+    p += 1;
+  );
+  gfx_x = 2; gfx_y += 15; gfx_lineto (1164, gfx_y);                  // the bottom line
+
+  edo > 0 && edo2 > 1 && edo != edo2 ? (                             // edo pair? display the math
+    gfx_x = 92; gfx_y += 30; gfx_drawstr ("Gen = ");
+    writeNum (Bezout [1], 0, 0); gfx_drawchar ($'\'); writeNum (edo,  0, 0);
+    gfx_drawstr (" = ");
+    writeNum (Bezout [0], 0, 0); gfx_drawchar ($'\'); writeNum (edo2, 0, 0);
+
+    gfx_x = 294; gfx_y -= 10; gfx_drawstr ("Gen is the bezout pair");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("of the two edos, which");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("is where the two edos");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("coincide most closely");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("without coinciding");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("exactly");
+
+    gfx_x = 136; gfx_y += 30; gfx_drawstr ("8ve 5th Gen");
+    gfx_x = 24;  gfx_y += 20; gfx_drawstr ("edomappings:");          // display 2 edomappings
+    h = edosteps (-1, 1); r = edosteps2 (-1, 1);                     // h,r = 3/2 edosteps (8ve-reduced mapping)
+    writeNum (edo,  0, 4); writeNum (h, 0, 4); writeNum (Bezout [1], 0, 4);
+    gfx_x = 120; gfx_y += 15;
+    writeNum (edo2, 0, 4); writeNum (r, 0, 4); writeNum (Bezout [0], 0, 4);
+    gfx_x = 136; gfx_y += 10; gfx_drawstr ("----------");
+    gfx_x = 8; gfx_y += 10; gfx_drawstr ("cross product:");          // display their cross product
+    p = h * Bezout [0] - r * Bezout [1];                             // (p,q,r) = the comma
+    q = -edo * Bezout [0] + edo2 * Bezout [1];
+    r = edo * r - edo2 * h;                                          // r = 0 if edo2 is on edo's spine
+    h = GCD (GCD (p, q), r); p /= h; q /= h; r /= h;                 // simplify if possible
+    writeNum (p, 0, 4); writeNum (q, 0, 4); writeNum (r, 0, 4);
+
+    gfx_x = 294; gfx_y -= 35; gfx_drawstr ("The cross product is");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("the comma that defines");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("the rank-2 temperament");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("that both edos support");
+
+    gfx_x = 24;  gfx_y += 75; gfx_drawstr ("per-gen map:  ");        // display the per-gen mapping
+    h = GCD (edo, edo2);                                             // h = the 8ve split
+    gfx_drawstr ("P8 = "); writeNum (h, 0, 1); gfx_drawstr ("P");
+    gfx_x = 136; gfx_y += 15; gfx_drawstr ("P5 = ");                 // P8 = h P
+    writeNum (-p*h/q, 0, 1); gfx_drawstr ("P");                      // P5 = -ph/q P + -r/q G
+    -r/q >= 0 ? gfx_drawstr (" + ") : gfx_drawstr (" - ");
+    writeNum (abs (-r/q), 0, 1); gfx_drawstr ("G");
+
+    gfx_x = 294; gfx_y -= 15; gfx_drawstr ("The per-gen map is");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("derived from this");
+    gfx_x = 294; gfx_y += 10; gfx_drawstr ("comma");
+
+    gfx_x = 64; gfx_y += 65; gfx_drawstr ("pergen: (P8");            // display the pergen
+    h > 1 ? (gfx_drawstr ("/"); writeNum (h, 0, 1)); gfx_drawstr (",");
+    r < 0 ? (p = -p; q = -q; r = -r);                                // make r positive or zero, (-p,-q) = M
+    r > 1 && GCD (q, r) == r && GCD (h, r) == r ? (                  // can we simplify the multigen?
+      t = 7 * abs (q/r); s = 4 * abs (q/r); w = 1;                   // p = 0, q = -|q/r|, w = r = 1
+    ) : (                                                            // else
+      t = -(12 * p + 7 * q);                                         // t = 12edo keyspan  of the multigen
+      s = -( 7 * p + 4 * q); w = r;                                  // s = 12edo stepspan of the multigen
+    );
+    gfx_x = 184;                                                     // display the multigen, ^1 if r = 0
+    r == 0 ? writeInterval (0, 0, 1, -1) : writeInterval (t, s, 0, -1);
+    w > 1 ? (gfx_drawstr ("/"); writeNum (w, 0, 1));                 // w = r, possibly simplified
+    gfx_drawstr (")");
+    r == 0 ? s = Bezout [1] : s = edosteps (q-p, -q) / r;            // display the pergen in edosteps
+    gfx_x = 128; gfx_y += 15; writeNum (edo / h, 0, 2);   gfx_drawchar ($'\'); writeNum (edo, 0, 1);
+    gfx_x = 184; writeNum (s, 0, 2); gfx_drawchar ($'\'); writeNum (edo, 0, 1);
+    r == 0 ? s = Bezout [0] : s = edosteps2 (q-p, -q) / r;
+    gfx_x = 128; gfx_y += 15; writeNum (edo2 / h, 0, 2);  gfx_drawchar ($'\'); writeNum (edo2, 0, 1);
+    gfx_x = 184; writeNum (s, 0, 2); gfx_drawchar ($'\'); writeNum (edo2, 0, 1);
+    r > 0 ? (
+      gfx_x = 294; gfx_y -= 30; gfx_drawstr ("The pergen is derived");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("from the per-gen map,");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("and should match the");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("results of the search,");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("either reduced or");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("unreduced");
+    ) : (
+      gfx_x = 294; gfx_y -= 30; gfx_drawstr ("Because the 3rd number");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("in the comma is zero,");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("the temperament is");
+      gfx_x = 294; gfx_y += 10; gfx_drawstr ("rank-1 not rank-2");
+    );
+  );
+);
+
+writeList ();
+
+// format: 0-1                 periodFraction, genFraction, 
+//         2-5  multi-gen:     2-exponent, 3-exponent, keyspan and stepspan
+//        6-10  period:        keyspan and stepspan,   enharmonic1: keyspan, stepspan and count
+//       11-15  generator:     keyspan and stepspan,   enharmonic2: keyspan, stepspan and count
+//       16-20  alt generator: keyspan and stepspan,   enharmonic3: keyspan, stepspan and count
+//       21-23  alt multi-gen: keyspan, stepspan and fraction
+//       24-25  alt period:    keyspan and stepspan (fraction = periodFraction, enharmonic = alt-E')
+//          26  alt-period's count x', mP' + x'E" = 8ve, if the pergen is a true double, x' = 0
+//       27-29  original gen:  keyspan, stepspan and E"-count
+
+/*
+(a,b)/n implies P8/GCD(b,n). But in a valid pergen, n is always a multiple of b, so:
+(P8/m,M/n) is a true double-split only if m > |b|
+*/

@@ -2134,7 +2134,7 @@ export default {
         if (numHarmQtd > 0) {
 
           var arrHarm = []
-          var primeList = this.primeFilter?.split(' ').map(v => parseFloat(v));
+          var primeList = this.primeFilter.split(' ').map(v => parseFloat(v));
           var hBase = 1;
           for (let index = 0; index < numHarmQtd; index++) {
             var v = 1;
@@ -2617,7 +2617,7 @@ for (let p = 0; p < permutations.length; p++) {
   }, 1);
   result.pop();
 }
-console.log(result.toString());
+//console.log(result.toString());
 // console.log();
 
 function isPrime(num) {
