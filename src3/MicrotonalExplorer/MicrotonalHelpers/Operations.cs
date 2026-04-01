@@ -159,30 +159,6 @@ public static class Operations
 
         return closestData;
     }
-
-    public static float Reduce(float value, float period)
-    {
-        if (period == 1)
-        {
-            return value;
-        }
-
-        if (value >= period)
-        {
-            while (value >= period)
-            {
-                value = value / period;
-            }
-        }
-        else if (value > 0 && value < 1)
-        {
-            while (value < 1)
-            {
-                value = value * period;
-            }
-        }
-        return value;
-    }
 }
 
 public record ClosestRationFromScaleResult(int ScaleIndex, float DiffInCents, float TargetScaleRatio, float ClosestScaleRatio);

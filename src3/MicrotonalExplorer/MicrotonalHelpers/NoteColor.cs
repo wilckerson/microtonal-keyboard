@@ -1,17 +1,20 @@
 using MicrotonalExplorer;
 
-public static class NoteColor{
+public static class NoteColor
+{
     /// <summary>
     /// Writes a ratio value to the console with color based on the ratio value
     /// </summary>
     /// <param name="ratio">The ratio value to write with color</param>
-    public static void WriteRatioWithColor(float ratio)
+    public static void WriteRatioWithColor(float ratio, bool inBrackets = false)
     {
+        Console.Write(inBrackets ? " [" : "  ");
         SetConsoleColorByRatio(ratio);
         Console.Write($"{ratio,6:F4}");
         Console.ResetColor();
+        Console.Write(inBrackets ? "]" : " ");
     }
-    
+
     public static void WriteCentsWithColor(float cents)
     {
         // Convert cents to ratio
@@ -20,9 +23,9 @@ public static class NoteColor{
         Console.Write($"{cents,7:F1}c ");
         Console.ResetColor();
     }    /// <summary>
-    /// Sets the console foreground color based on the ratio value using HSV color space
-    /// </summary>
-    /// <param name="ratio">The ratio value to determine color</param>
+         /// Sets the console foreground color based on the ratio value using HSV color space
+         /// </summary>
+         /// <param name="ratio">The ratio value to determine color</param>
     private static void SetConsoleColorByRatio(float ratio)
     {
         // Assuming equivalence is 2 (octave) like the TunningInfo.Period default
@@ -50,9 +53,9 @@ public static class NoteColor{
         float c = v * s;
         float x = c * (1 - Math.Abs((h * 6) % 2 - 1));
         float m = v - c;
-        
+
         float r1, g1, b1;
-        
+
         if (h < 1.0f / 6.0f)
         {
             r1 = c; g1 = x; b1 = 0;
@@ -77,16 +80,16 @@ public static class NoteColor{
         {
             r1 = c; g1 = 0; b1 = x;
         }
-        
+
         int r = (int)Math.Round((r1 + m) * 255);
         int g = (int)Math.Round((g1 + m) * 255);
         int b = (int)Math.Round((b1 + m) * 255);
-        
+
         // Clamp values to 0-255 range
         r = Math.Max(0, Math.Min(255, r));
         g = Math.Max(0, Math.Min(255, g));
         b = Math.Max(0, Math.Min(255, b));
-        
+
         return (r, g, b);
     }
 }

@@ -6,13 +6,13 @@ public class FretsSectionExplorerV2
     {
         Console.WriteLine("Testing different string tuning values\n");
 
-        float[] targets = //{ 9/8f, 5/4f, 4/3f, 3/2f, 5/3f, 15/8f, 2f }; 
-                          //Diamond.Diamond5Limit;
-                          //Diamond.Diamond7LimitNo5;
-                          Diamond.Diamond7Limit;
+        float[] targets = { 9 / 8f, 5 / 4f, 4 / 3f, 3 / 2f, 5 / 3f, 15 / 8f, 2f };
+        //Diamond.Diamond5Limit;
+        //Diamond.Diamond7LimitNo5;
+        //Diamond.Diamond7Limit;
         //Diamond.Diamond9Limit;
 
-        var results = new List<(int strEdoJump, float totalMinDistance, List<ClosestMatchResult> matches, RelativeNote[,] matrix)>();
+        var results = new List<(int strEdoJump, float totalMinDistance, List<ClosestMatchResult> matches, RelativeNote[,] matrix, float points)>();
 
         var edo = 31;
         var skipFreting = new int[] { 2, 1 };
@@ -30,7 +30,12 @@ public class FretsSectionExplorerV2
             var matches = FindClosestMatches(matrix, targets, maxCentsDiff);
             float totalMinDistance = CalculateTotalMinimumDistance(matches);
 
-            results.Add((strEdoJump, totalMinDistance, matches, matrix));
+            var pointsByUniqueTargetCounts = 100 - (100 * ((float)matches.Count / targets.Length));
+            var pointsByDistance = totalMinDistance;
+            var pointsByRepetition = 0;//10 * matches.SelectMany(m => m.ClosestNotes).GroupBy(x => x.Position.y).Where(x => x.Count() >= 2).Count();
+            var points = pointsByUniqueTargetCounts + pointsByDistance + pointsByRepetition;
+
+            results.Add((strEdoJump, totalMinDistance, matches, matrix, points));
 
             //DisplayMatrix(matrix, matches);
             //Console.Write($"StrEdoJump {strEdoJump,2}: {totalMinDistance:F2}  ");
@@ -40,10 +45,14 @@ public class FretsSectionExplorerV2
         Console.WriteLine("\n");
 
         // Sort results by number of matches (descending), then by total minimum distance (ascending)
+        // var sortedResults = results
+        //     .OrderByDescending(r => r.matches.Count)
+        //     .ThenBy(r => r.totalMinDistance)
+        //     .ToList();
+
         var sortedResults = results
-            .OrderByDescending(r => r.matches.Count)
-            .ThenBy(r => r.totalMinDistance)
-            .ToList();
+           .OrderBy(r => r.points)
+           .ToList();
 
         var topResults = 5;
 
@@ -51,9 +60,9 @@ public class FretsSectionExplorerV2
 
         for (int i = 0; i < Math.Min(topResults, sortedResults.Count); i++)
         {
-            var (strEdoJump, totalMinDistance, matches, matrix) = sortedResults[i];
+            var (strEdoJump, totalMinDistance, matches, matrix, points) = sortedResults[i];
 
-            Console.WriteLine($"#{i + 1} - StrEdoJump: {strEdoJump}, Matches: {matches.Count}, Total Distance: {totalMinDistance:F3}");
+            Console.WriteLine($"#{i + 1} - StrEdoJump: {strEdoJump}, Matches: {matches.Count}, Total Distance: {totalMinDistance:F3}, Points: {points:F2}");
             Console.WriteLine("Target approximations:");
 
             foreach (var match in matches)
@@ -142,21 +151,15 @@ public class FretsSectionExplorerV2
                 if ((matchedPositions != null && matchedPositions.Contains(posStr)) || ratio == 1.0f)
                 {
                     // Highlight matched notes with square brackets
-                    Console.Write(" [");
-                    NoteColor.WriteRatioWithColor(ratio);
-                    Console.Write("]");
+                    NoteColor.WriteRatioWithColor(ratio, true);
                 }
                 else if (ratio < 1.0f)
                 {
-                    Console.Write(" [");
-                    NoteColor.WriteRatioWithColor(ratio);
-                    Console.Write("]");
+                    NoteColor.WriteRatioWithColor(ratio, true);
                 }
                 else
                 {
-                    Console.Write("  ");
                     NoteColor.WriteRatioWithColor(ratio);
-                    Console.Write(" ");
                 }
 
                 //var cents = note.GetNormalizedCents();
@@ -180,7 +183,7 @@ public class FretsSectionExplorerV2
         foreach (var targetRatio in targetRatios)
         {
             var closestNotes = new List<RelativeNote>();
-            float minDiffInCents = float.MaxValue;
+            float minDiffInCents = maxCentsDiff;//float.MaxValue;
 
             // Search through the entire matrix
             int rows = matrix.GetLength(0);
@@ -188,6 +191,7 @@ public class FretsSectionExplorerV2
 
             for (int row = 0; row < rows; row++)
             {
+                RelativeNote? closestNote = null;
                 for (int col = 0; col < cols; col++)
                 {
                     var note = matrix[row, col];
@@ -196,21 +200,20 @@ public class FretsSectionExplorerV2
                     // Calculate difference in cents
                     float diffInCents = Operations.RatiosDiffInCents(targetRatio, noteRatio);
 
-                    if (diffInCents < minDiffInCents)
+                    if (diffInCents <= minDiffInCents || (Math.Abs(diffInCents - minDiffInCents) < 0.001f))
                     {
                         minDiffInCents = diffInCents;
-                        closestNotes.Clear();
-                        closestNotes.Add(note);
+                        closestNote = note;
+                        break;
                     }
-                    else if (Math.Abs(diffInCents - minDiffInCents) < 0.001f)
-                    {
-                        closestNotes.Add(note);
-                    }
+                }
+                if (closestNote != null)
+                {
+                    closestNotes.Add(closestNote);
                 }
             }
 
-            // Only add if the best match is below the maxCents threshold
-            if (closestNotes.Count > 0 && minDiffInCents <= maxCentsDiff)
+            if (closestNotes.Count > 0)
             {
                 results.Add(new ClosestMatchResult(targetRatio, closestNotes, minDiffInCents));
             }
