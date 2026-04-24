@@ -3,8 +3,10 @@ import {
   getNoteNameByStringTuningIdx,
   buildFretboardData,
   buildFretboardDataByRatios,
+  buildFretboardDataByCents,
   DISPLAY_MODES
 } from "./fretboard";
+import { ratioToCents } from "../core/core";
 
 // --- Existing tests ---
 
@@ -427,6 +429,53 @@ describe("buildFretboardDataByRatios", () => {
     for (let f = 0; f < result[0].length; f++) {
       expect(result[0][f].width).toBeCloseTo(result[1][f].width, 5);
     }
+  });
+});
+
+describe("buildFretboardDataByCents", () => {
+  const scale = [5 / 4, 3 / 2, 2 / 1];
+  const baseFreq = 440;
+
+  test("returns correct grid dimensions", () => {
+    const result = buildFretboardDataByCents(
+      baseFreq, scale, [0, 701.955], [], [],
+      DISPLAY_MODES.DEFAULT, 650, false, 0
+    );
+    expect(result).toHaveLength(2);
+    result.forEach(stringData => {
+      expect(stringData).toHaveLength(scale.length + 1);
+    });
+  });
+
+  test("falls back to [2] when scale is empty", () => {
+    const result = buildFretboardDataByCents(
+      baseFreq, [], [0], [], [],
+      DISPLAY_MODES.DEFAULT, 650, false, 0
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveLength(2);
+  });
+
+  test("is numerically equivalent to ratio mode for equivalent tuning", () => {
+    const ratios = [1, 5 / 4, 3 / 2, 9 / 8];
+    const cents = ratios.map(ratio => ratioToCents(ratio));
+
+    const byRatios = buildFretboardDataByRatios(
+      baseFreq, scale, ratios, [], [],
+      DISPLAY_MODES.FREQUENCY, 650, false, 0
+    );
+    const byCents = buildFretboardDataByCents(
+      baseFreq, scale, cents, [], [],
+      DISPLAY_MODES.FREQUENCY, 650, false, 0
+    );
+
+    expect(byRatios).toHaveLength(byCents.length);
+    byRatios.forEach((stringData, rowIdx) => {
+      stringData.forEach((fretData, fretIdx) => {
+        expect(byCents[rowIdx][fretIdx].freq).toBeCloseTo(fretData.freq, 8);
+        expect(byCents[rowIdx][fretIdx].width).toBeCloseTo(fretData.width, 8);
+      });
+    });
   });
 });
 

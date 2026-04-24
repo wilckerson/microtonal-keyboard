@@ -4,6 +4,7 @@ import {
   getKeyName,
   rotateScale,
   ratioToCents,
+  centsToRatio,
   ratioToFretDistance
 } from "../core/core";
 
@@ -243,6 +244,31 @@ export function buildFretboardDataByRatios(
     );
   });
   return applyKeyMapping(data);
+}
+
+export function buildFretboardDataByCents(
+  baseFreq,
+  scale,
+  stringsTuningCents,
+  noteNames,
+  noteTexts,
+  displayMode,
+  stringLength,
+  fullFrets,
+  baseIndex
+) {
+  const stringsTuningRatios = stringsTuningCents.map(cents => centsToRatio(cents));
+  return buildFretboardDataByRatios(
+    baseFreq,
+    scale,
+    stringsTuningRatios,
+    noteNames,
+    noteTexts,
+    displayMode,
+    stringLength,
+    fullFrets,
+    baseIndex
+  );
 }
 
 export function getRelativeRatioByIndex(scale, index) {

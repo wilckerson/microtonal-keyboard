@@ -1,11 +1,10 @@
 <template>
   <div class="fretboard-viewer">
     <div class="toolbar">
-      <div>Strings Tuning mode: <select v-model="stringTuningMode"
+        <div>Strings Tuning mode: <select :value="stringTuningMode"
           @change="onChangeStringTuningMode($event.target.value)">
           <option value="index">By index</option>
-          <option value="ratio">By ratio</option>
-          <!-- <option value="cents">By cents</option> -->
+            <option value="note">By note</option>
         </select></div>
       <div>Scroll position: <input type="number" v-model.number="baseIndex" /></div>
       <div>
@@ -26,15 +25,15 @@
           <input type="number" v-model.number="stringsTuningIdx[idx]" />
         </div>
 
-        <div v-if="stringTuningMode === 'ratio'" class="string-tuning-row" v-for="(_, idx) in stringsTuningRatio"
-          v-bind:key="'string-tuningByRatio-row-' + idx">
-          <input type="number" step="0.001" v-model.number="stringsTuningRatio[idx]" />
+        <div v-if="stringTuningMode === 'note'" class="string-tuning-row" v-for="(_, idx) in stringsTuningNote"
+          v-bind:key="'string-tuningByNote-row-' + idx">
+          <input
+            type="text"
+            v-model.trim="stringsTuningNote[idx]"
+            placeholder="1, 3/2, 700c, 7\12"
+            :class="{ 'input-invalid': !isStringTuningNoteValid(idx) }"
+          />
         </div>
-
-        <!-- <div v-if="stringTuningMode === 'cents'" class="string-tuning-row" v-for="(_, idx) in stringsTuningCents"
-          v-bind:key="'string-tuningByCents-row-' + idx">
-          <input type="number" v-model.number="stringsTuningCents[idx]" />
-        </div> -->
       </div>
       <div class="fretboard-scroller">
         <div class="fretboard" :class="{ 'fretboard-edit-mode': manualEditMode }">
@@ -191,7 +190,8 @@ import ToggleSwitch from "../ToggleSwitch.vue";
 import CircleOfFifths from "./CircleOfFifths.vue";
 import ScaleOptions from "./ScaleOptions.vue";
 import { buildFretboardData, buildFretboardDataByRatios, applyDisabledState, DISPLAY_MODES } from "./fretboard";
-import { unique, getKeyName, rotateScale } from "../core/core.js";
+import { unique, getKeyName } from "../core/core.js";
+import { parseNoteToken } from "../core/custom-notes-extractor.js";
 
 export default {
   components: { AudioKey, CustomNotes, ToggleSwitch, NoteGroup, NoteSelectionList, CircleOfFifths, ScaleOptions },
@@ -204,8 +204,7 @@ export default {
       noteGroups: [],
       baseFreq: 110,
       stringsTuningIdx: [0, 0, 0, 0, 0, 0],
-      stringsTuningRatio: [1, 1, 1, 1, 1, 1],
-      stringsTuningCents: [0, 0, 0, 0, 0, 0],
+      stringsTuningNote: ['1', '1', '1', '1', '1', '1'],
       displayMode: DISPLAY_MODES.DEFAULT,
       DISPLAY_MODES,
       stringLength: 650,
@@ -277,6 +276,12 @@ export default {
 
   },
   methods: {
+    getStringTuningRatios() {
+      return this.stringsTuningNote.map(item => {
+        const parsed = parseNoteToken(item);
+        return parsed.isValid ? parsed.value : 1;
+      });
+    },
     buildFretboardDataByStringTuningMode(overrideDisplayMode = undefined) {
       let data;
       if (this.stringTuningMode === 'index') {
@@ -292,11 +297,11 @@ export default {
           this.baseIndex
         );
       }
-      else if (this.stringTuningMode === 'ratio') {
+      else if (this.stringTuningMode === 'note') {
         data = buildFretboardDataByRatios(
           this.baseFreq,
           this.scale,
-          this.stringsTuningRatio,
+          this.getStringTuningRatios(),
           this.noteNames,
           this.noteTexts,
           overrideDisplayMode || this.displayMode,
@@ -305,10 +310,14 @@ export default {
           this.baseIndex
         );
       }
-      else if (this.stringTuningMode === 'cents') {
-        return [];
-      }
       return applyDisabledState(data, this.subsetEnabled, this.fullFrets, this.manualFretOverrides);
+    },
+    syncTuningArrayLength(targetArray, targetLength, defaultValue) {
+      const normalized = Array.isArray(targetArray) ? targetArray.slice(0, targetLength) : [];
+      while (normalized.length < targetLength) {
+        normalized.push(defaultValue);
+      }
+      return normalized;
     },
     getKeyNameForEnabledFret(rowIdx, fretIdx) {
       const rowData = this.fretboardData[rowIdx];
@@ -337,6 +346,9 @@ export default {
       edoIdx_Fifth,
       useCircleOfFifthViewer
     ) {
+      const nextStringsTuningIdx = stringsTuningIdx || this.stringsTuningIdx;
+      const targetLength = nextStringsTuningIdx.length;
+
       if (baseFreq) this.baseFreq = baseFreq;
       if (stringsTuningIdx) this.stringsTuningIdx = stringsTuningIdx;
       this.scale = notes;
@@ -348,6 +360,11 @@ export default {
       this.isEdo = !!isEdo;
       this.edoIdx_Fifth = edoIdx_Fifth;
       this.useCircleOfFifthViewer = !!useCircleOfFifthViewer;
+
+      if (!this.stringsTuningNote.length || this.stringsTuningNote.length !== targetLength) {
+        this.stringsTuningNote = this.syncTuningArrayLength(this.stringsTuningNote, targetLength, '1').map(String);
+      }
+
       this.manualFretOverrides = {};
       if (!this.useCircleOfFifthViewer) {
         this.noteSelectionViewMode = 'list';
@@ -388,9 +405,21 @@ export default {
       ).map(noteGroup => noteGroup.color);
     },
     onChangeStringTuningMode(newMode) {
-      if (newMode === 'ratio') {
+      const targetLength = this.stringsTuningIdx.length;
+      this.stringsTuningNote = this.syncTuningArrayLength(this.stringsTuningNote, targetLength, '1').map(String);
+
+      if (newMode === 'note' && this.displayMode === DISPLAY_MODES.DEFAULT) {
         this.displayMode = DISPLAY_MODES.RATIO;
       }
+
+      this.stringTuningMode = newMode;
+    },
+    isStringTuningNoteValid(idx) {
+      const value = this.stringsTuningNote[idx];
+      if (value === undefined || value === null || value === '') {
+        return true;
+      }
+      return parseNoteToken(value).isValid;
     },
     handleKeyMouseDown() {
       this.isDragging = true;
@@ -479,6 +508,11 @@ export default {
 
 .string-tuning-row input {
   width: 50px;
+}
+
+.string-tuning-row .input-invalid {
+  border: 1px solid #d32f2f;
+  background-color: #ffebee;
 }
 
 /* ======== Fretboard ======== */

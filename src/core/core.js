@@ -56,6 +56,11 @@ export function ratioToCents(ratio) {
   return cents;
 }
 
+export function centsToRatio(cents) {
+  const ratio = Math.pow(2, parseFloat(cents) / 1200);
+  return Math.ceil(ratio * 10000) / 10000;
+}
+
 export function ratioToFretDistance(ratio, stringLength) {
   return stringLength - stringLength / ratio;
 }

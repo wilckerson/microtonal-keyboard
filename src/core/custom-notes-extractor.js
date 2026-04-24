@@ -1,3 +1,27 @@
+export function parseNoteToken(token) {
+  const line = (token || "").trim();
+  if (!line) {
+    return { value: undefined, isValid: false };
+  }
+
+  let value;
+  if (line.indexOf("/") !== -1) {
+    const parts = line.split("/");
+    value = parseFloat(parts[0]) / parseFloat(parts[1]);
+  } else if (line.indexOf("\\") !== -1) {
+    const parts = line.split("\\");
+    value = Math.pow(2, parseFloat(parts[0]) / parseFloat(parts[1]));
+  } else if (line.toLowerCase().indexOf("c") !== -1 || line.indexOf("¢") !== -1) {
+    const centsText = line.toLowerCase().replace("¢", "").replace("c", "");
+    const cent = parseFloat(centsText);
+    value = Math.pow(2, cent / 1200);
+  } else {
+    value = parseFloat(line);
+  }
+
+  return { value, isValid: value !== undefined && !isNaN(value) };
+}
+
 export function extractCustomNotes(input) {
   var result = [];
   var lines = (input || "").split("\n");
@@ -12,26 +36,9 @@ export function extractCustomNotes(input) {
       line = line.substr(0, matchResult.index).trim();
     }
 
-    var v = undefined;
-    if (line.indexOf("/") !== -1) {
-      //Ratio
-      var parts = line.split("/");
-      v = parseFloat(parts[0]) / parseFloat(parts[1]);
-    } else if (line.indexOf("\\") !== -1) {
-      //Index of edo
-      var parts = line.split("\\");
-      v = Math.pow(2, parseFloat(parts[0]) / parseFloat(parts[1]));
-    } else if (line.indexOf("c") !== -1) {
-      //Cents
-      var parts = line.split("c");
-      var cent = parseFloat(parts[0]);
-      v = Math.pow(2, cent / 1200);
-    } else {
-      v = parseFloat(line);
-    }
-
-    if (v !== undefined && !isNaN(v)) {
-      result.push({ value: v, name, text: line });
+    const parsed = parseNoteToken(line);
+    if (parsed.isValid) {
+      result.push({ value: parsed.value, name, text: line });
     }
   }
 

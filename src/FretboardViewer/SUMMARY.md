@@ -27,7 +27,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 ## Current Features
 
 - **Configurable tuning systems** — Accepts custom note input (EDO, ratios, cents) via the `CustomNotes` component; supports templates like 12-EDO, 31-EDO, and custom JI scales.
-- **String tuning modes** — Strings can be tuned by scale index offset or by explicit ratio. A cents mode is stubbed but not yet implemented.
+- **String tuning modes** — Strings can be tuned by scale index offset (**By index**) or by parsed note text (**By note**). By note accepts ratio/fraction/EDO/cents-style tokens per string (e.g., `1`, `3/2`, `7\\12`, `700c`).
 - **Multiple display modes** — Default (note name/ratio), Ratio, Ratio reduced by period, Ratio relative to string, Cents, Cents reduced, Cents relative, Frequency (Hz), Frets distance (mm from nut).
 - **Full frets toggle** — When enabled, all strings share the same fret positions (aligned to the base index), like a guitar. When off, each string has independently rotated fret positions.
 - **Note subset selection** — Users can enable/disable individual scale degrees via a checkbox list. Supports Select All/None, Rotate (mode cycling), and applying predefined scale templates.
@@ -113,7 +113,7 @@ The FretboardViewer is a Vue 2 module that renders an interactive microtonal fre
 ## Notes for Future Development
 
 - **Vue 2 only** — Uses Options API, `beforeDestroy` lifecycle hook, and `__vue__` instance access. Migration to Vue 3 will require updating lifecycle hooks (`beforeUnmount`), removing `__vue__` reliance, and potentially switching to Composition API.
-- **Cents tuning mode is stubbed** — `stringTuningMode === 'cents'` returns an empty array; the UI option is commented out.
+- **By note parser reuse** — String tuning text tokens are parsed with the same shared parser semantics used by custom note input extraction.
 - **`Fretboard.vue` is legacy** — `Index.vue` only uses `Fretboard2.vue`. The old `Fretboard.vue`, `Fret.vue`, and `InstrumentString.vue` could be removed if confirmed unused elsewhere.
 - **No state persistence** — The "URL data similar to ScaleWorkshop" TODO suggests intent to support URL-based state sharing, but nothing is implemented.
 - **`ToggleSwitch` is imported but unused** in `Fretboard2.vue` (the `normalizeDisplay` data property is commented out).
