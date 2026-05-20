@@ -151,6 +151,7 @@
         display: block;
         margin: 0 auto;
         background: transparent;
+        touch-action: none;
       }
 
       /* Styling applied to the dynamically generated SVG */
@@ -161,7 +162,7 @@
         max-height: 80vh;
         user-select: none;
         -webkit-user-select: none;
-        touch-action: pan-x;
+        touch-action: none;
         display: block;
         margin: 0 auto;
         box-sizing: border-box;
@@ -302,6 +303,9 @@
 
         swipePointerId = event.pointerId;
         lastSwipeNodeValue = "";
+        if (graphTarget.setPointerCapture) {
+          graphTarget.setPointerCapture(event.pointerId);
+        }
         event.preventDefault();
         playSwipeNode(nodeValue);
       }
@@ -323,17 +327,26 @@
         if (swipePointerId === null || event.pointerId !== swipePointerId)
           return;
 
+        if (
+          graphTarget.releasePointerCapture &&
+          graphTarget.hasPointerCapture &&
+          graphTarget.hasPointerCapture(event.pointerId)
+        ) {
+          graphTarget.releasePointerCapture(event.pointerId);
+        }
+
         swipePointerId = null;
         lastSwipeNodeValue = "";
       }
 
       function setupSwipePlayback() {
         graphTarget.addEventListener("pointerdown", handleSwipePointerDown);
-        window.addEventListener("pointermove", handleSwipePointerMove, {
+        graphTarget.addEventListener("pointermove", handleSwipePointerMove, {
           passive: false
         });
-        window.addEventListener("pointerup", stopSwipePointer);
-        window.addEventListener("pointercancel", stopSwipePointer);
+        graphTarget.addEventListener("pointerup", stopSwipePointer);
+        graphTarget.addEventListener("pointercancel", stopSwipePointer);
+        graphTarget.addEventListener("lostpointercapture", stopSwipePointer);
       }
 
       setupSwipePlayback();
@@ -580,14 +593,12 @@
         const sy = start.y + Math.sin(angle) * radius;
         const ex = end.x - Math.cos(angle) * radius;
         const ey = end.y - Math.sin(angle) * radius;
-        const distanceX = Math.max(60, Math.abs(ex - sx) * 0.52);
         const ssx = sx + normalX * offset;
         const ssy = sy + normalY * offset;
         const eex = ex + normalX * offset;
         const eey = ey + normalY * offset;
 
-        return `M ${ssx} ${ssy} C ${ssx + distanceX} ${ssy}, ${eex -
-          distanceX} ${eey}, ${eex} ${eey}`;
+        return `M ${ssx} ${ssy} L ${eex} ${eey}`;
       }
 
       function renderNativeGraph() {
