@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>9-Limit Playable Diagram</title>
+
+    <!-- Libraries used to render GraphViz as SVG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Sora:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg-base: #e9eef6;
+        --bg-deep: #dce6f3;
+        --ink: #0f1a2b;
+        --ink-muted: #44546b;
+        --panel: rgba(252, 255, 255, 0.72);
+        --panel-border: rgba(128, 160, 201, 0.38);
+        --accent: #1d76d1;
+        --accent-strong: #155ca4;
+        --accent-glow: rgba(29, 118, 209, 0.28);
+      }
+
+      body {
+        font-family: "Sora", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 12%, #ffffff 0%, transparent 44%),
+          radial-gradient(circle at 82% 0%, #d8e9ff 0%, transparent 38%),
+          linear-gradient(160deg, var(--bg-base), var(--bg-deep));
+        color: var(--ink);
+        margin: 0;
+        padding: 28px 20px 36px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      h1 {
+        font-family: "Space Grotesk", "Sora", sans-serif;
+        font-size: clamp(1.6rem, 2.6vw, 2.3rem);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        margin: 0 0 8px;
+        color: #10243d;
+        text-wrap: balance;
+      }
+
+      p {
+        color: var(--ink-muted);
+        margin-top: 0;
+        margin-bottom: 24px;
+        text-align: center;
+        max-width: 720px;
+        line-height: 1.45;
+      }
+
+      #controls {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px 12px;
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(19, 48, 86, 0.12);
+      }
+
+      label {
+        font-weight: 600;
+        color: #2c415e;
+      }
+
+      select {
+        appearance: none;
+        border: 1px solid #a9c2df;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 15px;
+        font-family: "Sora", "Segoe UI", sans-serif;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--ink);
+        min-width: 180px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+
+      select:focus-visible {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(29, 118, 209, 0.2);
+      }
+
+      button {
+        background: linear-gradient(135deg, var(--accent), #2f8ee8);
+        color: #f5fbff;
+        border: 1px solid #0f5aa7;
+        padding: 11px 18px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: "Space Grotesk", "Sora", sans-serif;
+        letter-spacing: 0.01em;
+        border-radius: 10px;
+        cursor: pointer;
+        transition:
+          transform 0.14s,
+          box-shadow 0.2s,
+          filter 0.2s;
+        box-shadow: 0 6px 14px var(--accent-glow);
+      }
+
+      button:hover {
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      #canvas-container {
+        background: var(--panel);
+        border-radius: 16px;
+        border: 1px solid var(--panel-border);
+        box-shadow:
+          0 20px 40px rgba(14, 35, 64, 0.14),
+          inset 0 1px 0 rgba(255, 255, 255, 0.92);
+        padding: 22px;
+        width: 100%;
+        max-width: 1100px;
+        overflow-x: auto;
+        display: flex;
+        justify-content: center;
+      }
+
+      /* Styling applied to the dynamically generated SVG */
+      svg {
+        width: 100%;
+        height: auto;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+      }
+
+      .node {
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .node text {
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .node:hover ellipse {
+        fill: #e8f4ff !important;
+        stroke: var(--accent) !important;
+        stroke-width: 2px;
+        transition: all 0.2s;
+      }
+
+      .edge {
+        cursor: pointer;
+      }
+
+      .edge:hover path,
+      .edge:hover polygon {
+        opacity: 0.82;
+      }
+
+      .edge-hit-area {
+        fill: none !important;
+        stroke: transparent !important;
+        stroke-width: 18px;
+        pointer-events: stroke;
+        vector-effect: non-scaling-stroke;
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: 20px 12px 24px;
+        }
+
+        #controls {
+          width: 100%;
+          justify-content: stretch;
+        }
+
+        button,
+        select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>9-Limit Playable Diagram</h1>
+    <p>
+      Click the button to enable audio, then click any node to hear the
+      corresponding frequency.
+    </p>
+
+    <div id="controls">
+      <button id="audio-toggle">Enable Audio Synthesizer</button>
+    </div>
+
+    <div id="canvas-container">
+      <div id="graph-target">Loading diagram...</div>
+    </div>
+
+    <script>
+      // Base fundamental frequency
+      const BASE_FREQ = 220;
+
+      // Web Audio API setup
+      let audioCtx = null;
+      let viz = new Viz();
+      const colorCanvasCtx = document.createElement("canvas").getContext("2d");
+      const graphTarget = document.getElementById("graph-target");
+      let swipePointerId = null;
+      let lastSwipeNodeValue = "";
+
+      // Initializes the audio context after a user click
+      document
+        .getElementById("audio-toggle")
+        .addEventListener("click", function () {
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            this.textContent = "Synthesizer Enabled (Ready)";
+            this.style.backgroundColor = "#28a745";
+            this.style.boxShadow = "0 4px 6px rgba(40, 167, 69, 0.15)";
+          } else if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+          }
+        });
+
+      function getNodeValueFromElement(element) {
+        const node = element?.closest?.(".node");
+        if (!node) return "";
+
+        const titleElement = node.querySelector("title");
+        return titleElement ? titleElement.textContent.trim() : "";
+      }
+
+      function playSwipeNode(nodeValue) {
+        if (!nodeValue || nodeValue === lastSwipeNodeValue) return;
+        lastSwipeNodeValue = nodeValue;
+        playTone(nodeValue);
+      }
+
+      function handleSwipePointerDown(event) {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+
+        const nodeValue = getNodeValueFromElement(event.target);
+        if (!nodeValue) return;
+
+        swipePointerId = event.pointerId;
+        lastSwipeNodeValue = "";
+        event.preventDefault();
+        playSwipeNode(nodeValue);
+      }
+
+      function handleSwipePointerMove(event) {
+        if (swipePointerId === null || event.pointerId !== swipePointerId)
+          return;
+
+        event.preventDefault();
+        const pointedElement = document.elementFromPoint(
+          event.clientX,
+          event.clientY,
+        );
+        const nodeValue = getNodeValueFromElement(pointedElement);
+        playSwipeNode(nodeValue);
+      }
+
+      function stopSwipePointer(event) {
+        if (swipePointerId === null || event.pointerId !== swipePointerId)
+          return;
+
+        swipePointerId = null;
+        lastSwipeNodeValue = "";
+      }
+
+      function setupSwipePlayback() {
+        graphTarget.addEventListener("pointerdown", handleSwipePointerDown);
+        window.addEventListener("pointermove", handleSwipePointerMove, {
+          passive: false,
+        });
+        window.addEventListener("pointerup", stopSwipePointer);
+        window.addEventListener("pointercancel", stopSwipePointer);
+      }
+
+      setupSwipePlayback();
+
+      function normalizeColor(color) {
+        if (!color || !colorCanvasCtx) return "";
+        colorCanvasCtx.fillStyle = "#000000";
+        colorCanvasCtx.fillStyle = color;
+        return colorCanvasCtx.fillStyle.trim().toLowerCase();
+      }
+
+      function parseRatioValue(ratioString) {
+        if (ratioString.includes("/")) {
+          const parts = ratioString.split("/");
+          return parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+
+        return parseFloat(ratioString);
+      }
+
+      function playRatioGroup(ratios) {
+        if (!audioCtx) {
+          alert("Please click the 'Enable Audio Synthesizer' button first!");
+          return;
+        }
+
+        const uniqueRatios = [...new Set(ratios)].filter(Boolean);
+        if (uniqueRatios.length === 0) return;
+
+        const now = audioCtx.currentTime;
+        const peakGain = Math.min(0.3, 0.6 / Math.sqrt(uniqueRatios.length));
+
+        uniqueRatios.forEach((ratioString) => {
+          const ratioValue = parseRatioValue(ratioString);
+          const targetFrequency = BASE_FREQ * ratioValue;
+
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+
+          oscillator.type = "sine";
+          oscillator.frequency.value = targetFrequency;
+
+          gainNode.gain.setValueAtTime(0, now);
+          gainNode.gain.linearRampToValueAtTime(peakGain, now + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 2);
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+
+          oscillator.start(now);
+          oscillator.stop(now + 3);
+        });
+      }
+
+      // Plays the frequency calculated from a node ratio
+      function playTone(ratioString) {
+        const ratioValue = parseRatioValue(ratioString);
+
+        const targetFrequency = BASE_FREQ * ratioValue;
+        console.log(
+          `Playing node: ${ratioString} | Ratio: ${ratioValue} | Frequency: ${targetFrequency.toFixed(2)}Hz`,
+        );
+        playRatioGroup([ratioString]);
+      }
+
+      function extractEdgeColor(edge) {
+        const path = edge.querySelector("path");
+        const polygon = edge.querySelector("polygon");
+
+        const rawColor =
+          path?.getAttribute("stroke") ||
+          polygon?.getAttribute("fill") ||
+          polygon?.getAttribute("stroke") ||
+          "";
+
+        return normalizeColor(rawColor);
+      }
+
+      function sanitizeRatioLabel(label) {
+        return label.replace(/^"+|"+$/g, "").trim();
+      }
+
+      function extractRatiosFromEdge(edge) {
+        const titleElement = edge.querySelector("title");
+        if (!titleElement) return [];
+
+        const edgeText = titleElement.textContent.trim();
+        const [fromRaw, toRaw] = edgeText.split("->");
+        if (!fromRaw || !toRaw) return [];
+
+        return [sanitizeRatioLabel(fromRaw), sanitizeRatioLabel(toRaw)];
+      }
+
+      function playNotesByEdgeColor(selectedColor) {
+        const normalizedTargetColor = normalizeColor(selectedColor);
+        if (!normalizedTargetColor) return;
+
+        const allEdges = document.querySelectorAll(".edge");
+        const ratios = new Set();
+
+        allEdges.forEach((edge) => {
+          if (extractEdgeColor(edge) !== normalizedTargetColor) return;
+          extractRatiosFromEdge(edge).forEach((ratio) => ratios.add(ratio));
+        });
+
+        const ratioList = [...ratios];
+        console.log(
+          `Playing color group ${normalizedTargetColor}: ${ratioList.join(", ")}`,
+        );
+        playRatioGroup(ratioList);
+      }
+
+      // GraphViz code definition
+      const dotGraph = `
+      digraph G {
+          rankdir=LR;
+          splines=true;
+          node [shape=circle, style=filled, fillcolor=white];
+
+          "1/1" -> "6/5"  [color=blue, penwidth=2];
+          "6/5" -> "7/5" [color=blue, penwidth=2];
+          "7/5" -> "8/5" [color=blue, penwidth=2];
+          "8/5" -> "9/5" [color=blue, penwidth=2];
+          "9/5" -> "2"   [color=blue, penwidth=2];
+
+          "1/1" -> "7/6"   [color=red, penwidth=2];
+          "7/6" -> "4/3" [color=red, penwidth=2];
+          "4/3" -> "3/2" [color=red, penwidth=2];
+          "3/2" -> "5/3" [color=red, penwidth=2];
+          "5/3" -> "2"   [color=red, penwidth=2];
+
+          "1/1" -> "8/7"    [color=green, penwidth=2];
+          "8/7" -> "9/7"  [color=green, penwidth=2];
+          "9/7" -> "10/7" [color=green, penwidth=2];
+          "10/7" -> "12/7" [color=green, penwidth=2];
+          "12/7" -> "2"   [color=green, penwidth=2];
+
+          "1/1" -> "9/8"   [color=orange, penwidth=2];
+          "9/8" -> "5/4" [color=orange, penwidth=2];
+          "5/4" -> "3/2" [color=orange, penwidth=2];
+          "3/2" -> "7/4" [color=orange, penwidth=2];
+          "7/4" -> "2"   [color=orange, penwidth=2];
+
+          "1/1" -> "10/9"   [color=purple, penwidth=2];
+          "10/9" -> "4/3" [color=purple, penwidth=2];
+          "4/3" -> "14/9" [color=purple, penwidth=2];
+          "14/9" -> "16/9" [color=purple, penwidth=2];
+          "16/9" -> "2"   [color=purple, penwidth=2];
+
+          "1/1" -> "10/9" [style=dashed, color=cyan4];
+          "10/9" -> "5/4" [style=dashed, color=cyan4];
+          "5/4" -> "10/7" [style=dashed, color=cyan4];
+          "10/7" -> "5/3" [style=dashed, color=cyan4];
+          "5/3" -> "2"    [style=dashed, color=cyan4];
+
+          "1/1" -> "9/8" [style=dashed, color=magenta4];
+          "9/8"  -> "9/7" [style=dashed, color=magenta4];
+          "9/7"  -> "3/2" [style=dashed, color=magenta4];
+          "3/2"  -> "9/5" [style=dashed, color=magenta4];
+          "9/5"  -> "2"   [style=dashed, color=magenta4];
+
+          "1/1" -> "8/7" [style=dashed, color=goldenrod3];
+          "8/7" -> "4/3" [style=dashed, color=goldenrod3];
+          "4/3" -> "8/5" [style=dashed, color=goldenrod3];
+          "8/5" -> "16/9" [style=dashed, color=goldenrod3];
+          "16/9" -> "2" [style=dashed, color=goldenrod3];
+
+          "1/1" -> "7/6" [style=dashed, color=sienna4];
+          "7/6"  -> "7/5" [style=dashed, color=sienna4];
+          "7/5"  -> "14/9" [style=dashed, color=sienna4];
+          "14/9" -> "7/4" [style=dashed, color=sienna4];
+          "7/4" -> "2" [style=dashed, color=sienna4];
+
+          "1/1" -> "6/5" [style=dashed, color=gray50];
+          "6/5" -> "4/3" [style=dashed, color=gray50];
+          "4/3" -> "3/2" [style=dashed, color=gray50];
+          "3/2" -> "12/7" [style=dashed, color=gray50];
+          "12/7" -> "2" [style=dashed, color=gray50];
+      }
+      `;
+
+      function renderGraph(engine) {
+        const target = document.getElementById("graph-target");
+        target.innerHTML = "Loading diagram...";
+
+        viz
+          .renderSVGElement(dotGraph, { engine })
+          .then(function (element) {
+            target.innerHTML = "";
+            target.appendChild(element);
+
+            // Binds click events to GraphViz-generated nodes
+            setupNodeListeners();
+            setupEdgeListeners();
+          })
+          .catch(function (error) {
+            console.error(error);
+            target.innerHTML = "Error rendering diagram.";
+          });
+      }
+
+      // Renders the graph as structured SVG
+      renderGraph("dot");
+
+      // Maps SVG node elements and wires up audio behavior
+      function setupNodeListeners() {
+        const nodes = document.querySelectorAll(".node");
+
+        nodes.forEach((node) => {
+          // GraphViz stores the node name in the inner <title> of each g.node
+          const titleElement = node.querySelector("title");
+          if (titleElement) {
+            const nodeValue = titleElement.textContent.trim();
+
+            // Adds click behavior
+            node.addEventListener("click", () => {
+              playTone(nodeValue);
+            });
+          }
+        });
+      }
+
+      function setupEdgeListeners() {
+        const edges = document.querySelectorAll(".edge");
+
+        edges.forEach((edge) => {
+          const edgePath = edge.querySelector("path");
+          if (edgePath) {
+            const hitPath = edgePath.cloneNode();
+            hitPath.classList.add("edge-hit-area");
+            edge.insertBefore(hitPath, edgePath);
+          }
+
+          edge.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const clickedColor = extractEdgeColor(edge);
+            playNotesByEdgeColor(clickedColor);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

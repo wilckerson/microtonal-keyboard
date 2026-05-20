@@ -10,6 +10,7 @@
         @click="navigate('#lambdoma')">Lambdoma</button>
       <button :class="['nav-link', { 'nav-link-active': route === '#calc2' }]"
         @click="navigate('#calc2')">Calculator</button>
+      <button :class="['nav-link']" @click="navigateToPage('/graph-app.html')">Graph App</button>
       <a href="/sw3.html" :class="['nav-link']">SW3</a>
     </div>
 
@@ -73,6 +74,9 @@ export default {
     navigate(pageName) {
       this.route = pageName;
       window.location.hash = pageName;
+    },
+    navigateToPage(path) {
+      window.location.href = path;
     }
   },
 };
