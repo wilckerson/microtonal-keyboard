@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -30,8 +30,11 @@
 
       body {
         font-family: "Sora", "Segoe UI", sans-serif;
-        background:
-          radial-gradient(circle at 12% 12%, #ffffff 0%, transparent 44%),
+        background: radial-gradient(
+            circle at 12% 12%,
+            #ffffff 0%,
+            transparent 44%
+          ),
           radial-gradient(circle at 82% 0%, #d8e9ff 0%, transparent 38%),
           linear-gradient(160deg, var(--bg-base), var(--bg-deep));
         color: var(--ink);
@@ -92,9 +95,7 @@
         background: rgba(255, 255, 255, 0.88);
         color: var(--ink);
         min-width: 180px;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
       }
 
       select:focus-visible {
@@ -114,10 +115,7 @@
         letter-spacing: 0.01em;
         border-radius: 10px;
         cursor: pointer;
-        transition:
-          transform 0.14s,
-          box-shadow 0.2s,
-          filter 0.2s;
+        transition: transform 0.14s, box-shadow 0.2s, filter 0.2s;
         box-shadow: 0 6px 14px var(--accent-glow);
       }
 
@@ -130,28 +128,75 @@
         transform: translateY(0);
       }
 
+
       #canvas-container {
         background: var(--panel);
         border-radius: 16px;
         border: 1px solid var(--panel-border);
-        box-shadow:
-          0 20px 40px rgba(14, 35, 64, 0.14),
+        box-shadow: 0 20px 40px rgba(14, 35, 64, 0.14),
           inset 0 1px 0 rgba(255, 255, 255, 0.92);
-        padding: 22px;
-        width: 100%;
+        padding: 12px 0 12px 0;
+        width: 85vw;
         max-width: 1100px;
+        min-width: 0;
         overflow-x: auto;
-        display: flex;
-        justify-content: center;
+        overflow-y: visible;
+        display: block;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        box-sizing: border-box;
       }
 
       /* Styling applied to the dynamically generated SVG */
-      svg {
+      #canvas-container svg {
+              #graph-target {
+                width: 100%;
+                min-width: 0;
+                overflow: visible;
+                box-sizing: border-box;
+                display: block;
+                margin: 0 auto;
+                background: transparent;
+              }
+
+              #graph-target svg {
+                width: 100%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                box-sizing: border-box;
+              }
         width: 100%;
+        max-width: 1100px;
         height: auto;
+        max-height: 80vh;
         user-select: none;
         -webkit-user-select: none;
-        touch-action: none;
+        touch-action: pan-x;
+        display: block;
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+      /* Landscape: altura máxima do SVG = 90% da viewport */
+      @media (orientation: landscape) {
+        #canvas-container svg {
+          max-height: 90vh;
+        }
+      }
+
+      @media (max-width: 900px) {
+        #canvas-container svg {
+          max-width: 900px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        #canvas-container {
+          padding: 8px 0 8px 0;
+        }
+        #canvas-container svg {
+          max-width: 640px;
+        }
       }
 
       .node {
@@ -236,7 +281,7 @@
       // Initializes the audio context after a user click
       document
         .getElementById("audio-toggle")
-        .addEventListener("click", function () {
+        .addEventListener("click", function() {
           if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             this.textContent = "Synthesizer Enabled (Ready)";
@@ -280,7 +325,7 @@
         event.preventDefault();
         const pointedElement = document.elementFromPoint(
           event.clientX,
-          event.clientY,
+          event.clientY
         );
         const nodeValue = getNodeValueFromElement(pointedElement);
         playSwipeNode(nodeValue);
@@ -297,7 +342,7 @@
       function setupSwipePlayback() {
         graphTarget.addEventListener("pointerdown", handleSwipePointerDown);
         window.addEventListener("pointermove", handleSwipePointerMove, {
-          passive: false,
+          passive: false
         });
         window.addEventListener("pointerup", stopSwipePointer);
         window.addEventListener("pointercancel", stopSwipePointer);
@@ -333,7 +378,7 @@
         const now = audioCtx.currentTime;
         const peakGain = Math.min(0.3, 0.6 / Math.sqrt(uniqueRatios.length));
 
-        uniqueRatios.forEach((ratioString) => {
+        uniqueRatios.forEach(ratioString => {
           const ratioValue = parseRatioValue(ratioString);
           const targetFrequency = BASE_FREQ * ratioValue;
 
@@ -361,7 +406,9 @@
 
         const targetFrequency = BASE_FREQ * ratioValue;
         console.log(
-          `Playing node: ${ratioString} | Ratio: ${ratioValue} | Frequency: ${targetFrequency.toFixed(2)}Hz`,
+          `Playing node: ${ratioString} | Ratio: ${ratioValue} | Frequency: ${targetFrequency.toFixed(
+            2
+          )}Hz`
         );
         playRatioGroup([ratioString]);
       }
@@ -401,14 +448,16 @@
         const allEdges = document.querySelectorAll(".edge");
         const ratios = new Set();
 
-        allEdges.forEach((edge) => {
+        allEdges.forEach(edge => {
           if (extractEdgeColor(edge) !== normalizedTargetColor) return;
-          extractRatiosFromEdge(edge).forEach((ratio) => ratios.add(ratio));
+          extractRatiosFromEdge(edge).forEach(ratio => ratios.add(ratio));
         });
 
         const ratioList = [...ratios];
         console.log(
-          `Playing color group ${normalizedTargetColor}: ${ratioList.join(", ")}`,
+          `Playing color group ${normalizedTargetColor}: ${ratioList.join(
+            ", "
+          )}`
         );
         playRatioGroup(ratioList);
       }
@@ -488,7 +537,7 @@
 
         viz
           .renderSVGElement(dotGraph, { engine })
-          .then(function (element) {
+          .then(function(element) {
             target.innerHTML = "";
             target.appendChild(element);
 
@@ -496,7 +545,7 @@
             setupNodeListeners();
             setupEdgeListeners();
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.error(error);
             target.innerHTML = "Error rendering diagram.";
           });
@@ -509,7 +558,7 @@
       function setupNodeListeners() {
         const nodes = document.querySelectorAll(".node");
 
-        nodes.forEach((node) => {
+        nodes.forEach(node => {
           // GraphViz stores the node name in the inner <title> of each g.node
           const titleElement = node.querySelector("title");
           if (titleElement) {
@@ -526,7 +575,7 @@
       function setupEdgeListeners() {
         const edges = document.querySelectorAll(".edge");
 
-        edges.forEach((edge) => {
+        edges.forEach(edge => {
           const edgePath = edge.querySelector("path");
           if (edgePath) {
             const hitPath = edgePath.cloneNode();
@@ -534,7 +583,7 @@
             edge.insertBefore(hitPath, edgePath);
           }
 
-          edge.addEventListener("click", (event) => {
+          edge.addEventListener("click", event => {
             event.stopPropagation();
             const clickedColor = extractEdgeColor(edge);
             playNotesByEdgeColor(clickedColor);
