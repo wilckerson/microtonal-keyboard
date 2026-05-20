@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>9-Limit Playable Diagram</title>
+    <title>11-Limit Playable Diagram</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -285,7 +285,7 @@
     </style>
   </head>
   <body>
-    <h1>9-Limit Playable Diagram</h1>
+    <h1>11-Limit Playable Diagram</h1>
     <p>
       Click the button to enable audio, then click any node to hear the
       corresponding frequency. Use the color buttons on the left side of the
@@ -296,7 +296,7 @@
 
     <div id="nav-links">
       <a href="index.html" class="nav-link">← Microtonal Apps</a>
-      <a href="graph-app-11limit.html" class="nav-link">11-Limit Diagram →</a>
+      <a href="graph-app.html" class="nav-link">← 9-Limit Diagram</a>
     </div>
 
     <div id="controls">
@@ -518,67 +518,248 @@
       const NODE_RADIUS = 40;
       const BUTTON_PANEL_WIDTH = 150;
       const COLOR_BUTTON_WIDTH = 60;
-      const COLUMNS = [
-        ["1/1"],
-        ["10/9", "9/8", "8/7", "7/6", "6/5"],
-        ["5/4", "9/7", "4/3", "7/5"],
-        ["10/7", "3/2", "14/9", "8/5"],
-        ["5/3", "12/7", "7/4", "16/9", "9/5"],
-        ["2"]
+
+      // 11-Limit series data
+      const SOLID_SERIES = [
+        {
+          path: ["1/1", "7/6", "4/3", "3/2", "5/3", "11/6", "2"],
+          color: "blue"
+        },
+        {
+          path: ["1/1", "8/7", "9/7", "10/7", "11/7", "12/7", "2"],
+          color: "red"
+        },
+        {
+          path: ["1/1", "9/8", "5/4", "11/8", "3/2", "7/4", "2"],
+          color: "limegreen"
+        },
+        {
+          path: ["1/1", "10/9", "11/9", "4/3", "14/9", "16/9", "2"],
+          color: "orange"
+        },
+        {
+          path: ["1/1", "11/10", "6/5", "7/5", "8/5", "9/5", "2"],
+          color: "blueviolet"
+        },
+        {
+          path: ["1/1", "12/11", "14/11", "16/11", "18/11", "20/11", "2"],
+          color: "#0b7285"
+        }
       ];
 
-      const EDGES = [
-        { from: "1/1", to: "6/5", color: "blue" },
-        { from: "6/5", to: "7/5", color: "blue" },
-        { from: "7/5", to: "8/5", color: "blue" },
-        { from: "8/5", to: "9/5", color: "blue" },
-        { from: "9/5", to: "2", color: "blue" },
-        { from: "1/1", to: "7/6", color: "red" },
-        { from: "7/6", to: "4/3", color: "red" },
-        { from: "4/3", to: "3/2", color: "red" },
-        { from: "3/2", to: "5/3", color: "red" },
-        { from: "5/3", to: "2", color: "red" },
-        { from: "1/1", to: "8/7", color: "limegreen" },
-        { from: "8/7", to: "9/7", color: "limegreen" },
-        { from: "9/7", to: "10/7", color: "limegreen" },
-        { from: "10/7", to: "12/7", color: "limegreen" },
-        { from: "12/7", to: "2", color: "limegreen" },
-        { from: "1/1", to: "9/8", color: "orange" },
-        { from: "9/8", to: "5/4", color: "orange" },
-        { from: "5/4", to: "3/2", color: "orange" },
-        { from: "3/2", to: "7/4", color: "orange" },
-        { from: "7/4", to: "2", color: "orange" },
-        { from: "1/1", to: "10/9", color: "blueviolet" },
-        { from: "10/9", to: "4/3", color: "blueviolet" },
-        { from: "4/3", to: "14/9", color: "blueviolet" },
-        { from: "14/9", to: "16/9", color: "blueviolet" },
-        { from: "16/9", to: "2", color: "blueviolet" },
-        { from: "1/1", to: "10/9", color: "#008b8b", dashed: true },
-        { from: "10/9", to: "5/4", color: "#008b8b", dashed: true },
-        { from: "5/4", to: "10/7", color: "#008b8b", dashed: true },
-        { from: "10/7", to: "5/3", color: "#008b8b", dashed: true },
-        { from: "5/3", to: "2", color: "#008b8b", dashed: true },
-        { from: "1/1", to: "9/8", color: "#8b008b", dashed: true },
-        { from: "9/8", to: "9/7", color: "#8b008b", dashed: true },
-        { from: "9/7", to: "3/2", color: "#8b008b", dashed: true },
-        { from: "3/2", to: "9/5", color: "#8b008b", dashed: true },
-        { from: "9/5", to: "2", color: "#8b008b", dashed: true },
-        { from: "1/1", to: "8/7", color: "#cd9b1d", dashed: true },
-        { from: "8/7", to: "4/3", color: "#cd9b1d", dashed: true },
-        { from: "4/3", to: "8/5", color: "#cd9b1d", dashed: true },
-        { from: "8/5", to: "16/9", color: "#cd9b1d", dashed: true },
-        { from: "16/9", to: "2", color: "#cd9b1d", dashed: true },
-        { from: "1/1", to: "7/6", color: "#8b4726", dashed: true },
-        { from: "7/6", to: "7/5", color: "#8b4726", dashed: true },
-        { from: "7/5", to: "14/9", color: "#8b4726", dashed: true },
-        { from: "14/9", to: "7/4", color: "#8b4726", dashed: true },
-        { from: "7/4", to: "2", color: "#8b4726", dashed: true },
-        { from: "1/1", to: "6/5", color: "#7f7f7f", dashed: true },
-        { from: "6/5", to: "4/3", color: "#7f7f7f", dashed: true },
-        { from: "4/3", to: "3/2", color: "#7f7f7f", dashed: true },
-        { from: "3/2", to: "12/7", color: "#7f7f7f", dashed: true },
-        { from: "12/7", to: "2", color: "#7f7f7f", dashed: true }
+      const DASHED_SERIES = [
+        {
+          path: ["1/1", "12/11", "6/5", "4/3", "3/2", "12/7", "2"],
+          color: "#008b8b",
+          dashed: true
+        },
+        {
+          path: ["1/1", "11/10", "11/9", "11/8", "11/7", "11/6", "2"],
+          color: "#8b008b",
+          dashed: true
+        },
+        {
+          path: ["1/1", "10/9", "5/4", "10/7", "5/3", "20/11", "2"],
+          color: "#cd9b1d",
+          dashed: true
+        },
+        {
+          path: ["1/1", "9/8", "9/7", "3/2", "18/11", "9/5", "2"],
+          color: "#8b4726",
+          dashed: true
+        },
+        {
+          path: ["1/1", "8/7", "4/3", "16/11", "8/5", "16/9", "2"],
+          color: "#7f7f7f",
+          dashed: true
+        },
+        {
+          path: ["1/1", "7/6", "14/11", "7/5", "14/9", "7/4", "2"],
+          color: "#1f4e79",
+          dashed: true
+        }
       ];
+
+      // Generate EDGES from series
+      function generateEdges() {
+        const edges = [];
+
+        const processPath = (pathArray, color, dashed = false) => {
+          for (let i = 0; i < pathArray.length - 1; i++) {
+            edges.push({
+              from: pathArray[i],
+              to: pathArray[i + 1],
+              color: color,
+              dashed: dashed
+            });
+          }
+        };
+
+        SOLID_SERIES.forEach(series => {
+          processPath(series.path, series.color, false);
+        });
+
+        DASHED_SERIES.forEach(series => {
+          processPath(series.path, series.color, series.dashed);
+        });
+
+        return edges;
+      }
+
+      const EDGES = generateEdges();
+
+      // Extract all unique ratios from edges
+      function getAllUniqueRatios() {
+        const ratios = new Set();
+        EDGES.forEach(edge => {
+          ratios.add(edge.from);
+          ratios.add(edge.to);
+        });
+        return Array.from(ratios).sort(
+          (a, b) => parseRatioValue(a) - parseRatioValue(b)
+        );
+      }
+
+      // Get ratios that connect directly to 2
+      function getRatiosThatConnectTo2() {
+        const ratiosThatConnectTo2 = new Set();
+        EDGES.forEach(edge => {
+          if (edge.to === "2") {
+            ratiosThatConnectTo2.add(edge.from);
+          }
+        });
+        return ratiosThatConnectTo2;
+      }
+
+      // Generate columns from unique ratios
+      function generateColumns(ratios) {
+        const lastColumnIndex = 7;
+        const finalNotesColumnIndex = 6;
+        const firstMiddleColumnIndex = 1;
+        const lastMiddleColumnIndex = 5;
+        const middleColumnCount =
+          lastMiddleColumnIndex - firstMiddleColumnIndex + 1;
+        const ratiosThatConnectTo2 = getRatiosThatConnectTo2();
+
+        // Separar 1/1, 2, nós que conectam com 2, e outros
+        const otherRatios = ratios.filter(
+          r => r !== "1/1" && r !== "2" && !ratiosThatConnectTo2.has(r)
+        );
+
+        const finalNotes = Array.from(ratiosThatConnectTo2).sort(
+          (a, b) => parseRatioValue(a) - parseRatioValue(b)
+        );
+
+        const columnsByRatio = new Map([
+          ["1/1", 0],
+          ["2", lastColumnIndex]
+        ]);
+        const outgoingByRatio = new Map();
+        const incomingByRatio = new Map();
+        const fixedRatios = new Set(["1/1", "2", ...finalNotes]);
+        const ratiosPerColumn = Math.ceil(
+          otherRatios.length / middleColumnCount
+        );
+
+        function addEdgeLookup(map, key, value) {
+          if (!map.has(key)) {
+            map.set(key, []);
+          }
+          map.get(key).push(value);
+        }
+
+        EDGES.forEach(edge => {
+          addEdgeLookup(outgoingByRatio, edge.from, edge.to);
+          addEdgeLookup(incomingByRatio, edge.to, edge.from);
+        });
+
+        finalNotes.forEach(ratio => {
+          columnsByRatio.set(ratio, finalNotesColumnIndex);
+        });
+
+        otherRatios.forEach((ratio, index) => {
+          const baseColumn = Math.min(
+            lastMiddleColumnIndex,
+            firstMiddleColumnIndex + Math.floor(index / ratiosPerColumn)
+          );
+          columnsByRatio.set(ratio, baseColumn);
+        });
+
+        function canMoveToColumn(ratio, nextColumn) {
+          if (fixedRatios.has(ratio)) {
+            return false;
+          }
+
+          if (
+            nextColumn < firstMiddleColumnIndex ||
+            nextColumn > lastMiddleColumnIndex
+          ) {
+            return false;
+          }
+
+          const incoming = incomingByRatio.get(ratio) || [];
+          const outgoing = outgoingByRatio.get(ratio) || [];
+
+          if (
+            incoming.some(source => columnsByRatio.get(source) >= nextColumn)
+          ) {
+            return false;
+          }
+
+          if (
+            outgoing.some(target => columnsByRatio.get(target) <= nextColumn)
+          ) {
+            return false;
+          }
+
+          return true;
+        }
+
+        function tryResolveConflicts() {
+          let changed = false;
+
+          EDGES.forEach(edge => {
+            const fromColumn = columnsByRatio.get(edge.from);
+            const toColumn = columnsByRatio.get(edge.to);
+
+            if (fromColumn >= toColumn) {
+              if (canMoveToColumn(edge.to, toColumn + 1)) {
+                columnsByRatio.set(edge.to, toColumn + 1);
+                changed = true;
+                return;
+              }
+
+              if (canMoveToColumn(edge.from, fromColumn - 1)) {
+                columnsByRatio.set(edge.from, fromColumn - 1);
+                changed = true;
+              }
+            }
+          });
+
+          return changed;
+        }
+
+        for (let i = 0; i < ratios.length; i++) {
+          if (!tryResolveConflicts()) {
+            break;
+          }
+        }
+
+        const columns = Array.from({ length: lastColumnIndex + 1 }, () => []);
+        ratios.forEach(ratio => {
+          const columnIndex = columnsByRatio.get(ratio);
+          columns[columnIndex].push(ratio);
+        });
+
+        columns.forEach(column => {
+          column.sort((a, b) => parseRatioValue(a) - parseRatioValue(b));
+        });
+
+        return columns.filter(column => column.length > 0);
+      }
+
+      const ALL_RATIOS = getAllUniqueRatios();
+      const COLUMNS = generateColumns(ALL_RATIOS);
 
       function getMarkerId(color) {
         return `arrow-${normalizeColor(color).replace(/[^a-z0-9]/g, "")}`;
@@ -711,10 +892,6 @@
         return startY + colors.length * (buttonHeight + rowGap);
       }
 
-      function createEdgePath(start, end, radius) {
-        return createOffsetEdgePath(start, end, radius, 0);
-      }
-
       function createOffsetEdgePath(start, end, radius, offset) {
         const angle = Math.atan2(end.y - start.y, end.x - start.x);
         const normalX = -Math.sin(angle);
@@ -738,7 +915,7 @@
         const svg = document.createElementNS(SVG_NS, "svg");
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
         svg.setAttribute("role", "img");
-        svg.setAttribute("aria-label", "9-limit playable graph");
+        svg.setAttribute("aria-label", "11-limit playable graph");
 
         const defs = document.createElementNS(SVG_NS, "defs");
         svg.appendChild(defs);
