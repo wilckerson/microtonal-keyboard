@@ -15,7 +15,7 @@ public class FretsSectionExplorerV2
         var results = new List<(int strEdoJump, float totalMinDistance, List<ClosestMatchResult> matches, RelativeNote[,] matrix, float points)>();
 
         var edo = 31;
-        var skipFreting = new int[] { 2, 1 };
+        var skipFreting = new int[] { 2,1 };
         var maxJumps = edo;
         for (int strEdoJump = 1; strEdoJump <= maxJumps; strEdoJump++)
         {

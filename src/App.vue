@@ -11,6 +11,8 @@
       <button :class="['nav-link', { 'nav-link-active': route === '#calc2' }]"
         @click="navigate('#calc2')">Calculator</button>
       <button :class="['nav-link']" @click="navigateToPage('/graph-app.html')">Graph App</button>
+      <button :class="['nav-link', { 'nav-link-active': route === '#tritriadic' }]"
+        @click="navigate('#tritriadic')">Tritriadic</button>
       <a href="/sw3.html" :class="['nav-link']">SW3</a>
     </div>
 
@@ -26,6 +28,7 @@
     <Mos v-else-if="route == '#mos'" />
     <TouchBoard v-else-if="route == '#touchboard'" />
     <FretboardViewer v-else-if="route == '#fretboard'" />
+    <Tritriadic v-else-if="route == '#tritriadic'" />
     <keyboard v-else />
 
     <!-- <audio-key keyName="W" freq="220"/>
@@ -45,6 +48,7 @@ import LambdomaKeyboard from "./LambdomaKeyboard.vue";
 import TouchBoard from "./TouchBoard.vue";
 import Mos from "./Mos.vue";
 import FretboardViewer from "./FretboardViewer/Index.vue"
+import Tritriadic from "./Tritriadic.vue";
 
 export default {
   name: "app",
@@ -59,7 +63,8 @@ export default {
     KeyboardMos,
     TouchBoard,
     Mos,
-    FretboardViewer
+    FretboardViewer,
+    Tritriadic
   },
   data() {
     return {
@@ -69,6 +74,9 @@ export default {
   },
   mounted() {
     this.route = window.location.hash.toLowerCase();
+    window.addEventListener("hashchange", () => {
+      this.route = window.location.hash.toLowerCase();
+    });
   },
   methods: {
     navigate(pageName) {
