@@ -26,6 +26,10 @@
         Guitar string length (cm):
         <input type="number" v-model="guitarStringLength" step="1" style="width: 70px;" />
       </span>
+      <span>
+        Stretch:
+        <input type="number" v-model="stretch" min="0.1" max="10" step="0.005" style="width: 70px;" />
+      </span>
 
     </p>
     <div>
@@ -386,6 +390,7 @@ export default {
       ratioListIdx: true,
       inCents: false,
       guitarStringLength: 65, //65
+      stretch: 1,
       testValue: Math.pow(2, (8 - (Math.sqrt(5) + 1) / 2) / 11), //Golden meantone
       testValue2: 1,
       testValue3: 4 / 3,
@@ -640,6 +645,13 @@ export default {
     centsToRatio(cents) {
       var ratio = Math.pow(2, cents / 1200);
       return ratio;
+    },
+    applyStretch(ratio) {
+      var stretchVal = parseFloat(this.stretch);
+      if (!ratio || ratio <= 0 || isNaN(stretchVal) || stretchVal === 1) {
+        return ratio;
+      }
+      return this.centsToRatio(this.ratioToCents(ratio) * stretchVal);
     },
     setPhi() {
       this.base = (Math.sqrt(5) + 1) / 2;
@@ -2093,7 +2105,7 @@ export default {
 
       //AQUI!
       if (this.mode == "wtg" || this.mode == "code" || this.mode == "gtr" || this.mode == "dynamic-mos") {
-        return ratiosArr[idx - 1] || 0;
+        return this.applyStretch(ratiosArr[idx - 1] || 0);
       }
 
       //#endregion
@@ -2125,7 +2137,7 @@ export default {
         if (this.normalize) {
           v = this.normalizeValue(v);
         }
-        return v;
+        return this.applyStretch(v);
       }
 
       //Linear
@@ -2171,7 +2183,7 @@ export default {
           if (this.normalize) {
             harmV = this.normalizeValue(harmV);
           }
-          return harmV;
+          return this.applyStretch(harmV);
 
         } else {
           var v = 1;
@@ -2187,7 +2199,7 @@ export default {
           if (this.normalize) {
             v = this.normalizeValue(v);
           }
-          return v;
+          return this.applyStretch(v);
         }
       }
 
@@ -2222,7 +2234,7 @@ export default {
           }
         }
         const v = resultNotes[idx - 1];
-        return v;
+        return this.applyStretch(v);
       }
       // if(true){
       //   var v = Math.log(Math.pow(this.base,idx));
