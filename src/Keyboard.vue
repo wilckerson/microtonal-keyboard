@@ -72,6 +72,8 @@
         <input type="checkbox" v-model="repeatScale" />
         Repeat
         <input type="number" v-model="repeatScaleValue" step="0.0001" />
+        <input type="checkbox" v-model="syncRepeatWithEquivalence" />
+        Sync with Period
 
         <input type="checkbox" v-model="repeatScaleHarm" />
         HarmRepeat
@@ -377,6 +379,7 @@ export default {
       normalize: false,
       repeatScale: false,
       repeatScaleValue: 2,
+      syncRepeatWithEquivalence: false,
       elementsCount: 5,
       applySort: false,
       repeatScaleHarm: false,
@@ -2498,6 +2501,21 @@ export default {
     eqt: function (val) {
       if (val == 0) {
         this.eqt = 1;
+      }
+    },
+    syncRepeatWithEquivalence: function (val) {
+      if (val) {
+        this.repeatScaleValue = this.equivalence;
+      }
+    },
+    equivalence: function (val) {
+      if (this.syncRepeatWithEquivalence) {
+        this.repeatScaleValue = val;
+      }
+    },
+    repeatScaleValue: function (val) {
+      if (this.syncRepeatWithEquivalence && val !== this.equivalence) {
+        this.equivalence = val;
       }
     },
   },
