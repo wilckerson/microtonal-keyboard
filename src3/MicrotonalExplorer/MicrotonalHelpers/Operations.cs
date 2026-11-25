@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace MicrotonalExplorer;
@@ -18,6 +18,103 @@ public static class Operations
             }
         }
         return minInterval;
+    }
+
+    /// <summary>
+    /// Computes how much of the scale's consecutive note-to-note interval sequence repeats
+    /// starting from a given rotation note, continuing past the period up to that same note
+    /// in the next period.
+    /// </summary>
+    public static ScaleSymmetryResult GetScaleSymmetry(float[] scale, float intervalEpsilonInCents = 0.05f)
+    {
+        int startIdx = scale.Length > 0 && scale[0] == 1f ? 1 : 0;
+        int n = scale.Length - startIdx;
+        if (n <= 1)
+        {
+            return new ScaleSymmetryResult(0f, 0f, 0, 0, n, 0, 0f, 0, 0f);
+        }
+
+        Span<float> noteCents = n <= 128 ? stackalloc float[n] : new float[n];
+        Span<float> intervals = n <= 128 ? stackalloc float[n] : new float[n];
+
+        float prevCents = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float cents = RatioToCents(scale[startIdx + i]);
+            noteCents[i] = cents;
+            intervals[i] = cents - prevCents;
+            prevCents = cents;
+        }
+
+        int bestConsecutive = -1;
+        int bestConsecutivePositional = -1;
+        int bestConsecutiveRotation = 0;
+
+        int bestPositional = -1;
+        int bestPositionalConsecutive = -1;
+        int bestPositionalRotation = 0;
+
+        for (int rotation = 1; rotation < n; rotation++)
+        {
+            int consecutive = 0;
+            bool stillConsecutive = true;
+            int positional = 0;
+
+            for (int k = 0; k < n; k++)
+            {
+                int wrappedIdx = rotation + k;
+                if (wrappedIdx >= n)
+                {
+                    wrappedIdx -= n;
+                }
+
+                if (MathF.Abs(intervals[k] - intervals[wrappedIdx]) <= intervalEpsilonInCents)
+                {
+                    positional++;
+                    if (stillConsecutive)
+                    {
+                        consecutive++;
+                    }
+                }
+                else
+                {
+                    stillConsecutive = false;
+                }
+            }
+
+            if (consecutive > bestConsecutive
+                || (consecutive == bestConsecutive && positional > bestConsecutivePositional))
+            {
+                bestConsecutive = consecutive;
+                bestConsecutivePositional = positional;
+                bestConsecutiveRotation = rotation;
+            }
+
+            if (positional > bestPositional
+                || (positional == bestPositional && consecutive > bestPositionalConsecutive))
+            {
+                bestPositional = positional;
+                bestPositionalConsecutive = consecutive;
+                bestPositionalRotation = rotation;
+            }
+        }
+
+        float symmetryPercentage = (float)bestConsecutive / n * 100f;
+        float positionalSymmetryPercentage = (float)bestPositional / n * 100f;
+        float bestConsecutiveRootCents = bestConsecutiveRotation > 0 ? noteCents[bestConsecutiveRotation - 1] : 0f;
+        float bestPositionalRootCents = bestPositionalRotation > 0 ? noteCents[bestPositionalRotation - 1] : 0f;
+
+        return new ScaleSymmetryResult(
+            symmetryPercentage,
+            positionalSymmetryPercentage,
+            bestConsecutive,
+            bestPositional,
+            n,
+            bestConsecutiveRotation,
+            bestConsecutiveRootCents,
+            bestPositionalRotation,
+            bestPositionalRootCents
+        );
     }
 
     public static float[][] ComputeRotations(float[] scaleArray)
@@ -162,3 +259,15 @@ public static class Operations
 }
 
 public record ClosestRationFromScaleResult(int ScaleIndex, float DiffInCents, float TargetScaleRatio, float ClosestScaleRatio);
+
+public record ScaleSymmetryResult(
+    float SymmetryPercentage,
+    float PositionalSymmetryPercentage,
+    int ConsecutiveMatches,
+    int PositionalMatches,
+    int TotalIntervals,
+    int BestConsecutiveRotation,
+    float BestConsecutiveRootCents,
+    int BestPositionalRotation,
+    float BestPositionalRootCents
+);

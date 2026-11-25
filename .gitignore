@@ -12,3 +12,6 @@ yarn-error.log
 *.sln
 dist
 mos_output.json
+.local/share/NuGet/Migrations/1
+src3/MicrotonalExplorer/Library/Application Support/Microsoft/DeveloperTools/deviceid
+src3/MicrotonalExplorer/.local/share/NuGet/Migrations/1

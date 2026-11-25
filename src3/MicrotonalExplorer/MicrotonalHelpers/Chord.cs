@@ -1,4 +1,4 @@
-﻿namespace MicrotonalExplorer;
+namespace MicrotonalExplorer;
 
 public class Chord
 {
@@ -17,4 +17,15 @@ public class Chord
     public static readonly float[] Undertone7Limit_Inversion1 = [5/4f, 10/7f, 5/3f, 2/1f];
     public static readonly float[] Undertone7Limit_Inversion2 = [6/5f, 3/2f, 12/7f, 2/1f];
     public static readonly float[] Undertone7Limit_Inversion3 = [7/6f, 7/5f, 7/4f, 2/1];
+
+    public static readonly float[] Overtone9Limit_Inversion0 = [9/8f, 5/4f, 3/2f, 7/4f, 2/1f];
+    public static readonly float[] Overtone9Limit_Inversion1 = [10/9f, 4/3f, 14/9f, 16/9f, 2/1f];
+    public static readonly float[] Overtone9Limit_Inversion2 = [6/5f, 7/5f, 8/5f, 9/5f, 2/1f];
+    public static readonly float[] Overtone9Limit_Inversion3 = [7/6f, 4/3f, 3/2f, 5/3f, 2/1f];
+    public static readonly float[] Overtone9Limit_Inversion4 = [8/7f, 9/7f, 10/7f, 12/7f, 2/1f];
+    public static readonly float[] Undertone9Limit_Inversion0 = [8/7f, 4/3f, 8/5f, 16/9f, 2/1f];
+    public static readonly float[] Undertone9Limit_Inversion1 = [9/8f, 9/7f, 3/2f, 9/5f, 2/1f];
+    public static readonly float[] Undertone9Limit_Inversion2 = [10/9f, 5/4f, 10/7f, 5/3f, 2/1f];
+    public static readonly float[] Undertone9Limit_Inversion3 = [6/5f, 4/3f, 3/2f, 12/7f, 2/1f];
+    public static readonly float[] Undertone9Limit_Inversion4 = [7/6f, 7/5f, 14/9f, 7/4f, 2/1f];
 }

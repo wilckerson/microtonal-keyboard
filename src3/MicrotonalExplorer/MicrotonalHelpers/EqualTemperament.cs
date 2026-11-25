@@ -49,10 +49,11 @@ public static class EqualTemperament
           numberOfNotes - 1
         );
         var arrayLength = initialNumberOfCombinations * numberOfNotes;
-        if (arrayLength >= Array.MaxLength)
-        {
-            throw new Exception($"Too many combinations to calculate: {initialNumberOfCombinations:N0} Array length: {arrayLength:N0} Array max length: {Array.MaxLength:N0}");
-        }
+        arrayLength = Math.Min(arrayLength,Array.MaxLength);
+        // if (arrayLength >= Array.MaxLength)
+        // {
+        //     throw new Exception($"Too many combinations to calculate: {initialNumberOfCombinations:N0} Array length: {arrayLength:N0} Array max length: {Array.MaxLength:N0}");
+        // }
         var result = new int[arrayLength];
         var refArray = new int[numberOfNotes];
         var refArrayIndex = 0;
